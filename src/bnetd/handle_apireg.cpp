@@ -828,26 +828,7 @@ namespace pvpgn
             DEBUG3("APIREG:/{}/{}/{}/", apiregmember_get_request(apiregmember), apiregmember_get_newnick(apiregmember), apiregmember_get_newpass(apiregmember));
 
             if ((request) && (std::strcmp(apiregmember_get_request(apiregmember), REQUEST_AGEVERIFY) == 0)) {
-                char data[1024];
-                int pos = 0;
-
-                // 安全地构建字符串
-                auto safe_append = [&](const char* str, int max_len = 500) {
-                    if (!str) return;
-                    int len = std::strlen(str);
-                    if (len > max_len) len = max_len;
-                    if (pos + len < sizeof(data)) {
-                        std::strncpy(data + pos, str, len);
-                        pos += len;
-                    }
-                };
-
-                pos += std::snprintf(data, sizeof(data), "HRESULT=");
-                safe_append(hresult);
-                pos += std::snprintf(data + pos, sizeof(data) - pos, "\nMessage=");
-                safe_append(message);
-                pos += std::snprintf(data + pos, sizeof(data) - pos, "\nNewNick=((NewNick))\nNewPass=((NewPass))\n");
-
+                std::snprintf(data, sizeof(data), "HRESULT=%1024s\nMessage=%1024s\nNewNick=((NewNick))\nNewPass=((NewPass))\n", hresult, message);
                 /* FIXME: Count real age here! */
                 std::snprintf(age, sizeof(age), "28"); /* FIXME: Here must be counted age */
                 std::snprintf(temp, sizeof(temp), "Age=%s\nConsent=((Consent))\nEND\r", age);
@@ -899,19 +880,7 @@ namespace pvpgn
                         }
                     }
                 }
-                // 计算需要的缓冲区大小
-                int needed_size = std::snprintf(nullptr, 0, "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
-                                                hresult, message, newnick, newpass, age, consent) + 1; // +1 for null terminator
-
-                if (needed_size > 0) {
-                    char* data = new char[needed_size];
-                    std::snprintf(data, needed_size, "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
-                                  hresult, message, newnick, newpass, age, consent);
-
-                    // 使用 data...
-
-                    delete[] data;  // 记得释放内存
-                }
+                std::snprintf(data, sizeof(data), "HRESULT=%1024s\nMessage=%s\nNewNick=%1024s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r", hresult, message, newnick, newpass, age, consent);
                 apireg_send(apiregmember_get_conn(apiregmember), data);
                 return 0;
             }
