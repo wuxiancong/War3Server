@@ -27,6 +27,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
+#include <climits>
 
 #include "common/xalloc.h"
 
