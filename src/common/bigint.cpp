@@ -19,7 +19,6 @@
 #include "bigint.h"
 
 #include <algorithm>
-#include <climits>
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -28,6 +27,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
+#include <climits>
 
 #include "common/xalloc.h"
 
@@ -90,11 +90,11 @@ namespace pvpgn
         for (i = 0; i < segment_count; i++){
             segment[i] = input & bigint_base_mask;
 
-            // 安全的移位处理
-            if (bigint_base_bitcount > 0 && bigint_base_bitcount < 32) {
+            // 完全安全的移位处理
+            if (bigint_base_bitcount <= 0 || bigint_base_bitcount >= 32) {
+                input = 0;
+            } else if (input != 0) {
                 input >>= bigint_base_bitcount;
-            } else {
-                input = 0;  // 无效的移位位数，清零
             }
         }
     }
