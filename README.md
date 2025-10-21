@@ -1,8 +1,4 @@
-Player vs Player Gaming Network - PRO
-=====
-![](http://i.imgur.com/LfI3hXo.png)
-
-PvPGN is a free and open source cross-platform server software that supports Battle.net and and Westwood Online game clients. PvPGN-PRO is a fork of the official PvPGN project, whose development stopped in 2011, and aims to provide continued maintenance and additional features for PvPGN.
+War3Server is a free and open source cross-platform server software that supports Battle.net and and Westwood Online game clients. War3Server-PRO is a fork of the official War3Server project, whose development stopped in 2011, and aims to provide continued maintenance and additional features for War3Server.
 
 [![License (GPL version 2)](https://img.shields.io/badge/license-GNU%20GPL%20version%202-blue.svg?style=flat-square)](http://opensource.org/licenses/GPL-2.0)
 ![Language (C++)](https://img.shields.io/badge/powered_by-C++-brightgreen.svg?style=flat-square)
@@ -43,18 +39,18 @@ By default, tracking is enabled and is only used for the purpose of sending info
 - **Dune 2000**: 1.06
 - **Emperor: Battle for Dune**: 1.09
 
-\* WarCraft 3 clients are unable to connect to PvPGN servers without a client-side modification, through tools such as [W3L](https://github.com/w3lh/w3l), to disable server signature verification.
-\* StarCraft clients beginning with patch 1.18 will not be supported by PvPGN-PRO due to protocol changes. A 1.18.0 versioncheck entry is included for compatibility with bot software.
+\* WarCraft 3 clients are unable to connect to War3Server servers without a client-side modification, through tools such as [W3L](https://github.com/w3lh/w3l), to disable server signature verification.
+\* StarCraft clients beginning with patch 1.18 will not be supported by War3Server-PRO due to protocol changes. A 1.18.0 versioncheck entry is included for compatibility with bot software.
 
 ## Support
-[Create an issue](https://github.com/wuxiancong/War3Server/issues) if you have any questions, suggestions, or anything else to say about PvPGN-PRO. Please note that D2GS is not part of the PvPGN project and is therefore unsupported here.
+[Create an issue](https://github.com/wuxiancong/War3Server/issues) if you have any questions, suggestions, or anything else to say about War3Server-PRO. Please note that D2GS is not part of the War3Server project and is therefore unsupported here.
 Set `loglevels = fatal,error,warn,info,debug,trace` in `bnetd.conf` before obtaining logs and posting them.
 
 ## Development
 Submit pull requests to contribute to this project. Utilize C++11 features and adhere to the [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md) whenever possible.
 
 ## Building
-See [docs/ports.md](https://github.com/wuxiancong/War3Server/blob/master/docs/ports.md) for operating systems and compilers that have been confirmed to work with PvPGN. Any operating system that supports WinAPI or POSIX, and any C++11 compliant compiler should be able to build PvPGN. The CMake files have been hardcoded to reject compilers older than Visual Studio 2015 and GCC 5.1.
+See [docs/ports.md](https://github.com/wuxiancong/War3Server/blob/master/docs/ports.md) for operating systems and compilers that have been confirmed to work with War3Server. Any operating system that supports WinAPI or POSIX, and any C++11 compliant compiler should be able to build War3Server. The CMake files have been hardcoded to reject compilers older than Visual Studio 2015 and GCC 5.1.
 
 #### Windows
 Use [Magic Builder](https://github.com/pvpgn/pvpgn-magic-builder).
@@ -83,7 +79,7 @@ make install
 ```
 sudo apt-get -y install build-essential git cmake zlib1g-dev
 git clone https://github.com/wuxiancong/War3Server.git
-cd pvpgn-server && cmake -G "Unix Makefiles" -H./ -B./build
+cd War3Server && cmake -G "Unix Makefiles" -H./ -B./build
 cd build && make
 ```
 
@@ -98,7 +94,7 @@ sudo add-apt-repository -y ppa:george-edison55/cmake-3.x
 sudo apt-get update
 sudo apt-get -y install cmake
 git clone https://github.com/wuxiancong/War3Server.git
-cd pvpgn-server && cmake -G "Unix Makefiles" -H./ -B./build
+cd War3Server && cmake -G "Unix Makefiles" -H./ -B./build
 cd build && make
 ```
 
@@ -108,7 +104,7 @@ sudo apt-get -y install build-essential zlib1g-dev clang libc++-dev git
 wget https://cmake.org/files/v3.7/cmake-3.7.1-Linux-x86_64.tar.gz
 tar xvfz cmake-3.7.1-Linux-x86_64.tar.gz
 git clone https://github.com/wuxiancong/War3Server.git
-cd pvpgn-server && CC=/usr/bin/clang CXX=/usr/bin/clang++ ../cmake-3.7.1-Linux-x86_64/bin/cmake -G "Unix Makefiles" -H./ -B./build
+cd War3Server && CC=/usr/bin/clang CXX=/usr/bin/clang++ ../cmake-3.7.1-Linux-x86_64/bin/cmake -G "Unix Makefiles" -H./ -B./build
 cd build && make
 ```
 
@@ -118,7 +114,7 @@ sudo yum -y install epel-release centos-release-scl
 sudo yum -y install git zlib-devel cmake3 devtoolset-4-gcc*
 sudo ln -s /usr/bin/cmake3 /usr/bin/cmake
 git clone https://github.com/wuxiancong/War3Server.git
-cd pvpgn-server
+cd War3Server
 CC=/opt/rh/devtoolset-4/root/usr/bin/gcc CXX=/opt/rh/devtoolset-4/root/usr/bin/g++ cmake -G "Unix Makefiles" -H./ -B./build
 cd build && make
 ```
@@ -127,7 +123,7 @@ cd build && make
 ```
 sudo dnf -y install gcc-c++ gcc make zlib-devel cmake git
 git clone https://github.com/wuxiancong/War3Server.git
-cd pvpgn-server
+cd War3Server
 cmake -G "Unix Makefiles" -H./ -B./build
 cd build && make
 ```
@@ -136,7 +132,7 @@ cd build && make
 ```
 sudo pkg install -y git cmake
 git clone https://github.com/wuxiancong/War3Server.git
-cd pvpgn-server
+cd War3Server
 cmake -G "Unix Makefiles" -H./ -B./build
 cd build && make
 ```
@@ -146,7 +142,7 @@ Full instructions: [Русский](http://harpywar.com/?a=articles&b=2&c=1&d=74
 ## Hosting on LAN or VPS with private IP address
 Some VPS providers do not assign your server a direct public IP. If that is the case or you host at home behind NAT you need to setup the route translation in `address_translation.conf`. The public address is pushed as the route server address to game clients when seeking games. Failure to push the correct address to game clients results in players not being able to match and join games (long game search and error).
 
-If your network interface is directly bound to public IP, PvPGN can figure it out on it's own and this step is not necessary.
+If your network interface is directly bound to public IP, War3Server can figure it out on it's own and this step is not necessary.
 
 ## License
 
