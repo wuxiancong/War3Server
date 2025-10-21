@@ -19,6 +19,7 @@
 #include "bigint.h"
 
 #include <algorithm>
+#include <climits>
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -89,13 +90,11 @@ namespace pvpgn
         for (i = 0; i < segment_count; i++){
             segment[i] = input & bigint_base_mask;
 
-            // 确保移位位数在安全范围内
-            if (input != 0) {
-                if (bigint_base_bitcount > 0 && bigint_base_bitcount < sizeof(input) * CHAR_BIT) {
-                    input >>= bigint_base_bitcount;
-                } else {
-                    input = 0;  // 无效的移位位数，清零
-                }
+            // 安全的移位处理
+            if (bigint_base_bitcount > 0 && bigint_base_bitcount < 32) {
+                input >>= bigint_base_bitcount;
+            } else {
+                input = 0;  // 无效的移位位数，清零
             }
         }
     }
