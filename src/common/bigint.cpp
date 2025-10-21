@@ -88,14 +88,8 @@ namespace pvpgn
         segment = (bigint_base*)xmalloc(segment_count * sizeof(bigint_base));
 
         for (i = 0; i < segment_count; i++){
-            segment[i] = input & bigint_base_mask;
-
-            // 安全的移位处理
-            if (bigint_base_bitcount > 0 && bigint_base_bitcount < 32) {
-                input >>= bigint_base_bitcount;
-            } else {
-                input = 0;  // 无效的移位位数，清零
-            }
+            // 直接计算每个段的值，避免移位警告
+            segment[i] = (input >> (i * bigint_base_bitcount)) & bigint_base_mask;
         }
     }
 
