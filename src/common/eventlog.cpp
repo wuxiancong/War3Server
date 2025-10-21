@@ -51,7 +51,7 @@ namespace pvpgn
 #endif
 		;
 	/* FIXME: maybe this should be default for win32 */
-	extern int eventlog_debugmode = 0;
+    int eventlog_debugmode = 0;
 
 	extern void eventlog_set_debugmode(int debugmode)
 	{
