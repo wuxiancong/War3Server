@@ -27,7 +27,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
-#include <climits>
 
 #include "common/xalloc.h"
 
@@ -89,12 +88,11 @@ namespace pvpgn
 
         for (i = 0; i < segment_count; i++){
             segment[i] = input & bigint_base_mask;
-
-            // 完全安全的移位处理
-            if (bigint_base_bitcount <= 0 || bigint_base_bitcount >= 32) {
-                input = 0;
-            } else if (input != 0) {
+            // 只有当还有数据需要处理时才移位
+            if (input != 0 && bigint_base_bitcount < 32) {
                 input >>= bigint_base_bitcount;
+            } else {
+                input = 0;
             }
         }
     }
