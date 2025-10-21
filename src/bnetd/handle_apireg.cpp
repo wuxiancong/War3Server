@@ -828,24 +828,20 @@ namespace pvpgn
             DEBUG3("APIREG:/{}/{}/{}/", apiregmember_get_request(apiregmember), apiregmember_get_newnick(apiregmember), apiregmember_get_newpass(apiregmember));
 
             if ((request) && (std::strcmp(apiregmember_get_request(apiregmember), REQUEST_AGEVERIFY) == 0)) {
-                // 计算固定部分长度
-                constexpr int fixed_length = 54; // "HRESULT=\nMessage=\nNewNick=((NewNick))\nNewPass=((NewPass))\n" 的长度
+                if ((request) && (std::strcmp(apiregmember_get_request(apiregmember), REQUEST_AGEVERIFY) == 0)) {
+                    // 计算需要的缓冲区大小
+                    int needed_size = std::snprintf(nullptr, 0, "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
+                                                    hresult, message, "((NewNick))", "((NewPass))", age, consent) + 1; // +1 for null terminator
 
-                // 计算可变部分长度
-                int hresult_len = std::strlen(hresult);
-                int message_len = std::strlen(message);
+                    if (needed_size > 0) {
+                        char* data = new char[needed_size];
+                        std::snprintf(data, needed_size, "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
+                                      hresult, message, "((NewNick))", "((NewPass))", age, consent);
 
-                // 检查是否需要截断
-                if (fixed_length + hresult_len + message_len < sizeof(data)) {
-                    std::snprintf(data, sizeof(data),
-                                  "HRESULT=%s\nMessage=%s\nNewNick=((NewNick))\nNewPass=((NewPass))\n", hresult, message);
-                } else {
-                    // 需要截断
-                    int available_for_strings = sizeof(data) - fixed_length;
-                    int max_each = available_for_strings / 2; // 平均分配
-
-                    std::snprintf(data, sizeof(data),
-                                  "HRESULT=%.*s\nMessage=%.*s\nNewNick=((NewNick))\nNewPass=((NewPass))\n", max_each, hresult, max_each, message);
+                        apireg_send(apiregmember_get_conn(apiregmember), data);
+                        delete[] data;  // 记得释放内存
+                        return 0;
+                    }
                 }
                 /* FIXME: Count real age here! */
                 std::snprintf(age, sizeof(age), "28"); /* FIXME: Here must be counted age */
