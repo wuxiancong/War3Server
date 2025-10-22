@@ -274,55 +274,33 @@ namespace pvpgn
 	}
 
 
-	// You must free the result if result is non-NULL.
-	extern char *str_replace(char *orig, char *rep, char *with)
-	{
-		if (!orig)
-			return nullptr;
+    // You must free the result if result is non-NULL.
+    extern char *str_replace(char *orig, char *rep, char *with)
+    {
+        if (!orig)
+            return nullptr;
 
-		if (!rep)
-			std::strcpy(rep, "");
-		int len_rep = std::strlen(rep);
+        // 处理空指针参数
+        const char* safe_rep = rep ? rep : "";
+        const char* safe_with = with ? with : "";
 
-		if (!with)
-			std::strcpy(with, "");
-		int len_with = std::strlen(with);
+        std::string input(orig);
+        std::string pattern(safe_rep);
+        std::string replacement(safe_with);
 
-		// number of replacements
-		int count = 0;
+        // 如果模式为空，直接返回原字符串副本
+        if (pattern.empty()) {
+            return xstrdup(orig);
+        }
 
-		// next insert point
-		char *ins = orig;
-		char *tmp = nullptr;
-		for (count = 0; tmp = std::strstr(ins, rep); ++count)
-			ins = tmp + len_rep;
+        size_t pos = 0;
+        while ((pos = input.find(pattern, pos)) != std::string::npos) {
+            input.replace(pos, pattern.length(), replacement);
+            pos += replacement.length();
+        }
 
-		// the return string
-		char *result = nullptr;
-
-		// first time through the loop, all the variable are set correctly
-		// from here on,
-		//    tmp points to the end of the result string
-		//    ins points to the next occurrence of rep in orig
-		//    orig points to the remainder of orig after "end of rep"
-		tmp = result = (char*)xmalloc(std::strlen(orig) + (len_with - len_rep) * count + 1);
-
-		if (!result)
-			return nullptr;
-
-		// distance between rep and end of last rep
-		int len_front = 0;
-		while (count--)
-		{
-			ins = std::strstr(orig, rep);
-			len_front = ins - orig;
-			tmp = std::strncpy(tmp, orig, len_front) + len_front;
-			tmp = std::strcpy(tmp, with) + len_with;
-			orig += len_front + len_rep; // move to next "end of rep"
-		}
-		std::strcpy(tmp, orig);
-		return result;
-	}
+        return xstrdup(input.c_str());
+    }
 
 
 	/* Replace "\n" in string to a new line character '\n' */

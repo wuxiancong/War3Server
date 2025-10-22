@@ -724,35 +724,36 @@ namespace pvpgn
 											 conn_unget_chatname(me, from.nick);
 			}
 				break;
-			case message_type_emote:
-			{
-									   char const * dest;
-									   char temp[MAX_IRC_MESSAGE_LEN];
+            case message_type_emote:
+            {
+                char const * dest;
+                char temp[MAX_IRC_MESSAGE_LEN];
 
-									   /* "\001ACTION " + text + "\001" + \0 */
+                /* "\001ACTION " + text + "\001" + \0 */
 
-									   /* PELISH: WOLv1, DUNE2000 and RENEGADE shows emotes automaticaly to self */
-									   if ((me == dst) && ((tag_check_wolv1(conn_get_clienttag(dst))) ||
-										   (conn_get_clienttag(dst) == CLIENTTAG_DUNE2000_UINT) ||
-										   (conn_get_clienttag(dst) == CLIENTTAG_RENEGADE_UINT) ||
-										   (conn_get_clienttag(dst) == CLIENTTAG_RENGDFDS_UINT)))
-										   break;
+                /* PELISH: WOLv1, DUNE2000 and RENEGADE shows emotes automaticaly to self */
+                if ((me == dst) && ((tag_check_wolv1(conn_get_clienttag(dst))) ||
+                                    (conn_get_clienttag(dst) == CLIENTTAG_DUNE2000_UINT) ||
+                                    (conn_get_clienttag(dst) == CLIENTTAG_RENEGADE_UINT) ||
+                                    (conn_get_clienttag(dst) == CLIENTTAG_RENGDFDS_UINT)))
+                    break;
 
-									   if ((8 + std::strlen(text) + 1 + 1) <= MAX_IRC_MESSAGE_LEN) {
-										   std::sprintf(temp, ":\001ACTION %s\001", text);
-									   }
-									   else {
-										   std::sprintf(temp, ":\001ACTION (maximum message length exceeded)\001");
-									   }
-									   from.nick = conn_get_chatname(me);
-									   from.user = ctag;
-									   from.host = addr_num_to_ip_str(conn_get_addr(me));
-									   /* FIXME: also supports whisper emotes? */
-									   dest = irc_convert_channel(conn_get_channel(me), dst); /* FIXME: support more channels and choose right one! */
-									   msg = irc_message_preformat(&from, "PRIVMSG", dest, temp);
-									   conn_unget_chatname(me, from.nick);
-			}
-				break;
+                if ((8 + std::strlen(text) + 1 + 1) <= MAX_IRC_MESSAGE_LEN) {
+                    // 修复这里：使用 snprintf 并确保不会溢出
+                    std::snprintf(temp, sizeof(temp), ":\001ACTION %s\001", text);
+                }
+                else {
+                    std::sprintf(temp, ":\001ACTION (maximum message length exceeded)\001");
+                }
+                from.nick = conn_get_chatname(me);
+                from.user = ctag;
+                from.host = addr_num_to_ip_str(conn_get_addr(me));
+                /* FIXME: also supports whisper emotes? */
+                dest = irc_convert_channel(conn_get_channel(me), dst); /* FIXME: support more channels and choose right one! */
+                msg = irc_message_preformat(&from, "PRIVMSG", dest, temp);
+                conn_unget_chatname(me, from.nick);
+            }
+            break;
 			case message_type_broadcast:
 			case message_type_info:
 			case message_type_error:

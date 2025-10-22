@@ -338,8 +338,15 @@ namespace {
 				if (std::fclose(outfile) < 0)
 					eventlog(eventlog_level_error, __FUNCTION__, "could not close output file \"{}\" after writing (std::fclose: {})", prefs.outfile, std::strerror(errno));
 
-				if (prefs.process[0] != '\0')
-					std::system(prefs.process);
+                if (prefs.process[0] != '\0')
+                {
+                    int result = std::system(prefs.process);
+                    if (result != 0)
+                    {
+                        // 记录警告但不中断跟踪服务
+                        std::fprintf(stderr, "Warning: system command returned %d: %s\n", result, prefs.process);
+                    }
+                }
 			}
 
 			/* select socket to operate on */

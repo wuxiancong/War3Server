@@ -1317,7 +1317,9 @@ namespace pvpgn
 						if ((user = connlist_find_connection_by_accountname(e[i]))) {
 							addr = addr_num_to_ip_str(conn_get_addr(user));
 						}
-						std::snprintf(_temp_a, sizeof(_temp_a), "%s %s ", e[i], addr);
+                        std::snprintf(_temp_a, sizeof(_temp_a), "%s %s ",
+                                      e[i] ? e[i] : "",
+                                      addr ? addr : "");
 						std::strcat(temp, _temp_a);
 					}
 					std::strcat(temp, ":");

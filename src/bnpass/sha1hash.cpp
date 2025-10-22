@@ -89,14 +89,18 @@ extern int main(int argc, char * argv[])
 
 		eventlog_set(stderr); /* sha1_hash() and friends use eventlog */
 
-		if (!pass)
-		{
-			std::printf("Enter password to hash: ");
-			std::fflush(stdout);
-			std::fgets(buff, 256, stdin);
-			if (buff[0] != '\0')
-				buff[std::strlen(buff) - 1] = '\0';
-		}
+        if (!pass)
+        {
+            std::printf("Enter password to hash: ");
+            std::fflush(stdout);
+            if (std::fgets(buff, 256, stdin) == NULL)
+            {
+                std::fprintf(stderr, "Error reading password from stdin\n");
+                return EXIT_FAILURE;
+            }
+            if (buff[0] != '\0')
+                buff[std::strlen(buff) - 1] = '\0';
+        }
 		else
 		{
 			std::strncpy(buff, pass, sizeof(buff));
