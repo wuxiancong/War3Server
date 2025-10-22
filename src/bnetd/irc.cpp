@@ -729,8 +729,6 @@ namespace pvpgn
                 char const * dest;
                 char temp[MAX_IRC_MESSAGE_LEN];
 
-                /* "\001ACTION " + text + "\001" + \0 */
-
                 /* PELISH: WOLv1, DUNE2000 and RENEGADE shows emotes automaticaly to self */
                 if ((me == dst) && ((tag_check_wolv1(conn_get_clienttag(dst))) ||
                                     (conn_get_clienttag(dst) == CLIENTTAG_DUNE2000_UINT) ||
@@ -738,18 +736,32 @@ namespace pvpgn
                                     (conn_get_clienttag(dst) == CLIENTTAG_RENGDFDS_UINT)))
                     break;
 
-                if ((8 + std::strlen(text) + 1 + 1) <= MAX_IRC_MESSAGE_LEN) {
-                    // 修复这里：使用 snprintf 并确保不会溢出
+                // 正确计算所需长度：
+                // ":\001ACTION " = 10字节, "\001" = 1字节, null终止符 = 1字节
+                // 总计固定部分: 10 + 1 + 1 = 12字节
+                const size_t fixed_length = 12;
+                size_t text_length = std::strlen(text);
+                size_t total_needed = fixed_length + text_length;
+
+                if (total_needed <= sizeof(temp)) {
+                    // 安全使用 snprintf
                     std::snprintf(temp, sizeof(temp), ":\001ACTION %s\001", text);
                 }
                 else {
-                    std::sprintf(temp, ":\001ACTION (maximum message length exceeded)\001");
+                    // 消息太长，创建截断版本
+                    // 为固定部分和截断指示符留出空间
+                    size_t available_for_text = sizeof(temp) - fixed_length - 4; // 为 "..." 留空间
+                    if (available_for_text > text_length) {
+                        available_for_text = text_length;
+                    }
+
+                    std::snprintf(temp, sizeof(temp), ":\001ACTION %.*s...\001",
+                                  (int)available_for_text, text);
                 }
                 from.nick = conn_get_chatname(me);
                 from.user = ctag;
                 from.host = addr_num_to_ip_str(conn_get_addr(me));
-                /* FIXME: also supports whisper emotes? */
-                dest = irc_convert_channel(conn_get_channel(me), dst); /* FIXME: support more channels and choose right one! */
+                dest = irc_convert_channel(conn_get_channel(me), dst);
                 msg = irc_message_preformat(&from, "PRIVMSG", dest, temp);
                 conn_unget_chatname(me, from.nick);
             }
