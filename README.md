@@ -12,7 +12,7 @@ War3Server 是一款免费开源的跨平台服务器软件，基于PVPGN项目�
 [![Build Status](https://travis-ci.org/wuxiancong/War3Server.svg?branch=master)](https://travis-ci.org/wuxiancong/War3Server)
 [![Build status](https://ci.appveyor.com/api/projects/status/dqoj9lkvhfwthmn6)](https://ci.appveyor.com/project/HarpyWar/pvpgn)
 
-[Deleaker](http://www.deleaker.com/) helps us find memory leaks.
+[Deleaker](http://www.deleaker.com/) 帮助我们找到内存泄漏。
 
 ## Tracking
 默认情况下，跟踪功能已启用，仅用于向跟踪服务器发送信息数据（例如服务器描述、主页、正常运行时间、用户数量）。要禁用跟踪，请在 ````conf/bnetd.conf````中设置 ````track = 0````。
