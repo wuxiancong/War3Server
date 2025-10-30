@@ -64,7 +64,7 @@ cd build && make
 
 ## 先修复一些警告和错误：
 
-### [1]
+### [1] - ⚠ 最严重的错误
 https://github.com/pvpgn/pvpgn-server/blob/master/src/bnetd/handle_bnet.cpp#L2935
 
 为什么这是问题的根源？
