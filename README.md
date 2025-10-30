@@ -1,4 +1,4 @@
-War3Server 是一款免费开源的跨平台服务器软件，支持 Battle.net 和 Westwood Online 游戏客户端。War3Server-PRO 是官方 War3Server 项目的一个分支，官方项目于 2011 年停止开发，War3Server-PRO 旨在为 War3Server 提供持续维护和额外功能。
+War3Server 是一款免费开源的跨平台服务器软件，基于PVPGN项目，支持 Battle.net 和 Westwood Online 游戏客户端。War3Server-PRO 是官方 War3Server 项目的一个分支，官方项目于 2011 年停止开发，War3Server-PRO 旨在为 War3Server 提供持续维护和额外功能。
 
 [![License (GPL version 2)](https://img.shields.io/badge/license-GNU%20GPL%20version%202-blue.svg?style=flat-square)](http://opensource.org/licenses/GPL-2.0)
 ![Language (C++)](https://img.shields.io/badge/powered_by-C++-brightgreen.svg?style=flat-square)
