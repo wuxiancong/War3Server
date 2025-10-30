@@ -92,17 +92,6 @@ FLUSH PRIVILEGES;
 -- 退出
 EXIT;
 
-## 查找数据库初始化文件
-find ~/War3Server -name "*.sql" -o -name "*mysql*" 2>/dev/null
-
-## 如果找到，导入数据库结构
-sudo mysql -u root -p pvpgn < /path/to/pvpgn.sql
-
-## 查看文件内容
-cat ~/War3Server/conf/sql_DB_layout.conf.in
-
-sudo cp ~/War3Server/conf/sql_DB_layout.conf.in /usr/local/War3Server/var/sql_DB_layout.conf
-
 ## 克隆你的项目
 git clone https://github.com/wuxiancong/War3Server.git
 cd War3Server
