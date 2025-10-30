@@ -80,7 +80,7 @@ sudo mysql -u root -p
 -- 创建数据库
 CREATE DATABASE pvpgn;
 
--- 创建用户（使用简单密码）
+-- 创建用户
 CREATE USER 'pvpgn'@'localhost' IDENTIFIED BY 'yourpassword';
 
 -- 授权
