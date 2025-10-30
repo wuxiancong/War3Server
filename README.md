@@ -15,7 +15,7 @@ War3Server 是一款免费开源的跨平台服务器软件，基于PVPGN项目�
 [Deleaker](http://www.deleaker.com/) helps us find memory leaks.
 
 ## Tracking
-默认情况下，跟踪功能已启用，仅用于向跟踪服务器发送信息数据（例如服务器描述、主页、正常运行时间、用户数量）。要禁用跟踪，请设置 ````track = 0```` in ````conf/bnetd.conf````.
+默认情况下，跟踪功能已启用，仅用于向跟踪服务器发送信息数据（例如服务器描述、主页、正常运行时间、用户数量）。要禁用跟踪，请在 ````conf/bnetd.conf````中设置 ````track = 0````。
 
 ## 支持的客户端
 
