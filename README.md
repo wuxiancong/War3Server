@@ -79,54 +79,63 @@ https://github.com/pvpgn/pvpgn-server/blob/master/src/bnetd/handle_bnet.cpp#L293
 3. 这发生在处理Warcraft III MOTD时，与客户端连接时机匹配
 
 修复前（错误）：
+```bash
 fmt::format_to(serverinfo, "{}" + '\n', (line + 1));
-
+```
 修复后（正确）：
+```bash
 fmt::format_to(serverinfo, "{}\n", (line + 1));
-
+```
 ### 2
 /root/pvpgn-server/src/bnetd/anongame_wol.cpp
 将：
+```bash
 *i = (max * rand() / (RAND_MAX + 1)); 改为 *i = (max * rand() / RAND_MAX);
 *j = (max * rand() / (RAND_MAX + 1)); 改为 *j = (max * rand() / RAND_MAX);
 *j = (max * rand() / (RAND_MAX + 1)); 改为 *j = (max * rand() / RAND_MAX);
-
+```
 ### 3
  /root/pvpgn-server/src/bnetd/sql_mysql.cpp
 将：
+```bash
 my_bool  my_true = true;
+```
 修改为：
+```bash
 bool  my_true = true;
-
+```
 ### 4
  /root/pvpgn-server/src/common/eventlog.cpp
-
+```bash
 extern std::FILE *eventstrm = NULL;
 
 extern unsigned currlevel = eventlog_level_debug | eventlog_level_info | eventlog_level_warn | eventlog_level_error | eventlog_level_fatal
 
 extern int eventlog_debugmode = 0;
-
+```
 改为：
+```bash
 std::FILE *eventstrm = NULL;
 unsigned currlevel = eventlog_level_debug | eventlog_level_info | eventlog_level_warn | eventlog_level_error | eventlog_level_fatal
 int eventlog_debugmode = 0;
-
+```
 ### 5
 /root/pvpgn-server/src/common/proginfo.cpp
 
 搜索 vernum_to_verstr 函数：
 将缓冲区大小从 16 增加到足够的大小
 // 将原来的 16 改为更大的值，比如 32
+```bash
 static char verstr[32]; // 或者 64 更安全
-
+```
 ### 6
 /root/pvpgn-server/src/common/bigint.cpp
 
 搜索 BigInt::BigInt(std::uint32_t input) 构造函数
 问题分析
+```bash
 bigint_base_bitcount = sizeof(bigint_base) * 8
-
+```
 如果 bigint_base 是 64 位类型，那么 bigint_base_bitcount = 64
 
 input 是 uint32_t (32位)
@@ -134,7 +143,7 @@ input 是 uint32_t (32位)
 input >>= 64 试图右移64位，超过了32位类型的宽度
 
 #修复方法：添加边界检查
-
+```bash
 BigInt::BigInt(std::uint64_t input)
 {
 #ifndef HAVE_UINT64_T
@@ -173,17 +182,20 @@ BigInt::BigInt(std::uint32_t input)
         }
     }
 }
-
+```
 ### 7
 /root/pvpgn-server/src/bnetd/command.cpp
 第 4696 行
+```bash
 std::sprintf(msgtemp0, " \"%.64s\" (%.128s = \"%.128s\")", account_get_name(account), key, value);
+```
 改为
+```bash
 std::snprintf(msgtemp0, sizeof(msgtemp0), " \"%.64s\" (%.80s = \"%.80s\")",  account_get_name(account), key, value);
-
+```
 ### 8
 /root/pvpgn-server/src/bnetd/handle_apireg.cpp
-
+```bash
 // 原来的代码：
 char data[MAX_IRC_MESSAGE_LEN];
 char temp[MAX_IRC_MESSAGE_LEN];
@@ -191,40 +203,55 @@ char temp[MAX_IRC_MESSAGE_LEN];
 // 修复后的代码：
 char data[1024];  // 增加到1024字节
 char temp[1024];  // 增加到1024字节
-
+```
 ### 9
 /root/pvpgn-server/src/bnetd/ipban.cpp
 
 第 697 行
+```bash
 std::sprintf(timestr, "(%.48s)", seconds_to_timestr(entry->endtime - now));
+```
 改为
+```bash
 std::sprintf(timestr, "(%.47s)", seconds_to_timestr(entry->endtime - now));
-
+```
 ### 10
 /root/pvpgn-server/src/bnetd/sql_dbcreator.cpp
 第 641 行
+```bash
 char           query[1024];
 char           query[2048];
+```
 第 724 行
+```bash
 std::sscanf(column->name, "%s", _column); //get column name without format infos
 std::sprintf(query, "INSERT INTO %s (%s) VALUES (%s)", table->name, _column, column->value);
+```
 改为
+```bash
 // 限制读取的字符数量
 std::sscanf(column->name, "%1023s", _column);
 // 使用安全的 snprintf
 std::snprintf(query, sizeof(query), "INSERT INTO %s (%s) VALUES (%s)", table->name, _column, column->value);
-
+```
 ### 11
 /root/pvpgn-server/src/bnetd/tracker.cpp
 
 第 122 行
+```bash
 std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "");
+```
 改为
+```bash
 // 直接设置空字符串，不需要使用 snprintf
 std::memset(packet.platform, 0, sizeof packet.platform);
-
+```
 第 127 行
+```bash
 std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "%s", utsbuf.sysname);
+```
 改为
-    // 修复2：确保不会溢出，即使截断也是安全的
-    std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "%.31s", utsbuf.sysname);
+```bash
+// 修复2：确保不会溢出，即使截断也是安全的
+std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "%.31s", utsbuf.sysname);
+```
