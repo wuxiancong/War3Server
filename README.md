@@ -51,10 +51,180 @@ War3Server 是一款免费开源的跨平台服务器软件，基于PVPGN项目�
 在获取并发布日志之前，请在 `bnetd.conf` 文件中设置 `loglevels = fatal,error,warn,info,debug,trace`。
 
 
-#### Ubuntu 16.04, 18.04
+# 安装
+## Ubuntu 16.04, 18.04
 ```
 sudo apt-get -y install build-essential git cmake zlib1g-dev
 git clone https://github.com/wuxiancong/War3Server.git
 cd War3Server && cmake -G "Unix Makefiles" -H./ -B./build
 cd build && make
 ```
+
+# 错误修复
+
+## 先修复一些警告和错误：
+
+### 1
+https://github.com/pvpgn/pvpgn-server/blob/master/src/bnetd/handle_bnet.cpp#L2935
+
+为什么这是问题的根源？
+1. "{}" + '\n' 是指针运算，不是字符串拼接
+2. 在C++中，"string" + char 会将char的ASCII值加到字符串指针上
+3. '\n' 的ASCII值是10，所以 "{}" + 10 会指向无效的内存地址
+4. 当 fmt::format_to 尝试使用这个无效的格式字符串时，会抛出异常
+
+这个修复应该能解决 "argument index out of range" 错误，因为：
+1. 原来的代码使用了无效的格式字符串指针
+2. 修复后的代码使用有效的格式字符串 "{}\n"
+3. 这发生在处理Warcraft III MOTD时，与客户端连接时机匹配
+
+修复前（错误）：
+fmt::format_to(serverinfo, "{}" + '\n', (line + 1));
+
+修复后（正确）：
+fmt::format_to(serverinfo, "{}\n", (line + 1));
+
+### 2
+/root/pvpgn-server/src/bnetd/anongame_wol.cpp
+将：
+*i = (max * rand() / (RAND_MAX + 1)); 改为 *i = (max * rand() / RAND_MAX);
+*j = (max * rand() / (RAND_MAX + 1)); 改为 *j = (max * rand() / RAND_MAX);
+*j = (max * rand() / (RAND_MAX + 1)); 改为 *j = (max * rand() / RAND_MAX);
+
+### 3
+ /root/pvpgn-server/src/bnetd/sql_mysql.cpp
+将：
+my_bool  my_true = true;
+修改为：
+bool  my_true = true;
+
+### 4
+ /root/pvpgn-server/src/common/eventlog.cpp
+
+extern std::FILE *eventstrm = NULL;
+
+extern unsigned currlevel = eventlog_level_debug | eventlog_level_info | eventlog_level_warn | eventlog_level_error | eventlog_level_fatal
+
+extern int eventlog_debugmode = 0;
+
+改为：
+std::FILE *eventstrm = NULL;
+unsigned currlevel = eventlog_level_debug | eventlog_level_info | eventlog_level_warn | eventlog_level_error | eventlog_level_fatal
+int eventlog_debugmode = 0;
+
+### 5
+/root/pvpgn-server/src/common/proginfo.cpp
+
+搜索 vernum_to_verstr 函数：
+将缓冲区大小从 16 增加到足够的大小
+// 将原来的 16 改为更大的值，比如 32
+static char verstr[32]; // 或者 64 更安全
+
+### 6
+/root/pvpgn-server/src/common/bigint.cpp
+
+搜索 BigInt::BigInt(std::uint32_t input) 构造函数
+问题分析
+bigint_base_bitcount = sizeof(bigint_base) * 8
+
+如果 bigint_base 是 64 位类型，那么 bigint_base_bitcount = 64
+
+input 是 uint32_t (32位)
+
+input >>= 64 试图右移64位，超过了32位类型的宽度
+
+#修复方法：添加边界检查
+
+BigInt::BigInt(std::uint64_t input)
+{
+#ifndef HAVE_UINT64_T
+    int i;
+#endif
+    segment_count = sizeof(std::uint32_t) / sizeof(bigint_base);
+    segment = (bigint_base*)xmalloc(segment_count * sizeof(bigint_base));
+#ifdef HAVE_UINT64_T
+    segment[0] = input;
+#else
+    for (i = 0; i < segment_count; i++){
+        segment[i] = input & bigint_base_mask;
+        // 修复移位计数溢出
+        if (bigint_base_bitcount >= sizeof(input) * 8) {
+            input = 0;
+        } else {
+            input >>= bigint_base_bitcount;
+        }
+    }
+#endif
+}
+
+BigInt::BigInt(std::uint32_t input)
+{
+    int i;
+    segment_count = sizeof(std::uint32_t) / sizeof(bigint_base);
+    segment = (bigint_base*)xmalloc(segment_count * sizeof(bigint_base));
+    
+    for (i = 0; i < segment_count; i++){
+        segment[i] = input & bigint_base_mask;
+        // 只有当还有数据需要处理时才移位
+        if (input != 0 && bigint_base_bitcount < 32) {
+            input >>= bigint_base_bitcount;
+        } else {
+            input = 0;
+        }
+    }
+}
+
+### 7
+/root/pvpgn-server/src/bnetd/command.cpp
+第 4696 行
+std::sprintf(msgtemp0, " \"%.64s\" (%.128s = \"%.128s\")", account_get_name(account), key, value);
+改为
+std::snprintf(msgtemp0, sizeof(msgtemp0), " \"%.64s\" (%.80s = \"%.80s\")",  account_get_name(account), key, value);
+
+### 8
+/root/pvpgn-server/src/bnetd/handle_apireg.cpp
+
+// 原来的代码：
+char data[MAX_IRC_MESSAGE_LEN];
+char temp[MAX_IRC_MESSAGE_LEN];
+
+// 修复后的代码：
+char data[1024];  // 增加到1024字节
+char temp[1024];  // 增加到1024字节
+
+### 9
+/root/pvpgn-server/src/bnetd/ipban.cpp
+
+第 697 行
+std::sprintf(timestr, "(%.48s)", seconds_to_timestr(entry->endtime - now));
+改为
+std::sprintf(timestr, "(%.47s)", seconds_to_timestr(entry->endtime - now));
+
+### 10
+/root/pvpgn-server/src/bnetd/sql_dbcreator.cpp
+第 641 行
+char           query[1024];
+char           query[2048];
+第 724 行
+std::sscanf(column->name, "%s", _column); //get column name without format infos
+std::sprintf(query, "INSERT INTO %s (%s) VALUES (%s)", table->name, _column, column->value);
+改为
+// 限制读取的字符数量
+std::sscanf(column->name, "%1023s", _column);
+// 使用安全的 snprintf
+std::snprintf(query, sizeof(query), "INSERT INTO %s (%s) VALUES (%s)", table->name, _column, column->value);
+
+### 11
+/root/pvpgn-server/src/bnetd/tracker.cpp
+
+第 122 行
+std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "");
+改为
+// 直接设置空字符串，不需要使用 snprintf
+std::memset(packet.platform, 0, sizeof packet.platform);
+
+第 127 行
+std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "%s", utsbuf.sysname);
+改为
+    // 修复2：确保不会溢出，即使截断也是安全的
+    std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "%.31s", utsbuf.sysname);
