@@ -62,7 +62,7 @@ cd build && make
 
 # 错误修复
 
-## 先修复一些警告和错误：
+## 我在原来的pvpgn上修复了一些错误如下：
 
 ### [1] - ⚠ 最严重的错误
 https://github.com/pvpgn/pvpgn-server/blob/master/src/bnetd/handle_bnet.cpp#L2935
