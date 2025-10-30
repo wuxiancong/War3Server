@@ -394,3 +394,28 @@ std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, 
 // 修复2：确保不会溢出，即使截断也是安全的
 std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "%.31s", utsbuf.sysname);
 ```
+
+# 卸载
+
+```bash
+## 卸载编译工具和依赖
+sudo apt remove --purge build-essential cmake git libmysqlclient-dev libssl-dev zlib1g-dev
+
+## 这将卸载这些包并删除它们的配置文件。如果想要清理所有的未使用的依赖，可以运行：
+sudo apt autoremove
+
+## 卸载 Lua 支持：
+sudo apt remove --purge liblua5.1-0-dev
+
+## 卸载 MySQL 服务器：
+sudo apt remove --purge mysql-server
+
+## 如果想要删除 MySQL 服务器相关的所有数据文件（包括数据库文件等），可以执行：
+sudo apt purge mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-*
+sudo rm -rf /etc/mysql /var/lib/mysql
+sudo deluser mysql
+sudo delgroup mysq
+
+## 清理
+sudo apt autoremove
+sudo apt clean
