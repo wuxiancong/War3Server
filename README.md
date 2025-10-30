@@ -64,7 +64,7 @@ cd build && make
 
 ## 先修复一些警告和错误：
 
-### 1
+### [1]
 https://github.com/pvpgn/pvpgn-server/blob/master/src/bnetd/handle_bnet.cpp#L2935
 
 为什么这是问题的根源？
@@ -86,7 +86,7 @@ fmt::format_to(serverinfo, "{}" + '\n', (line + 1));
 ```bash
 fmt::format_to(serverinfo, "{}\n", (line + 1));
 ```
-### 2
+### [2]
 /root/pvpgn-server/src/bnetd/anongame_wol.cpp
 将：
 ```bash
@@ -94,7 +94,7 @@ fmt::format_to(serverinfo, "{}\n", (line + 1));
 *j = (max * rand() / (RAND_MAX + 1)); 改为 *j = (max * rand() / RAND_MAX);
 *j = (max * rand() / (RAND_MAX + 1)); 改为 *j = (max * rand() / RAND_MAX);
 ```
-### 3
+### [3]
  /root/pvpgn-server/src/bnetd/sql_mysql.cpp
 将：
 ```bash
@@ -104,7 +104,7 @@ my_bool  my_true = true;
 ```bash
 bool  my_true = true;
 ```
-### 4
+### [4]
  /root/pvpgn-server/src/common/eventlog.cpp
 ```bash
 extern std::FILE *eventstrm = NULL;
@@ -119,7 +119,7 @@ std::FILE *eventstrm = NULL;
 unsigned currlevel = eventlog_level_debug | eventlog_level_info | eventlog_level_warn | eventlog_level_error | eventlog_level_fatal
 int eventlog_debugmode = 0;
 ```
-### 5
+### [5]
 /root/pvpgn-server/src/common/proginfo.cpp
 
 搜索 vernum_to_verstr 函数：
@@ -128,7 +128,7 @@ int eventlog_debugmode = 0;
 ```bash
 static char verstr[32]; // 或者 64 更安全
 ```
-### 6
+### [6]
 /root/pvpgn-server/src/common/bigint.cpp
 
 搜索 BigInt::BigInt(std::uint32_t input) 构造函数
@@ -183,7 +183,7 @@ BigInt::BigInt(std::uint32_t input)
     }
 }
 ```
-### 7
+### [7]
 /root/pvpgn-server/src/bnetd/command.cpp
 第 4696 行
 ```bash
@@ -193,7 +193,7 @@ std::sprintf(msgtemp0, " \"%.64s\" (%.128s = \"%.128s\")", account_get_name(acco
 ```bash
 std::snprintf(msgtemp0, sizeof(msgtemp0), " \"%.64s\" (%.80s = \"%.80s\")",  account_get_name(account), key, value);
 ```
-### 8
+### [8]
 /root/pvpgn-server/src/bnetd/handle_apireg.cpp
 ```bash
 // 原来的代码：
@@ -204,7 +204,7 @@ char temp[MAX_IRC_MESSAGE_LEN];
 char data[1024];  // 增加到1024字节
 char temp[1024];  // 增加到1024字节
 ```
-### 9
+### [9]
 /root/pvpgn-server/src/bnetd/ipban.cpp
 
 第 697 行
@@ -215,7 +215,7 @@ std::sprintf(timestr, "(%.48s)", seconds_to_timestr(entry->endtime - now));
 ```bash
 std::sprintf(timestr, "(%.47s)", seconds_to_timestr(entry->endtime - now));
 ```
-### 10
+### [10]
 /root/pvpgn-server/src/bnetd/sql_dbcreator.cpp
 第 641 行
 ```bash
@@ -234,7 +234,7 @@ std::sscanf(column->name, "%1023s", _column);
 // 使用安全的 snprintf
 std::snprintf(query, sizeof(query), "INSERT INTO %s (%s) VALUES (%s)", table->name, _column, column->value);
 ```
-### 11
+### [11]
 /root/pvpgn-server/src/bnetd/tracker.cpp
 
 第 122 行
