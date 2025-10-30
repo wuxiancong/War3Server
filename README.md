@@ -96,7 +96,7 @@ cmake -g "Visual Studio 14 2015" -H./ -B./build
 apt-get install git install cmake make build-essential zlib1g-dev
 apt-get install liblua5.1-0-dev #Lua support
 apt-get install mysql-server mysql-client libmysqlclient-dev #MySQL support
-cd /home
+
 git clone https://github.com/wuxiancong/War3Server.git
 cmake -D CMAKE_INSTALL_PREFIX=/usr/local/pvpgn -D WITH_MYSQL=true -D WITH_LUA=true ../
 make
