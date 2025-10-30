@@ -165,7 +165,7 @@ cmake -G "Unix Makefiles" -H./ -B./build
 cd build && make
 ```
 
-Full instructions: [Русский](http://harpywar.com/?a=articles&b=2&c=1&d=74) | [English](http://harpywar.com/?a=articles&b=2&c=1&d=74&lang=en)
+完整说明: [Русский](http://harpywar.com/?a=articles&b=2&c=1&d=74) | [English](http://harpywar.com/?a=articles&b=2&c=1&d=74&lang=en)
 
 ## 局域网或VPS主机（使用私有IP地址）
 
