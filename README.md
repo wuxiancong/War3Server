@@ -53,11 +53,161 @@ War3Server 是一款免费开源的跨平台服务器软件，基于PVPGN项目�
 
 # 安装
 ## Ubuntu 16.04, 18.04
-```
-sudo apt-get -y install build-essential git cmake zlib1g-dev
+```bash
+## 更新系统
+sudo apt update && sudo apt upgrade -y
+
+## 安装编译工具和依赖
+sudo apt install -y build-essential cmake git libmysqlclient-dev libssl-dev zlib1g-dev
+
+## Lua 支持
+apt-get install -y liblua5.1-0-dev
+
+## 安装 MySQL 服务器
+sudo apt install -y mysql-server
+
+## 启动 MySQL 服务
+sudo systemctl start mysql
+sudo systemctl enable mysql
+
+## 登录 MySQL 并设置 root 密码
+mysql -u root
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'yourpassword';
+
+#密码登录
+sudo mysql -u root -p
+
+-- 创建数据库
+CREATE DATABASE pvpgn;
+
+-- 创建用户（使用简单密码）
+CREATE USER 'pvpgn'@'localhost' IDENTIFIED BY 'yourpassword';
+
+-- 授权
+GRANT ALL PRIVILEGES ON pvpgn.* TO 'pvpgn'@'localhost';
+
+-- 刷新权限
+FLUSH PRIVILEGES;
+
+-- 退出
+EXIT;
+
+## 查找数据库初始化文件
+find ~/War3Server -name "*.sql" -o -name "*mysql*" 2>/dev/null
+
+## 如果找到，导入数据库结构
+sudo mysql -u root -p pvpgn < /path/to/pvpgn.sql
+
+## 查看文件内容
+cat ~/War3Server/conf/sql_DB_layout.conf.in
+
+sudo cp ~/War3Server/conf/sql_DB_layout.conf.in /usr/local/War3Server/var/sql_DB_layout.conf
+
+## 克隆你的项目
 git clone https://github.com/wuxiancong/War3Server.git
-cd War3Server && cmake -G "Unix Makefiles" -H./ -B./build
-cd build && make
+cd War3Server
+
+## 创建构建目录并编译
+mkdir build && cd build
+cmake .. \
+  -D WITH_LUA=true\
+  -D WITH_MYSQL=true \
+  -D MYSQL_INCLUDE_DIR=/usr/include/mysql \
+  -D CMAKE_INSTALL_PREFIX=/usr/local/War3Server\
+  -D MYSQL_LIBRARY=/usr/lib/x86_64-linux-gnu/libmysqlclient.so \
+  -D CMAKE_BUILD_TYPE=Release
+
+make -j$(nproc)
+
+## 安装
+sudo make install
+
+storage_path = "sql:mode=mysql;host=localhost;name=pvpgn;user=pvpgn;pass=yourpassword;default=0;prefix=pvpgn_"
+
+## 正常启动（后台模式）
+sudo /usr/local/War3Server/sbin/bnetd
+## 前台启动
+sudo /usr/local/War3Server/sbin/bnetd --foreground
+
+## 查看 bnetd 进程是否在运行
+ps aux | grep bnetd
+
+[Unit]
+Description=PvPGN Battle.net Server
+After=network.target mysql.service
+Wants=mysql.service
+Requires=mysql.service
+
+[Service]
+Type=forking
+ExecStart=/usr/local/War3Server/sbin/bnetd
+ExecStop=/usr/local/War3Server/sbin/bnetd --stop
+WorkingDirectory=/usr/local/War3Server
+User=pvpgn
+Group=pvpgn
+RuntimeDirectory=War3Server
+PIDFile=/usr/local/var/run/bnetd.pid
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=30
+
+[Install]
+WantedBy=multi-user.target
+
+
+## 重新加载系统服务
+sudo systemctl daemon-reload
+
+## 停止服务
+sudo systemctl stop pvpgn
+
+## 启动服务
+sudo systemctl start pvpgn
+
+## 检查状态
+sudo systemctl status pvpgn
+
+## 启用开机自启
+sudo systemctl enable pvpgn
+
+## 查看实时日志
+sudo tail -f /usr/local/War3Server/var/War3Server/bnetd.log
+
+## 停止服务
+sudo systemctl stop pvpgn
+sudo pkill bnetd
+
+cd ~/War3Server/build
+
+## 清理并重新安装
+sudo make uninstall 2>/dev/null || true
+sudo make clean
+
+## 重新编译和安装，查看详细输出
+make
+sudo make install
+
+## 重新编译
+cd ~/War3Server/build
+rm -rf *
+cmake .. -DWITH_MYSQL=ON
+make -j$(nproc)
+sudo make install
+
+## 重新启动
+sudo systemctl start pvpgn
+
+## 检查服务状态
+sudo systemctl status pvpgn
+
+## 检查进程
+ps aux | grep bnetd
+
+## 检查数据库连接
+mysql -u pvpgn -p -e "USE pvpgn; SHOW TABLES;"
+
+## 查看日志
+sudo tail -f /usr/local/var/War3Server/bnetd.log
 ```
 
 # 错误修复
