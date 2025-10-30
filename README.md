@@ -1,4 +1,4 @@
-War3Server is a free and open source cross-platform server software that supports Battle.net and and Westwood Online game clients. War3Server-PRO is a fork of the official War3Server project, whose development stopped in 2011, and aims to provide continued maintenance and additional features for War3Server.
+War3Server 是一款免费开源的跨平台服务器软件，支持 Battle.net 和 Westwood Online 游戏客户端。War3Server-PRO 是官方 War3Server 项目的一个分支，官方项目于 2011 年停止开发，War3Server-PRO 旨在为 War3Server 提供持续维护和额外功能。
 
 [![License (GPL version 2)](https://img.shields.io/badge/license-GNU%20GPL%20version%202-blue.svg?style=flat-square)](http://opensource.org/licenses/GPL-2.0)
 ![Language (C++)](https://img.shields.io/badge/powered_by-C++-brightgreen.svg?style=flat-square)
@@ -15,32 +15,53 @@ War3Server is a free and open source cross-platform server software that support
 [Deleaker](http://www.deleaker.com/) helps us find memory leaks.
 
 ## Tracking
-By default, tracking is enabled and is only used for the purpose of sending informational data (e.g. server description, homepage, uptime, amount of users) to tracking servers. To disable tracking, set ````track = 0```` in ````conf/bnetd.conf````.
+默认情况下，跟踪功能已启用，仅用于向跟踪服务器发送信息数据（例如服务器描述、主页、正常运行时间、用户数量）。要禁用跟踪，请设置 ````track = 0```` in ````conf/bnetd.conf````.
 
-## Supported Clients
-- **WarCraft 2: Battle.net Edition**: 2.02a, 2.02b
-- **WarCraft 3: Reign of Chaos**\*: 1.13a, 1.13b, 1.14a, 1.14b, 1.15a, 1.16a, 1.17a, 1.18a, 1.19a, 1.19b, 1.20a, 1.20b, 1.20c, 1.20d, 1.20e, 1.21a, 1.21b, 1.22a, 1.23a, 1.24a, 1.24b, 1.24c, 1.24d, 1.24e, 1.25b, 1.26a, 1.27a, 1.27b, 1.28, 1.28.1, 1.28.2, 1.28.4, 1.28.5
-- **WarCraft 3: The Frozen Throne**\*: 1.13a, 1.13b, 1.14a, 1.14b, 1.15a, 1.16a, 1.17a, 1.18a, 1.19a, 1.19b, 1.20a, 1.20b, 1.20c, 1.20d, 1.20e, 1.21a, 1.21b, 1.22a, 1.23a, 1.24a, 1.24b, 1.24c, 1.24d, 1.24e, 1.25b, 1.26a, 1.27a, 1.27b, 1.28, 1.28.1, 1.28.2, 1.28.4, 1.28.5
-- **StarCraft**: 1.08, 1.08b, 1.09, 1.09b, 1.10, 1.11, 1.11b, 1.12, 1.12b, 1.13, 1.13b, 1.13c, 1.13d, 1.13e, 1.13f, 1.14, 1.15, 1.15.1, 1.15.2, 1.15.3, 1.16, 1.16.1, 1.17.0, 1.18.0
-- **StarCraft: Brood War**: 1.08, 1.08b, 1.09, 1.09b, 1.10, 1.11, 1.11b, 1.12, 1.12b, 1.13, 1.13b, 1.13c, 1.13d, 1.13e, 1.13f, 1.14, 1.15, 1.15.1, 1.15.2, 1.15.3, 1.16, 1.16.1, 1.17.0, 1.18.0
-- **Diablo**: 1.09, 1.09b
-- **Diablo 2**: 1.10, 1.11, 1.11b, 1.12a, 1.13c, 1.14a, 1.14b, 1.14c, 1.14d
-- **Diablo 2: Lord of Destruction**: 1.10, 1.11, 1.11b, 1.12a, 1.13c, 1.14a, 1.14b, 1.14c, 1.14d
-- **Westwood Chat Client**: 4.221
-- **Command & Conquer**: Win95 1.04a (using Westwood Chat)
-- **Command & Conquer: Red Alert**: Win95 2.00 (using Westwood Chat), Win95 3.03
-- **Command & Conquer: Red Alert 2**: 1.006
-- **Command & Conquer: Tiberian Sun**: 2.03 ST-10
-- **Command & Conquer: Tiberian Sun Firestorm**: 2.03 ST-10
-- **Command & Conquer: Yuri's Revenge**: 1.001
-- **Command & Conquer: Renegade**: 1.037
-- **Nox**: 1.02b
-- **Nox Quest**: 1.02b
-- **Dune 2000**: 1.06
-- **Emperor: Battle for Dune**: 1.09
+## 支持的客户端
 
-\* WarCraft 3 clients are unable to connect to War3Server servers without a client-side modification, through tools such as [W3L](https://github.com/w3lh/w3l), to disable server signature verification.
-\* StarCraft clients beginning with patch 1.18 will not be supported by War3Server-PRO due to protocol changes. A 1.18.0 versioncheck entry is included for compatibility with bot software.
+- **魔兽争霸2：战网版**：2.02a、2.02b
+
+- **魔兽争霸3：混乱之治**：1.13a、1.13b、1.14a、1.14b、1.15a、1.16a、1.17a、1.18a、1.19a、1.19b、1.20a、1.20b、1.20c、1.20d、1.20e、1.21a、1.21b、1.22a、1.23a、1.24a、1.24b、1.24c、1.24d、1.24e、1.25b、1.26a 1.27a、1.27b、1.28、1.28.1、1.28.2、1.28.4、1.28.5
+
+- **魔兽争霸3：冰封王座**\*：1.13a、1.13b、1.14a、1.14b、1.15a、1.16a、1.17a、1.18a、1.19a、1.19b、1.20a、1.20b、1.20c、1.20d、1.20e、1.21a、1.21b、1.22a、1.23a、1.24a、1.24b、1.24c、1.24d、1.24e 1.25b、1.26a、1.27a、1.27b、1.28、1.28.1、1.28.2、1.28.4、1.28.5
+
+- **星际争霸**：1.08、1.08b、1.09、1.09b、1.10、1.11、1.11b、1.12、1.12b、1.13、1.13b、1.13c、1.13d、1.13e、1.13f、1.14、1.15、1.15.1、1.15.2、1.15.3、1.16、1.16.1、1.17.0、1.18.0
+
+- **星际争霸：母巢之战**：1.08、1.08b、1.09、1.09b、1.10、1.11、1.11b、1.12、1.12b、1.13、1.13b、1.13c、1.13d、1.13e、1.13f、1.14、1.15、1.15.1、1.15.2、1.15.3、1.16、1.16.1、1.17.0、1.18.0
+
+- **暗黑破坏神**：1.09、1.09b
+
+- **暗黑破坏神2**：1.10、1.11、1.11b、1.12a、1.13c 1.14a、1.14b、1.14c、1.14d
+
+- **暗黑破坏神2：毁灭之王**：1.10、1.11、1.11b、1.12a、1.13c、1.14a、1.14b、1.14c、1.14d
+
+- **Westwood聊天客户端**：4.221
+
+- **命令与征服**：Win95 1.04a（使用Westwood聊天客户端）
+
+- **命令与征服：红色警戒**：Win95 2.00（使用Westwood聊天客户端）、Win95 3.03
+
+- **命令与征服：红色警戒2**：1.006
+
+- **命令与征服：泰伯利亚之日**：2.03 ST-10
+
+- **命令与征服**征服：泰伯利亚之日 烈焰风暴**：2.03 ST-10
+
+- **命令与征服：尤里的复仇**：1.001
+
+- **命令与征服：叛逆者**：1.037
+
+- **诺克斯**：1.02b
+
+- **诺克斯任务**：1.02b
+
+- **沙丘2000**：1.06
+
+- **帝皇：沙丘之战**：1.09
+
+* 魔兽争霸3客户端若不通过客户端修改（例如使用[W3L](https://github.com/w3lh/w3l)等工具禁用服务器签名验证）则无法连接到War3Server服务器。
+
+* 由于协议变更，War3Server-PRO将不再支持1.18版本及之后的星际争霸客户端。为了与机器人软件兼容，包含了 1.18.0 版本检查条目。
 
 ## Support
 [Create an issue](https://github.com/wuxiancong/War3Server/issues) if you have any questions, suggestions, or anything else to say about War3Server-PRO. Please note that D2GS is not part of the War3Server project and is therefore unsupported here.
@@ -139,23 +160,29 @@ cd build && make
 
 Full instructions: [Русский](http://harpywar.com/?a=articles&b=2&c=1&d=74) | [English](http://harpywar.com/?a=articles&b=2&c=1&d=74&lang=en)
 
-## Hosting on LAN or VPS with private IP address
-Some VPS providers do not assign your server a direct public IP. If that is the case or you host at home behind NAT you need to setup the route translation in `address_translation.conf`. The public address is pushed as the route server address to game clients when seeking games. Failure to push the correct address to game clients results in players not being able to match and join games (long game search and error).
+## 局域网或VPS主机（使用私有IP地址）
 
-If your network interface is directly bound to public IP, War3Server can figure it out on it's own and this step is not necessary.
+部分VPS提供商不会为您的服务器分配直接的公网IP地址。如果您的服务器位于NAT网络后，或者您的主机托管在家中，则需要在`address_translation.conf`文件中配置路由转换。公网IP地址会作为路由服务器地址推送给游戏客户端，用于匹配游戏。如果推送的地址不正确，玩家将无法匹配和加入游戏（长时间搜索游戏并出现错误）。
+
+如果您的网络接口直接绑定到公网IP地址，War3Server可以自动识别，无需执行此步骤。
 
 ## License
 
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
+本程序为自由软件；您可以根据自由软件基金会发布的 GNU 通用公共许可证的条款重新分发和/或
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+修改本程序；您可以选择使用许可证的第 2 版
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+或（由您选择）任何后续版本。
+
+本程序分发的目的是希望它能有用，
+
+但没有任何担保；甚至不包含适销性或特定用途适用性的默示担保。
+
+请参阅
+GNU 通用公共许可证了解更多详情。
+
+您应该已收到一份 GNU 通用公共许可证的副本
+
+随本程序一起提供；如果没有，请写信至：自由软件
+
+基金会，地址：51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA。
