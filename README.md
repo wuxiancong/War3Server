@@ -63,27 +63,34 @@ War3Server 是一款免费开源的跨平台服务器软件，基于PVPGN项目�
 
 * 由于协议变更，War3Server-PRO将不再支持1.18版本及之后的星际争霸客户端。为了与机器人软件兼容，包含了 1.18.0 版本检查条目。
 
-## Support
-[Create an issue](https://github.com/wuxiancong/War3Server/issues) if you have any questions, suggestions, or anything else to say about War3Server-PRO. Please note that D2GS is not part of the War3Server project and is therefore unsupported here.
-Set `loglevels = fatal,error,warn,info,debug,trace` in `bnetd.conf` before obtaining logs and posting them.
+## 支持
 
-## Development
-Submit pull requests to contribute to this project. Utilize C++11 features and adhere to the [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md) whenever possible.
+如果您对 War3Server 有任何疑问、建议或其他意见，请[创建 issue](https://github.com/wuxiancong/War3Server/issues)。请注意，D2GS 并非 War3Server 项目的一部分，因此此处不提供相关支持。
 
-## Building
-See [docs/ports.md](https://github.com/wuxiancong/War3Server/blob/master/docs/ports.md) for operating systems and compilers that have been confirmed to work with War3Server. Any operating system that supports WinAPI or POSIX, and any C++11 compliant compiler should be able to build War3Server. The CMake files have been hardcoded to reject compilers older than Visual Studio 2015 and GCC 5.1.
+在获取并发布日志之前，请在 `bnetd.conf` 文件中设置 `loglevels = fatal,error,warn,info,debug,trace`。
+
+## 开发
+
+提交 pull request 即可为本项目做出贡献。尽可能使用 C++11 特性并遵守 [C++ 核心指南](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md)。
+
+请参阅 [docs/ports.md](https://github.com/wuxiancong/War3Server/blob/master/docs/ports.md)，了解已确认可与 War3Server 兼容的操作系统和编译器。任何支持 WinAPI 或 POSIX 的操作系统，以及任何符合 C++11 标准的编译器，都应该能够构建 War3Server。CMake 文件已硬编码，拒绝使用低于 Visual Studio 2015 和 GCC 5.1 的编译器。
 
 #### Windows
-Use [Magic Builder](https://github.com/pvpgn/pvpgn-magic-builder).
 
-Alternatively, use cmake to generate the .sln project and build it from Visual Studio.
+使用 [Magic Builder](https://github.com/pvpgn/pvpgn-magic-builder)。
+
+或者，您可以使用 cmake 生成 .sln 项目，然后从 Visual Studio 构建它。
+
 ```
+
 cmake -g "Visual Studio 14 2015" -H./ -B./build
-```
-This will generate .sln in `build` directory.
 
-#### Linux in general
-Do not blindly run these commands. The main problem with older distributions is installing CMake 3.2.x and GCC 5, so external repositories are used in the examples.
+```
+这将在 `build` 目录中生成 .sln 文件。
+
+#### Linux 一般注意事项
+
+请勿盲目运行这些命令。旧版 Linux 的主要问题在于安装 CMake 3.2.x 和 GCC 5，因此示例中使用了外部仓库。
 
 ```
 apt-get install git install cmake make build-essential zlib1g-dev
