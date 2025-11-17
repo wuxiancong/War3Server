@@ -196,7 +196,7 @@ ps aux | grep bnetd
 mysql -u pvpgn -p -e "USE pvpgn; SHOW TABLES;"
 
 ## 查看日志
-sudo tail -f /usr/local/var/War3Server/bnetd.log
+sudo tail -f /usr/local/War3Server/var/War3Server/bnetd.log
 ```
 
 # 错误修复
