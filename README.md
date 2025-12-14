@@ -160,12 +160,12 @@ sudo chown -R pvpgn:pvpgn /usr/local/War3Server
 sudo chown -R pvpgn:pvpgn /usr/local/War3Server/var/
 
 # 创建并配置 run 目录
-sudo mkdir -p /usr/local/var/run
-sudo chmod 755 /usr/local/var/run
+mkdir -p /usr/local/War3Server/var/War3Server
+sudo chmod 755 /usr/local/War3Server/var/War3Server
 
 # 如果 PvPGN 不是 root 运行（比如 pvpgn 用户）
-chown -R pvpgn:pvpgn /usr/local/var/run
-chmod 755 /usr/local/var/run
+chown -R pvpgn:pvpgn /usr/local/War3Server/var
+chmod 755 /usr/local/War3Server/var/War3Server
 
 ```
 
@@ -203,7 +203,27 @@ sudo tail -f /usr/local/War3Server/var/War3Server/bnetd.log
 ## Systemd 服务配置
 
 创建服务文件 `/etc/systemd/system/pvpgn.service`，内容如下：
+### simple
+```
+[Unit]
+Description=PvPGN Battle.net Server
+After=network.target mysql.service
+Requires=mysql.service
 
+[Service]
+Type=simple
+ExecStart=/usr/local/War3Server/sbin/bnetd -f
+WorkingDirectory=/usr/local/War3Server
+User=pvpgn
+Group=pvpgn
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+```
+### forking
 ```ini
 [Unit]
 Description=PvPGN Battle.net Server
@@ -219,7 +239,7 @@ WorkingDirectory=/usr/local/War3Server
 User=pvpgn
 Group=pvpgn
 RuntimeDirectory=War3Server
-PIDFile=/usr/local/var/run/bnetd.pid
+PIDFile=/usr/local/War3Server/var/War3Server/bnetd.pid
 Restart=on-failure
 RestartSec=5
 TimeoutStartSec=30
