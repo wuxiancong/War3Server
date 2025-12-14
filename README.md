@@ -115,6 +115,15 @@ sudo make install
 
 storage_path = "sql:mode=mysql;host=localhost;name=pvpgn;user=pvpgn;pass=yourpassword;default=0;prefix=pvpgn_"
 
+## 创建用户
+sudo useradd -r -s /bin/false pvpgn
+
+## 把安装目录的所有权给 pvpgn 用户
+sudo chown -R pvpgn:pvpgn /usr/local/War3Server
+
+# 还有 var 目录
+sudo chown -R pvpgn:pvpgn /usr/local/War3Server/var/
+
 ## 正常启动（后台模式）
 sudo /usr/local/War3Server/sbin/bnetd
 ## 前台启动
