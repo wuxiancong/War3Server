@@ -6,3 +6,5 @@
 /build
 /lua5.1
 /CMakeSettings.json
+/.qtcreator
+*.user
