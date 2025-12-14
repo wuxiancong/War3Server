@@ -145,6 +145,7 @@ TimeoutStartSec=30
 [Install]
 WantedBy=multi-user.target
 
+sudo killall bnetd
 
 ## 重新加载系统服务
 sudo systemctl daemon-reload
