@@ -251,6 +251,15 @@ WantedBy=multi-user.target
 **管理服务命令：**
 
 ```bash
+# 停止服务
+systemctl stop pvpgn
+
+# 禁用服务
+systemctl disable pvpgn
+
+# 清理缓存
+systemctl daemon-reexec
+
 # 重新加载配置
 sudo systemctl daemon-reload
 
