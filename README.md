@@ -74,8 +74,10 @@ sudo systemctl enable mysql
 mysql -u root
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'yourpassword';
 
+EXIT;
+
 #密码登录
-sudo mysql -u root -p;
+sudo mysql -u root -p
 
 -- 创建数据库
 CREATE DATABASE pvpgn;
