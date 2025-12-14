@@ -1,161 +1,483 @@
-War3Server is a free and open source cross-platform server software that supports Battle.net and and Westwood Online game clients. War3Server-PRO is a fork of the official War3Server project, whose development stopped in 2011, and aims to provide continued maintenance and additional features for War3Server.
+# War3Server
 
-[![License (GPL version 2)](https://img.shields.io/badge/license-GNU%20GPL%20version%202-blue.svg?style=flat-square)](http://opensource.org/licenses/GPL-2.0)
-![Language (C++)](https://img.shields.io/badge/powered_by-C++-brightgreen.svg?style=flat-square)
-[![Language (Lua)](https://img.shields.io/badge/powered_by-Lua-red.svg?style=flat-square)](https://lua.org)
-[![Github Releases (by Release)](https://img.shields.io/github/downloads/wuxiancong/War3Server/1.99.7.2.1/total.svg?maxAge=2592000)]()
+**War3Server** 是一款免费开源的跨平台服务器软件，基于 **PVPGN** 项目，支持 Battle.net 和 Westwood Online 游戏客户端。由于 Pvpgn 项目已于 2011 年停止开发，War3Server 旨在为其提供持续维护和额外功能支持（只更新魔兽争霸部分）。
 
-[![Compiler (Microsoft Visual C++)](https://img.shields.io/badge/compiled_with-Microsoft%20Visual%20C++-yellow.svg?style=flat-square)](https://msdn.microsoft.com/en-us/vstudio/hh386302.aspx)
-[![Compiler (LLVM/Clang)](https://img.shields.io/badge/compiled_with-LLVM/Clang-lightgrey.svg?style=flat-square)](http://clang.llvm.org/)
-[![Compiler (GCC)](https://img.shields.io/badge/compiled_with-GCC-yellowgreen.svg?style=flat-square)](https://gcc.gnu.org/)
+## 目录
+- [功能配置](#功能配置)
+- [支持的客户端](#支持的客户端)
+- [安装指南 (Ubuntu 16.04/18.04)](#安装指南-ubuntu-1604-1804)
+- [配置与启动](#配置与启动)
+- [Systemd 服务配置](#systemd-服务配置)
+- [维护与重新编译](#维护与重新编译)
+- [错误修复日志](#错误修复日志)
+- [完全卸载指南](#完全卸载指南)
 
-[![Build Status](https://travis-ci.org/wuxiancong/War3Server.svg?branch=master)](https://travis-ci.org/wuxiancong/War3Server)
-[![Build status](https://ci.appveyor.com/api/projects/status/dqoj9lkvhfwthmn6)](https://ci.appveyor.com/project/HarpyWar/pvpgn)
+---
 
-[Deleaker](http://www.deleaker.com/) helps us find memory leaks.
+## 功能配置
 
-## Tracking
-By default, tracking is enabled and is only used for the purpose of sending informational data (e.g. server description, homepage, uptime, amount of users) to tracking servers. To disable tracking, set ````track = 0```` in ````conf/bnetd.conf````.
+### 跟踪功能 (Tracking)
+默认情况下，跟踪功能已启用。该功能用于向跟踪服务器发送统计数据（如服务器描述、主页、正常运行时间、在线用户数等）。
 
-## Supported Clients
-- **WarCraft 2: Battle.net Edition**: 2.02a, 2.02b
-- **WarCraft 3: Reign of Chaos**\*: 1.13a, 1.13b, 1.14a, 1.14b, 1.15a, 1.16a, 1.17a, 1.18a, 1.19a, 1.19b, 1.20a, 1.20b, 1.20c, 1.20d, 1.20e, 1.21a, 1.21b, 1.22a, 1.23a, 1.24a, 1.24b, 1.24c, 1.24d, 1.24e, 1.25b, 1.26a, 1.27a, 1.27b, 1.28, 1.28.1, 1.28.2, 1.28.4, 1.28.5
-- **WarCraft 3: The Frozen Throne**\*: 1.13a, 1.13b, 1.14a, 1.14b, 1.15a, 1.16a, 1.17a, 1.18a, 1.19a, 1.19b, 1.20a, 1.20b, 1.20c, 1.20d, 1.20e, 1.21a, 1.21b, 1.22a, 1.23a, 1.24a, 1.24b, 1.24c, 1.24d, 1.24e, 1.25b, 1.26a, 1.27a, 1.27b, 1.28, 1.28.1, 1.28.2, 1.28.4, 1.28.5
-- **StarCraft**: 1.08, 1.08b, 1.09, 1.09b, 1.10, 1.11, 1.11b, 1.12, 1.12b, 1.13, 1.13b, 1.13c, 1.13d, 1.13e, 1.13f, 1.14, 1.15, 1.15.1, 1.15.2, 1.15.3, 1.16, 1.16.1, 1.17.0, 1.18.0
-- **StarCraft: Brood War**: 1.08, 1.08b, 1.09, 1.09b, 1.10, 1.11, 1.11b, 1.12, 1.12b, 1.13, 1.13b, 1.13c, 1.13d, 1.13e, 1.13f, 1.14, 1.15, 1.15.1, 1.15.2, 1.15.3, 1.16, 1.16.1, 1.17.0, 1.18.0
-- **Diablo**: 1.09, 1.09b
-- **Diablo 2**: 1.10, 1.11, 1.11b, 1.12a, 1.13c, 1.14a, 1.14b, 1.14c, 1.14d
-- **Diablo 2: Lord of Destruction**: 1.10, 1.11, 1.11b, 1.12a, 1.13c, 1.14a, 1.14b, 1.14c, 1.14d
-- **Westwood Chat Client**: 4.221
-- **Command & Conquer**: Win95 1.04a (using Westwood Chat)
-- **Command & Conquer: Red Alert**: Win95 2.00 (using Westwood Chat), Win95 3.03
-- **Command & Conquer: Red Alert 2**: 1.006
-- **Command & Conquer: Tiberian Sun**: 2.03 ST-10
-- **Command & Conquer: Tiberian Sun Firestorm**: 2.03 ST-10
-- **Command & Conquer: Yuri's Revenge**: 1.001
-- **Command & Conquer: Renegade**: 1.037
-- **Nox**: 1.02b
-- **Nox Quest**: 1.02b
-- **Dune 2000**: 1.06
-- **Emperor: Battle for Dune**: 1.09
-
-\* WarCraft 3 clients are unable to connect to War3Server servers without a client-side modification, through tools such as [W3L](https://github.com/w3lh/w3l), to disable server signature verification.
-\* StarCraft clients beginning with patch 1.18 will not be supported by War3Server-PRO due to protocol changes. A 1.18.0 versioncheck entry is included for compatibility with bot software.
-
-## Support
-[Create an issue](https://github.com/wuxiancong/War3Server/issues) if you have any questions, suggestions, or anything else to say about War3Server-PRO. Please note that D2GS is not part of the War3Server project and is therefore unsupported here.
-Set `loglevels = fatal,error,warn,info,debug,trace` in `bnetd.conf` before obtaining logs and posting them.
-
-## Development
-Submit pull requests to contribute to this project. Utilize C++11 features and adhere to the [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md) whenever possible.
-
-## Building
-See [docs/ports.md](https://github.com/wuxiancong/War3Server/blob/master/docs/ports.md) for operating systems and compilers that have been confirmed to work with War3Server. Any operating system that supports WinAPI or POSIX, and any C++11 compliant compiler should be able to build War3Server. The CMake files have been hardcoded to reject compilers older than Visual Studio 2015 and GCC 5.1.
-
-#### Windows
-Use [Magic Builder](https://github.com/pvpgn/pvpgn-magic-builder).
-
-Alternatively, use cmake to generate the .sln project and build it from Visual Studio.
-```
-cmake -g "Visual Studio 14 2015" -H./ -B./build
-```
-This will generate .sln in `build` directory.
-
-#### Linux in general
-Do not blindly run these commands. The main problem with older distributions is installing CMake 3.2.x and GCC 5, so external repositories are used in the examples.
-
-```
-apt-get install git install cmake make build-essential zlib1g-dev
-apt-get install liblua5.1-0-dev #Lua support
-apt-get install mysql-server mysql-client libmysqlclient-dev #MySQL support
-cd /home
-git clone https://github.com/wuxiancong/War3Server.git
-cmake -D CMAKE_INSTALL_PREFIX=/usr/local/pvpgn -D WITH_MYSQL=true -D WITH_LUA=true ../
-make
-make install
+若需**禁用跟踪**，请修改配置文件 `conf/bnetd.conf`：
+```ini
+track = 0
 ```
 
-#### Ubuntu 16.04, 18.04
-```
-sudo apt-get -y install build-essential git cmake zlib1g-dev
-git clone https://github.com/wuxiancong/War3Server.git
-cd War3Server && cmake -G "Unix Makefiles" -H./ -B./build
-cd build && make
+### 日志级别
+在获取并发布日志用于调试之前，建议在 `bnetd.conf` 文件中设置详细的日志级别：
+```ini
+loglevels = fatal,error,warn,info,debug,trace
 ```
 
-#### Ubuntu 14.04
-```
-sudo apt-get -y install build-essential zlib1g-dev git
-sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-sudo apt-get -y update
-sudo apt-get -y install gcc-5 g++-5
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
-sudo add-apt-repository -y ppa:george-edison55/cmake-3.x
-sudo apt-get update
-sudo apt-get -y install cmake
-git clone https://github.com/wuxiancong/War3Server.git
-cd War3Server && cmake -G "Unix Makefiles" -H./ -B./build
-cd build && make
+---
+
+## 支持的客户端
+
+### Blizzard 游戏
+> **注意**：
+> 1. **魔兽争霸 3**：客户端若不进行修改（例如使用 [W3L](https://github.com/w3lh/w3l) 等工具禁用服务器签名验证），将无法连接到 War3Server。
+> 2. **星际争霸**：由于协议变更，War3Server-PRO 不再支持 1.18 及之后版本的客户端。但在代码中包含了 1.18.0 版本检查条目以兼容机器人软件。
+
+*   **魔兽争霸 2：战网版**：2.02a, 2.02b
+*   **魔兽争霸 3：混乱之治**：1.13a - 1.28.5 (全系列支持)
+*   **魔兽争霸 3：冰封王座**：1.13a - 1.28.5 (全系列支持)
+*   **星际争霸**：1.08 - 1.18.0
+*   **星际争霸：母巢之战**：1.08 - 1.18.0
+*   **暗黑破坏神**：1.09, 1.09b
+*   **暗黑破坏神 2**：1.10 - 1.14d
+*   **暗黑破坏神 2：毁灭之王**：1.10 - 1.14d
+
+### Westwood 游戏
+*   **Westwood 聊天客户端**：4.221
+*   **命令与征服 (C&C)**：Win95 1.04a
+*   **C&C：红色警戒**：Win95 2.00, Win95 3.03
+*   **C&C：红色警戒 2**：1.006
+*   **C&C：泰伯利亚之日**：2.03 ST-10
+*   **C&C：泰伯利亚之日 烈焰风暴**：2.03 ST-10
+*   **C&C：尤里的复仇**：1.001
+*   **C&C：叛逆者**：1.037
+*   **诺克斯 (Nox) / 诺克斯任务**：1.02b
+*   **沙丘 2000**：1.06
+*   **帝皇：沙丘之战**：1.09
+
+---
+
+## 安装指南 (Ubuntu 16.04 / 18.04)
+
+### 1. 环境准备与依赖安装
+```bash
+# 更新系统
+sudo apt update && sudo apt upgrade -y
+
+# 安装编译工具和依赖库
+sudo apt install -y build-essential cmake git libmysqlclient-dev libssl-dev zlib1g-dev
+
+# 安装 Lua 支持
+apt-get install -y liblua5.1-0-dev
+
+# 安装 MySQL 服务器
+sudo apt install -y mysql-server
+
+# 启动并启用 MySQL 服务
+sudo systemctl start mysql
+sudo systemctl enable mysql
 ```
 
-#### Debian 8 with clang compiler
-```
-sudo apt-get -y install build-essential zlib1g-dev clang libc++-dev git
-wget https://cmake.org/files/v3.7/cmake-3.7.1-Linux-x86_64.tar.gz
-tar xvfz cmake-3.7.1-Linux-x86_64.tar.gz
-git clone https://github.com/wuxiancong/War3Server.git
-cd War3Server && CC=/usr/bin/clang CXX=/usr/bin/clang++ ../cmake-3.7.1-Linux-x86_64/bin/cmake -G "Unix Makefiles" -H./ -B./build
-cd build && make
-```
-
-#### CentOS 7
-```
-sudo yum -y install epel-release centos-release-scl
-sudo yum -y install git zlib-devel cmake3 devtoolset-4-gcc*
-sudo ln -s /usr/bin/cmake3 /usr/bin/cmake
-git clone https://github.com/wuxiancong/War3Server.git
-cd War3Server
-CC=/opt/rh/devtoolset-4/root/usr/bin/gcc CXX=/opt/rh/devtoolset-4/root/usr/bin/g++ cmake -G "Unix Makefiles" -H./ -B./build
-cd build && make
+### 2. 配置 MySQL 数据库
+首先设置 root 密码（如果是新安装）：
+```bash
+sudo mysql -u root
+# 在 MySQL 提示符下执行：
+# ALTER USER 'root'@'localhost' IDENTIFIED BY 'yourpassword';
+# EXIT;
 ```
 
-#### Fedora 25
+创建 PvPGN 数据库和用户：
+```bash
+# 使用密码登录
+sudo mysql -u root -p
 ```
-sudo dnf -y install gcc-c++ gcc make zlib-devel cmake git
+在 MySQL 提示符下执行以下 SQL 语句：
+```sql
+-- 创建数据库
+CREATE DATABASE pvpgn;
+
+-- 创建用户
+CREATE USER 'pvpgn'@'localhost' IDENTIFIED BY 'yourpassword';
+
+-- 授权
+GRANT ALL PRIVILEGES ON pvpgn.* TO 'pvpgn'@'localhost';
+
+-- 刷新权限
+FLUSH PRIVILEGES;
+
+-- 退出
+EXIT;
+```
+
+### 3. 编译与安装 War3Server
+```bash
+# 克隆项目代码
 git clone https://github.com/wuxiancong/War3Server.git
 cd War3Server
-cmake -G "Unix Makefiles" -H./ -B./build
-cd build && make
+
+# 创建构建目录
+mkdir build && cd build
+
+# 配置 CMake
+cmake .. \
+  -D WITH_LUA=true \
+  -D WITH_MYSQL=true \
+  -D MYSQL_INCLUDE_DIR=/usr/include/mysql \
+  -D CMAKE_INSTALL_PREFIX=/usr/local/War3Server \
+  -D MYSQL_LIBRARY=/usr/lib/x86_64-linux-gnu/libmysqlclient.so \
+  -D CMAKE_BUILD_TYPE=Release
+
+# 编译 (使用所有核心)
+make -j$(nproc)
+
+# 安装
+sudo make install
 ```
 
-#### FreeBSD 11
-```
-sudo pkg install -y git cmake
-git clone https://github.com/wuxiancong/War3Server.git
-cd War3Server
-cmake -G "Unix Makefiles" -H./ -B./build
-cd build && make
+### 4. 权限与目录配置
+配置 `bnetd.conf` 中的数据库连接字符串（请根据实际密码修改）：
+> 配置文件路径通常在 `/usr/local/War3Server/etc/bnetd.conf`
+```ini
+storage_path = "sql:mode=mysql;host=localhost;name=pvpgn;user=pvpgn;pass=yourpassword;default=0;prefix=pvpgn_"
 ```
 
-Full instructions: [Русский](http://harpywar.com/?a=articles&b=2&c=1&d=74) | [English](http://harpywar.com/?a=articles&b=2&c=1&d=74&lang=en)
+设置运行用户和目录权限：
+```bash
+# 创建系统用户 pvpgn
+sudo useradd -r -s /bin/false pvpgn
 
-## Hosting on LAN or VPS with private IP address
-Some VPS providers do not assign your server a direct public IP. If that is the case or you host at home behind NAT you need to setup the route translation in `address_translation.conf`. The public address is pushed as the route server address to game clients when seeking games. Failure to push the correct address to game clients results in players not being able to match and join games (long game search and error).
+# 修改安装目录所有权
+sudo chown -R pvpgn:pvpgn /usr/local/War3Server
 
-If your network interface is directly bound to public IP, War3Server can figure it out on it's own and this step is not necessary.
+# 修改 var 目录权限
+sudo chown -R pvpgn:pvpgn /usr/local/War3Server/var/
 
-## License
+# 创建并配置 run 目录
+mkdir -p /usr/local/War3Server/var/War3Server/run
+sudo chmod 755 /usr/local/War3Server/var/War3Server
 
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
+# 如果 PvPGN 不是 root 运行（比如 pvpgn 用户）
+chown -R pvpgn:pvpgn /usr/local/War3Server/var
+chmod 755 /usr/local/War3Server/var/War3Server
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+```
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+---
+
+## 配置与启动
+
+### 手动启动
+```bash
+# 后台模式启动
+sudo /usr/local/War3Server/sbin/bnetd
+
+# 前台模式启动 (用于调试)
+sudo /usr/local/War3Server/sbin/bnetd --foreground
+
+# 检查进程
+ps aux | grep bnetd
+
+# 停止所有进程
+sudo killall bnetd
+```
+
+### 数据库连接测试
+```bash
+mysql -u pvpgn -p -e "USE pvpgn; SHOW TABLES;"
+```
+
+### 查看实时日志
+```bash
+sudo tail -f /usr/local/War3Server/var/War3Server/bnetd.log
+```
+
+---
+
+## Systemd 服务配置
+
+创建服务文件 `/etc/systemd/system/pvpgn.service`，内容如下：
+### simple
+```
+[Unit]
+Description=PvPGN Battle.net Server
+After=network.target mysql.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/War3Server/sbin/bnetd -f
+WorkingDirectory=/usr/local/War3Server
+User=pvpgn
+Group=pvpgn
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+```
+### forking
+```ini
+[Unit]
+Description=PvPGN Battle.net Server
+After=network.target mysql.service
+Wants=mysql.service
+Requires=mysql.service
+
+[Service]
+Type=forking
+ExecStart=/usr/local/War3Server/sbin/bnetd
+ExecStop=/usr/local/War3Server/sbin/bnetd --stop
+WorkingDirectory=/usr/local/War3Server
+User=pvpgn
+Group=pvpgn
+RuntimeDirectory=War3Server
+PIDFile=/usr/local/War3Server/var/War3Server/bnetd.pid
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=30
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**管理服务命令：**
+
+```bash
+# 停止服务
+systemctl stop pvpgn
+
+# 禁用服务
+systemctl disable pvpgn
+
+# 清理缓存
+systemctl daemon-reexec
+
+# 重新加载配置
+sudo systemctl daemon-reload
+
+# 启动服务
+sudo systemctl start pvpgn
+
+# 停止服务
+sudo systemctl stop pvpgn
+
+# 查看状态
+sudo systemctl status pvpgn
+
+# 开机自启
+sudo systemctl enable pvpgn
+```
+
+---
+
+## 维护与重新编译
+
+**清理并重新安装：**
+```bash
+# 停止服务
+sudo systemctl stop pvpgn
+sudo pkill bnetd
+
+cd ~/War3Server/build
+
+# 卸载旧文件
+sudo make uninstall 2>/dev/null || true
+sudo make clean
+
+# 重新编译安装
+cmake .. -DWITH_MYSQL=ON
+make -j$(nproc)
+sudo make install
+
+# 重启服务
+sudo systemctl start pvpgn
+```
+
+---
+
+## 错误修复日志
+
+以下是针对原始 PvPGN 代码进行的具体修复列表。
+
+### [1] 格式化字符串严重错误 (CRITICAL)
+**文件**: `src/bnetd/handle_bnet.cpp`
+**描述**: 修复了 `fmt::format_to` 中的指针运算错误。原代码中 `"{}" + '\n'` 会导致指针偏移 10 个字节指向无效内存，从而抛出 "argument index out of range" 异常。
+
+**Before:**
+```cpp
+fmt::format_to(serverinfo, "{}" + '\n', (line + 1));
+```
+**After:**
+```cpp
+fmt::format_to(serverinfo, "{}\n", (line + 1));
+```
+
+### [2] 随机数生成修正
+**文件**: `src/bnetd/anongame_wol.cpp`
+**描述**: 修正随机数范围计算。
+
+**Before:**
+```cpp
+*i = (max * rand() / (RAND_MAX + 1));
+```
+**After:**
+```cpp
+*i = (max * rand() / RAND_MAX);
+```
+
+### [3] 布尔类型定义
+**文件**: `src/bnetd/sql_mysql.cpp`
+
+**Before:**
+```cpp
+my_bool my_true = true;
+```
+**After:**
+```cpp
+bool my_true = true;
+```
+
+### [4] 外部变量声明修正
+**文件**: `src/common/eventlog.cpp`
+**描述**: 移除了 `extern` 关键字以正确定义变量。
+
+**Before:**
+```cpp
+extern std::FILE *eventstrm = NULL;
+extern unsigned currlevel = ...;
+extern int eventlog_debugmode = 0;
+```
+**After:**
+```cpp
+std::FILE *eventstrm = NULL;
+unsigned currlevel = ...;
+int eventlog_debugmode = 0;
+```
+
+### [5] 缓冲区溢出保护
+**文件**: `src/common/proginfo.cpp`
+**描述**: 增加版本字符串缓冲区大小。
+
+**After:**
+```cpp
+static char verstr[32]; // 原为 16，增加至 32 或 64
+```
+
+### [6] BigInt 移位溢出修复
+**文件**: `src/common/bigint.cpp`
+**描述**: 修复了在 32 位系统或特定类型下，右移 64 位导致的未定义行为。
+
+**Code Fix:**
+```cpp
+// 构造函数 BigInt::BigInt(std::uint64_t input) 中:
+#ifdef HAVE_UINT64_T
+    segment[0] = input;
+#else
+    for (i = 0; i < segment_count; i++){
+        segment[i] = input & bigint_base_mask;
+        // 修复: 增加边界检查
+        if (bigint_base_bitcount >= sizeof(input) * 8) {
+            input = 0;
+        } else {
+            input >>= bigint_base_bitcount;
+        }
+    }
+#endif
+
+// 构造函数 BigInt::BigInt(std::uint32_t input) 中:
+// 修复: 只有当 input 不为 0 且位宽允许时才移位
+if (input != 0 && bigint_base_bitcount < 32) {
+    input >>= bigint_base_bitcount;
+} else {
+    input = 0;
+}
+```
+
+### [7] 字符串格式化安全
+**文件**: `src/bnetd/command.cpp`
+**描述**: 使用 `snprintf` 替代 `sprintf` 并修正格式说明符。
+
+**After:**
+```cpp
+std::snprintf(msgtemp0, sizeof(msgtemp0), " \"%.64s\" (%.80s = \"%.80s\")", account_get_name(account), key, value);
+```
+
+### [8] 增加缓冲区大小
+**文件**: `src/bnetd/handle_apireg.cpp`
+
+**After:**
+```cpp
+char data[1024];  // 原为 MAX_IRC_MESSAGE_LEN
+char temp[1024];
+```
+
+### [9] 格式化精度调整
+**文件**: `src/bnetd/ipban.cpp`
+
+**After:**
+```cpp
+std::sprintf(timestr, "(%.47s)", seconds_to_timestr(entry->endtime - now)); // 原为 %.48s
+```
+
+### [10] SQL 注入与溢出防护
+**文件**: `src/bnetd/sql_dbcreator.cpp`
+
+**After:**
+```cpp
+// 增加缓冲区大小
+char query[2048]; 
+
+// 限制读取字符数
+std::sscanf(column->name, "%1023s", _column);
+
+// 使用 snprintf
+std::snprintf(query, sizeof(query), "INSERT INTO %s (%s) VALUES (%s)", table->name, _column, column->value);
+```
+
+### [11] Tracker 缓冲区修正
+**文件**: `src/bnetd/tracker.cpp`
+
+**After:**
+```cpp
+// 1. 使用 memset 清零
+std::memset(packet.platform, 0, sizeof packet.platform);
+
+// 2. 限制复制长度
+std::snprintf(reinterpret_cast<char*>(packet.platform), sizeof packet.platform, "%.31s", utsbuf.sysname);
+```
+
+---
+
+## 完全卸载指南
+
+**警告：以下操作将删除编译环境、数据库和相关数据文件。**
+
+```bash
+# 1. 卸载编译工具和依赖
+sudo apt remove --purge build-essential cmake git libmysqlclient-dev libssl-dev zlib1g-dev
+sudo apt autoremove
+
+# 2. 卸载 Lua 支持
+sudo apt remove --purge liblua5.1-0-dev
+
+# 3. 卸载 MySQL 服务器 (谨慎操作！)
+sudo apt remove --purge mysql-server
+
+# 4. 删除 MySQL 数据文件 (危险：这将删除所有数据库！)
+sudo apt purge mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-*
+sudo rm -rf /etc/mysql /var/lib/mysql
+sudo deluser mysql
+sudo delgroup mysql
+
+# 5. 系统清理
+sudo apt autoremove
+sudo apt clean
+```
