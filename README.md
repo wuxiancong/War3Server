@@ -1,5 +1,3 @@
----
-
 # War3Server
 
 **War3Server** 是一款免费开源的跨平台服务器软件，基于 **PVPGN** 项目，支持 Battle.net 和 Westwood Online 游戏客户端。由于 Pvpgn 项目已于 2011 年停止开发，War3Server 旨在为其提供持续维护和额外功能支持。
