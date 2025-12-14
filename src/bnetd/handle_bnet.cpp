@@ -1627,17 +1627,6 @@ namespace pvpgn
 
 							bnet_hash(&oldpasshash2, sizeof(temp), &temp);	/* do the double hash */
                             bnhash_to_hash(packet->u.client_loginreq1.password_hash2, &trypasshash2);
-                            // 更改记录：2025年12月15日03:08:14
-                            // ================= DEBUG START =================
-                            char dbg_client[128], dbg_server[128], dbg_db[128];
-                            eventlog(eventlog_level_info, __FUNCTION__, "DEBUG: Client Token = 0x%08x", bn_int_get(packet->u.client_loginreq1.ticks));
-                            eventlog(eventlog_level_info, __FUNCTION__, "DEBUG: Server Token = 0x%08x", bn_int_get(packet->u.client_loginreq1.sessionkey));
-                            eventlog(eventlog_level_info, __FUNCTION__, "DEBUG: DB Hash Str  = %s", oldstrhash1);
-                            eventlog(eventlog_level_info, __FUNCTION__, "DEBUG: DB Hash Ints = %08x %08x %08x %08x %08x",
-                                oldpasshash1[0], oldpasshash1[1], oldpasshash1[2], oldpasshash1[3], oldpasshash1[4]);
-                            eventlog(eventlog_level_info, __FUNCTION__, "DEBUG: Calc Expect  = %08x %08x %08x %08x %08x",
-                                oldpasshash2[0], oldpasshash2[1], oldpasshash2[2], oldpasshash2[3], oldpasshash2[4]);
-                            // ================= DEBUG END =================
 							if (hash_eq(trypasshash2, oldpasshash2) == 1) {
 								conn_login(c, account, username);
 								eventlog(eventlog_level_info, __FUNCTION__, "[{}] \"{}\" logged in (correct password)", conn_get_socket(c), username);
