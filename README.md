@@ -124,6 +124,12 @@ sudo chown -R pvpgn:pvpgn /usr/local/War3Server
 # 还有 var 目录
 sudo chown -R pvpgn:pvpgn /usr/local/War3Server/var/
 
+# 创建 run 目录
+sudo mkdir -p /usr/local/var/run
+
+# 赋予权限
+sudo chmod 755 /usr/local/var/run
+
 ## 正常启动（后台模式）
 sudo /usr/local/War3Server/sbin/bnetd
 ## 前台启动
