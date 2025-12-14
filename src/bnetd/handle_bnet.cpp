@@ -2240,11 +2240,29 @@ static int _client_logonproofreq(t_connection * c, t_packet const *const packet)
                     std::sprintf(dbg_server, "NULL");
                 }
 
-                // 注意：这里把 %s 改成了 {}
                 eventlog(eventlog_level_error, __FUNCTION__, "=== SRP DEBUG COMPARISON ===");
                 eventlog(eventlog_level_error, __FUNCTION__, "Client Sent: {}", dbg_client);
                 eventlog(eventlog_level_error, __FUNCTION__, "Server Want: {}", dbg_server);
                 eventlog(eventlog_level_error, __FUNCTION__, "============================");
+
+                t_account *acc = accountlist_find_account(username);
+                if(acc) {
+                    const char *salt = account_get_salt(acc);
+                    const char *verifier = account_get_verifier(acc);
+
+                    char dbg_salt[65] = {0};
+                    char dbg_v[65] = {0};
+
+                    if(salt) {
+                        for(int j=0; j<32; j++) std::sprintf(&dbg_salt[j*2], "%02x", (unsigned char)salt[j]);
+                    }
+                    if(verifier) {
+                        for(int j=0; j<32; j++) std::sprintf(&dbg_v[j*2], "%02x", (unsigned char)verifier[j]);
+                    }
+
+                    eventlog(eventlog_level_error, __FUNCTION__, "DB Salt: {}", dbg_salt);
+                    eventlog(eventlog_level_error, __FUNCTION__, "DB Verifier: {}", dbg_v);
+                }
             }
             // ==================== [结束] 添加调试日志 ====================
 
