@@ -135,6 +135,7 @@ ps aux | grep bnetd
 ## 杀死所有进程
 sudo killall bnetd
 
+## /etc/systemd/system/pvpgn.server
 [Unit]
 Description=PvPGN Battle.net Server
 After=network.target mysql.service
