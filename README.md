@@ -123,6 +123,9 @@ sudo /usr/local/War3Server/sbin/bnetd --foreground
 ## 查看 bnetd 进程是否在运行
 ps aux | grep bnetd
 
+## 杀死所有进程
+sudo killall bnetd
+
 [Unit]
 Description=PvPGN Battle.net Server
 After=network.target mysql.service
@@ -144,8 +147,6 @@ TimeoutStartSec=30
 
 [Install]
 WantedBy=multi-user.target
-
-sudo killall bnetd
 
 ## 重新加载系统服务
 sudo systemctl daemon-reload
