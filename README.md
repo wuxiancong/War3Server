@@ -160,7 +160,7 @@ sudo chown -R pvpgn:pvpgn /usr/local/War3Server
 sudo chown -R pvpgn:pvpgn /usr/local/War3Server/var/
 
 # 创建并配置 run 目录
-mkdir -p /usr/local/War3Server/var/War3Server
+mkdir -p /usr/local/War3Server/var/War3Server/run
 sudo chmod 755 /usr/local/War3Server/var/War3Server
 
 # 如果 PvPGN 不是 root 运行（比如 pvpgn 用户）
