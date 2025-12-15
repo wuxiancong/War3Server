@@ -1865,8 +1865,16 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
         const char *conn_client_public_key;
         int i;
 
+        // ============================================================
+        // [SRP Step 2] 服务端处理 (接收 A -> 生成 B -> 发送 Salt+B)
+        // ============================================================
+
         /* PELISH: Does not need to check conn_client_public_key != NULL because we testing packet size */
         conn_client_public_key = (char *)packet_get_data_const(packet, offsetof(t_client_loginreq_w3, client_public_key), 32);
+
+        // [SRP Step 2.1] 记录接收到的客户端公钥 A
+        // 注意：此时只获取了原始指针，尚未转换为 BigInt
+        eventlog(eventlog_level_info, __FUNCTION__, "[SRP Step 2.1] Received Client Public Key (A) raw bytes");
 
 
         if (!(username = packet_get_str_const(packet, sizeof(t_client_loginreq_w3), MAX_USERNAME_LEN))) {
@@ -1926,41 +1934,36 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
 
                         BigInt salt = BigInt((unsigned char*)account_salt, 32, 4, false);
                         BigInt verifier = BigInt((unsigned char*)account_verifier, 32, 1, false);
+
+                        // 初始化 SRP 上下文 (内部会生成随机私钥 b)
                         BnetSRP3 srp3 = BnetSRP3(username, salt);
 
+                        // 转换客户端 A
                         BigInt client_public_key = BigInt((unsigned char*)conn_client_public_key, 32, 1, false);
+
+                        // [SRP Step 2.2] 计算服务端公钥 B = (v + g^b) % N
                         BigInt server_public_key = srp3.getServerSessionPublicKey(verifier);
+
+                        // 记录 Step 2.2 日志
+                        eventlog(eventlog_level_info, __FUNCTION__, "[SRP Step 2.2] Generated Server Public Key (B): {}", server_public_key.toHexString().c_str());
 
                         server_public_key.getData((unsigned char*)&rpacket->u.server_loginreply_w3.server_public_key, 32, 4, false);
 
+                        // 预计算后续步骤所需的参数 (K, M1, M2)
                         BigInt hashed_server_secret_ = srp3.getHashedServerSecret(client_public_key, verifier);
                         BigInt client_proof = srp3.getClientPasswordProof(client_public_key, server_public_key, hashed_server_secret_);
                         BigInt server_proof = srp3.getServerPasswordProof(client_public_key, client_proof, hashed_server_secret_);
 
-                        // 2025年12月15日19:43:16
-                        // ================== 添加调试日志开始 ==================
+                        // ================== 调试日志开始 ==================
                         eventlog(eventlog_level_error, __FUNCTION__, "=== SRP DEBUG START [{}] ===", username);
-
-                        // 1. 客户端发来的公钥 A
                         eventlog(eventlog_level_error, __FUNCTION__, "Client PubKey (A): {}", client_public_key.toHexString().c_str());
-
-                        // 2. 数据库读取的 Salt
                         eventlog(eventlog_level_error, __FUNCTION__, "DB Salt (s):       {}", salt.toHexString().c_str());
-
-                        // 3. 数据库读取的 Verifier (v)
                         eventlog(eventlog_level_error, __FUNCTION__, "DB Verifier (v):   {}", verifier.toHexString().c_str());
-
-                        // 4. 服务端生成的公钥 B (发送给客户端)
                         eventlog(eventlog_level_error, __FUNCTION__, "Server PubKey (B): {}", server_public_key.toHexString().c_str());
-
-                        // 5. 计算出的会话密钥哈希 K (关键点：如果 A, B, s 都对，但 K 不对，说明私钥 x 计算有误)
                         eventlog(eventlog_level_error, __FUNCTION__, "Session Key (K):   {}", hashed_server_secret_.toHexString().c_str());
-
-                        // 6. 服务端期望客户端发来的 Proof M1
                         eventlog(eventlog_level_error, __FUNCTION__, "Expected Proof M1: {}", client_proof.toHexString().c_str());
-
                         eventlog(eventlog_level_error, __FUNCTION__, "=== SRP DEBUG END ===");
-                        // ================== 添加调试日志结束 ==================
+                        // ================== 调试日志结束 ==================
 
                         char * conn_client_proof = (char*)client_proof.getData(20, 4, false);
                         char * conn_server_proof = (char*)server_proof.getData(20, 4, false);
@@ -1978,6 +1981,9 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
                         bn_int_set(&rpacket->u.server_loginreply_w3.message, SERVER_LOGINREPLY_W3_MESSAGE_SUCCESS);
                     }
         }
+
+        // [SRP Step 2.3] 发送响应包 (包含 Salt 和 B)
+        eventlog(eventlog_level_info, __FUNCTION__, "[SRP Step 2.3] Sending Response Packet (Salt + B)");
 
         conn_push_outqueue(c, rpacket);
         packet_del_ref(rpacket);
@@ -2237,7 +2243,7 @@ static int _client_logonproofreq(t_connection * c, t_packet const *const packet)
             // ================== 添加调试日志开始 ==================
             {
                 char hex_client_proof[41] = {0}; // 20 bytes * 2 chars + null
-                char hex_server_want[41]  = {0};
+                char hex_server_want[128] = {0}; // 更大的缓冲区
                 char hex_db_salt[65]      = {0}; // 32 bytes * 2 chars + null
                 char hex_db_verifier[65]  = {0};
 
