@@ -110,7 +110,7 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
 
     s.getData(raw_salt, 32);
     // [DEBUG] 输出 Raw Salt (模拟内存拷贝时的样子)
-    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Init raw_salt (BE): %s", s.toHexString().c_str());
+    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Init raw_salt (BE): {}", s.toHexString());
 
     return 0;
 }
@@ -169,7 +169,7 @@ BnetSRP3::getClientPrivateKey() const
 
     BigInt x((unsigned char const*)private_value_hash, 20, 1, false);
     // [DEBUG] 输出客户端私钥 x
-    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] ClientPrivateKey x: %s", x.toHexString().c_str());
+    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] ClientPrivateKey x: {}", x.toHexString());
     return x;
 }
 
@@ -186,7 +186,7 @@ BnetSRP3::getScrambler(BigInt& B) const
 
     BigInt u(scrambler);
     // [DEBUG] 输出扰码 u
-    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Scrambler u: %s", u.toHexString().c_str());
+    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Scrambler u: {}", u.toHexString());
     return u;
 }
 
@@ -197,7 +197,7 @@ BnetSRP3::getClientSecret(BigInt& B) const
     BigInt u = getScrambler(B);
     BigInt S = (N + B - g.powm(x, N)).powm((x*u) + a, N);
     // [DEBUG] 输出客户端 Premaster Secret S
-    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Client Secret S: %s", S.toHexString().c_str());
+    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Client Secret S: {}", S.toHexString());
     return S;
 }
 
@@ -208,7 +208,7 @@ BnetSRP3::getServerSecret(BigInt& A, BigInt& v)
     BigInt u = getScrambler(B);
     BigInt S = ((A * v.powm(u, N)) % N).powm(b, N);
     // [DEBUG] 输出服务端 Premaster Secret S
-    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Server Secret S: %s", S.toHexString().c_str());
+    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Server Secret S: {}", S.toHexString());
     return S;
 }
 
@@ -250,7 +250,7 @@ BnetSRP3::hashSecret(BigInt& secret) const
 
     BigInt K(hashedSecret, 40, 1, false);
     // [DEBUG] 输出 Session Key K
-    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Session Key K: %s", K.toHexString().c_str());
+    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Session Key K: {}", K.toHexString());
     return K;
 }
 
@@ -321,7 +321,7 @@ BnetSRP3::getClientPasswordProof(BigInt& A, BigInt& B, BigInt& K) const
 
     BigInt M1((unsigned char*)proofHash, 20, 1, false);
     // [DEBUG] 输出 M1 Proof
-    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Client Proof M1: %s", M1.toHexString().c_str());
+    eventlog(eventlog_level_error, __FUNCTION__, "[DEBUG_SRP] Client Proof M1: {}", M1.toHexString());
     return M1;
 }
 
