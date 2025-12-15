@@ -1903,7 +1903,7 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
                         eventlog(eventlog_level_info, __FUNCTION__, "[{}] (W3) login for \"{}\" refused (already logged in)", conn_get_socket(c), username);
                         bn_int_set(&rpacket->u.server_loginreply_w3.message, SERVER_LOGINREPLY_W3_MESSAGE_ALREADY);
                     }
-                    else if (account_get_auth_bnetlogin(account) == 0) {	/* default to true */
+                    else if (account_get_auth_bnetlogin(account) == 0) {        /* default to true */
                         eventlog(eventlog_level_info, __FUNCTION__, "[{}] (W3) login for \"{}\" refused (no bnet access)", conn_get_socket(c), username);
                         bn_int_set(&rpacket->u.server_loginreply_w3.message, SERVER_LOGINREPLY_W3_MESSAGE_BADACCT);
                     }
@@ -1936,6 +1936,31 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
                         BigInt hashed_server_secret_ = srp3.getHashedServerSecret(client_public_key, verifier);
                         BigInt client_proof = srp3.getClientPasswordProof(client_public_key, server_public_key, hashed_server_secret_);
                         BigInt server_proof = srp3.getServerPasswordProof(client_public_key, client_proof, hashed_server_secret_);
+
+                        // 2025年12月15日19:43:16
+                        // ================== 添加调试日志开始 ==================
+                        eventlog(eventlog_level_error, __FUNCTION__, "=== SRP DEBUG START [{}] ===", username);
+
+                        // 1. 客户端发来的公钥 A
+                        eventlog(eventlog_level_error, __FUNCTION__, "Client PubKey (A): {}", client_public_key.toHexString().c_str());
+
+                        // 2. 数据库读取的 Salt
+                        eventlog(eventlog_level_error, __FUNCTION__, "DB Salt (s):       {}", salt.toHexString().c_str());
+
+                        // 3. 数据库读取的 Verifier (v)
+                        eventlog(eventlog_level_error, __FUNCTION__, "DB Verifier (v):   {}", verifier.toHexString().c_str());
+
+                        // 4. 服务端生成的公钥 B (发送给客户端)
+                        eventlog(eventlog_level_error, __FUNCTION__, "Server PubKey (B): {}", server_public_key.toHexString().c_str());
+
+                        // 5. 计算出的会话密钥哈希 K (关键点：如果 A, B, s 都对，但 K 不对，说明私钥 x 计算有误)
+                        eventlog(eventlog_level_error, __FUNCTION__, "Session Key (K):   {}", hashed_server_secret_.toHexString().c_str());
+
+                        // 6. 服务端期望客户端发来的 Proof M1
+                        eventlog(eventlog_level_error, __FUNCTION__, "Expected Proof M1: {}", client_proof.toHexString().c_str());
+
+                        eventlog(eventlog_level_error, __FUNCTION__, "=== SRP DEBUG END ===");
+                        // ================== 添加调试日志结束 ==================
 
                         char * conn_client_proof = (char*)client_proof.getData(20, 4, false);
                         char * conn_server_proof = (char*)server_proof.getData(20, 4, false);
@@ -2202,14 +2227,56 @@ static int _client_logonproofreq(t_connection * c, t_packet const *const packet)
             int i;
             const char * client_password_proof;
 
-            /* PELISH: This can not occur - We already tested packet size which must be wrong firstly.
-                       Also pvpgn will crash when will dereferencing NULL pointer (so we cant got this errorlog message)
-                       I vote for deleting this "if" */
             if (!(client_password_proof = (const char*)packet_get_data_const(packet, offsetof(t_client_logonproofreq, client_password_proof), 20))) {
                 eventlog(eventlog_level_error, __FUNCTION__, "[{}] (W3) got bad LOGONPROOFREQ packet (missing hash)", conn_get_socket(c));
                 packet_del_ref(rpacket);
                 return -1;
             }
+
+            // 2025年12月15日19:47:34
+            // ================== 添加调试日志开始 ==================
+            {
+                char hex_client_proof[41] = {0}; // 20 bytes * 2 chars + null
+                char hex_server_want[41]  = {0};
+                char hex_db_salt[65]      = {0}; // 32 bytes * 2 chars + null
+                char hex_db_verifier[65]  = {0};
+
+                // 1. 转换客户端发来的 Proof
+                for (int j = 0; j < 20; j++) {
+                    std::sprintf(&hex_client_proof[j * 2], "%02x", (unsigned char)client_password_proof[j]);
+                }
+
+                // 2. 转换服务器期望的 Proof
+                const char* stored_proof = conn_get_client_proof(c);
+                if (stored_proof) {
+                    for (int j = 0; j < 20; j++) {
+                        std::sprintf(&hex_server_want[j * 2], "%02x", (unsigned char)stored_proof[j]);
+                    }
+                } else {
+                    std::sprintf(hex_server_want, "NULL (Server didn't calc proof in step 1?)");
+                }
+
+                // 3. 转换数据库里的 Salt 和 Verifier (用于确认基础数据是否一致)
+                const char* db_salt = account_get_salt(account);
+                const char* db_verifier = account_get_verifier(account);
+
+                if (db_salt) {
+                    for(int j=0; j<32; j++) std::sprintf(&hex_db_salt[j*2], "%02x", (unsigned char)db_salt[j]);
+                } else { std::sprintf(hex_db_salt, "NULL"); }
+
+                if (db_verifier) {
+                    for(int j=0; j<32; j++) std::sprintf(&hex_db_verifier[j*2], "%02x", (unsigned char)db_verifier[j]);
+                } else { std::sprintf(hex_db_verifier, "NULL"); }
+
+                eventlog(eventlog_level_error, __FUNCTION__, "=== SRP DEBUG COMPARISON ===");
+                eventlog(eventlog_level_error, __FUNCTION__, "Client Sent: {}", hex_client_proof);
+                eventlog(eventlog_level_error, __FUNCTION__, "Server Want: {}", hex_server_want);
+                eventlog(eventlog_level_error, __FUNCTION__, "============================");
+                eventlog(eventlog_level_error, __FUNCTION__, "DB Salt:     {}", hex_db_salt);
+                eventlog(eventlog_level_error, __FUNCTION__, "DB Verifier: {}", hex_db_verifier);
+            }
+            // ================== 添加调试日志结束 ==================
+
 
             clienthash[0] = bn_int_get(packet->u.client_logonproofreq.client_password_proof[0]);
             clienthash[1] = bn_int_get(packet->u.client_logonproofreq.client_password_proof[4]);
@@ -2218,53 +2285,6 @@ static int _client_logonproofreq(t_connection * c, t_packet const *const packet)
             clienthash[4] = bn_int_get(packet->u.client_logonproofreq.client_password_proof[16]);
 
             hash_set_str(&serverhash, account_get_pass(account));
-
-            // 2025年12月15日04:16:23
-            // ==================== [开始] 添加调试日志 (修正版) ====================
-            {
-                char dbg_client[65] = {0}; // 20 bytes * 2 + null
-                char dbg_server[65] = {0};
-                const char* stored_server_proof = conn_get_client_proof(c); // 这是服务器之前算好的预期值 M1
-
-                // 1. 转储客户端发来的 Proof (20字节)
-                for (int j = 0; j < 20; j++) {
-                    std::sprintf(&dbg_client[j * 2], "%02x", (unsigned char)client_password_proof[j]);
-                }
-
-                // 2. 转储服务器期望的 Proof
-                if (stored_server_proof) {
-                    for (int j = 0; j < 20; j++) {
-                        std::sprintf(&dbg_server[j * 2], "%02x", (unsigned char)stored_server_proof[j]);
-                    }
-                } else {
-                    std::sprintf(dbg_server, "NULL");
-                }
-
-                eventlog(eventlog_level_error, __FUNCTION__, "=== SRP DEBUG COMPARISON ===");
-                eventlog(eventlog_level_error, __FUNCTION__, "Client Sent: {}", dbg_client);
-                eventlog(eventlog_level_error, __FUNCTION__, "Server Want: {}", dbg_server);
-                eventlog(eventlog_level_error, __FUNCTION__, "============================");
-
-                t_account *acc = accountlist_find_account(username);
-                if(acc) {
-                    const char *salt = account_get_salt(acc);
-                    const char *verifier = account_get_verifier(acc);
-
-                    char dbg_salt[65] = {0};
-                    char dbg_v[65] = {0};
-
-                    if(salt) {
-                        for(int j=0; j<32; j++) std::sprintf(&dbg_salt[j*2], "%02x", (unsigned char)salt[j]);
-                    }
-                    if(verifier) {
-                        for(int j=0; j<32; j++) std::sprintf(&dbg_v[j*2], "%02x", (unsigned char)verifier[j]);
-                    }
-
-                    eventlog(eventlog_level_error, __FUNCTION__, "DB Salt: {}", dbg_salt);
-                    eventlog(eventlog_level_error, __FUNCTION__, "DB Verifier: {}", dbg_v);
-                }
-            }
-            // ==================== [结束] 添加调试日志 ====================
 
             if (conn_get_client_proof(c) && std::memcmp(client_password_proof, conn_get_client_proof(c), 20) == 0) {
                 const char * server_proof = conn_get_server_proof(c);
@@ -2279,33 +2299,32 @@ static int _client_logonproofreq(t_connection * c, t_packet const *const packet)
                     bn_int_set(&rpacket->u.server_logonproofreply.response, SERVER_LOGONPROOFREPLY_RESPONSE_EMAIL);
                 else
                     bn_int_set(&rpacket->u.server_logonproofreply.response, SERVER_LOGONPROOFREPLY_RESPONSE_OK);
-                // by amadeo updates the userlist
 #ifdef WIN32_GUI
                 guiOnUpdateUserList();
 #endif
             }
+            // 旧的 Hash 登录逻辑 (SHA1/DoubleHash)
             else if (hash_eq(clienthash, serverhash)) {
-
                 conn_login(c, account, username);
-                eventlog(eventlog_level_info, __FUNCTION__, "[{}] (W3) \"{}\" logged in (right password)", conn_get_socket(c), username);
+                eventlog(eventlog_level_info, __FUNCTION__, "[{}] (W3) \"{}\" logged in (right password - legacy hash)", conn_get_socket(c), username);
+
+                // 注意：通常启用了 SRP 的服务器不应该再允许这里通过，除非是为了兼容
                 if ((conn_get_versionid(c) >= 0x0000000D) && (account_get_email(account) == NULL))
                     bn_int_set(&rpacket->u.server_logonproofreply.response, SERVER_LOGONPROOFREPLY_RESPONSE_EMAIL);
                 else
                     bn_int_set(&rpacket->u.server_logonproofreply.response, SERVER_LOGONPROOFREPLY_RESPONSE_OK);
+
 #ifdef WITH_LUA
                 if (lua_handle_user(c, NULL, NULL, luaevent_user_login) == 1)
                 {
-                    // feature to break login from Lua
                     conn_set_state(c, conn_state_destroy);
                     packet_del_ref(rpacket);
                     return -1;
                 }
 #endif
-                // by amadeo updates the userlist
 #ifdef WIN32_GUI
                 guiOnUpdateUserList();
 #endif
-
             }
             else {
                 eventlog(eventlog_level_info, __FUNCTION__, "[{}] (W3) got wrong client password proof for \"{}\"", conn_get_socket(c), username);
