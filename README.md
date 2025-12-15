@@ -119,7 +119,7 @@ EXIT;
 ### 3. 编译与安装 War3Server
 ```bash
 # 克隆项目代码
-git clone https://github.com/wuxiancong/War3Server.git
+git clone -v https://github.com/wuxiancong/War3Server.git
 cd War3Server
 
 # 创建构建目录
