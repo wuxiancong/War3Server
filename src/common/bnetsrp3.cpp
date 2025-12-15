@@ -28,6 +28,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 #include <stdexcept>
 
 #include "common/bigint.h"
@@ -41,6 +42,17 @@
 
 namespace pvpgn
 {
+// 2025年12月16日04:08:10
+// --- 添加辅助日志函数 (Start) ---
+static std::string debug_buf_to_hex(const unsigned char* buf, size_t len) {
+    std::ostringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (size_t i = 0; i < len; ++i) {
+        ss << std::setw(2) << (int)buf[i];
+    }
+    return ss.str();
+}
+// --- 添加辅助日志函数 (End) ---
 
 std::uint8_t bnetsrp3_g = 0x2F;
 
@@ -82,6 +94,8 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
         *(symbol++) = safe_toupper(*(source++));
     }
 
+    eventlog(eventlog_level_info, __FUNCTION__, "[SRP] Init Username: {}", username);
+
     if (!((password_ == NULL) ^ (salt_ == NULL))) {
         eventlog(eventlog_level_error, __FUNCTION__, "need to init with EITHER password_ OR salt_");
         return -1;
@@ -98,17 +112,23 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
         }
         a = BigInt::random(32) % N;
         s = BigInt::random(32);
+
+        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Generated privKey a: {}", a.toHexString());
+        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Generated Salt s: {}", s.toHexString());
     }
     else {
         password = NULL;
         password_length = 0;
         b = BigInt::random(32) % N;
         s = *salt_;
+
+        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Loaded Salt s: {}", s.toHexString());
     }
 
     B = NULL;
 
     s.getData(raw_salt, 32);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] raw_salt (Little Endian): {}", debug_buf_to_hex(raw_salt, 32));
 
     return 0;
 }
@@ -158,14 +178,22 @@ BnetSRP3::getClientPrivateKey() const
     userpass[username_length] = ':';
     std::memcpy(userpass + username_length + 1, password, password_length);
     userpass[username_length + 1 + password_length] = '\0';
+
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Calculating x for {}", userpass);
+
     little_endian_sha1_hash(&userpass_hash, username_length + 1 + password_length, userpass);
     xfree(userpass);
+
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] H(P) (BE in Hash): {}", debug_buf_to_hex((unsigned char*)userpass_hash, 20));
 
     std::memcpy(&private_value[0], raw_salt, 32);
     std::memcpy(&private_value[32], userpass_hash, 20);
     little_endian_sha1_hash(&private_value_hash, 52, private_value);
 
-    return BigInt((unsigned char const*)private_value_hash, 20, 1, false);
+    BigInt result((unsigned char const*)private_value_hash, 20, 1, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Calculated x: {}", result.toHexString());
+
+    return result;
 }
 
 BigInt
@@ -179,7 +207,10 @@ BnetSRP3::getScrambler(BigInt& B) const
     sha1_hash(&hash, 32, raw_B);
     scrambler = *(std::uint32_t*)hash;
 
-    return BigInt(scrambler);
+    BigInt u(scrambler);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Calculated Scrambler u: {}", u.toHexString());
+
+    return u;
 }
 
 BigInt
@@ -187,7 +218,10 @@ BnetSRP3::getClientSecret(BigInt& B) const
 {
     BigInt x = getClientPrivateKey();
     BigInt u = getScrambler(B);
-    return (N + B - g.powm(x, N)).powm((x*u) + a, N);
+    BigInt S = (N + B - g.powm(x, N)).powm((x*u) + a, N);
+
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Calculated Pre-Master Secret S: {}", S.toHexString());
+    return S;
 }
 
 BigInt
@@ -234,7 +268,10 @@ BnetSRP3::hashSecret(BigInt& secret) const
         *(secretPointer++) = *(evenPointer++);
     }
 
-    return BigInt(hashedSecret, 40, 1, false);
+    BigInt K(hashedSecret, 40, 1, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Calculated Session Key K: {}", K.toHexString());
+
+    return K;
 }
 
 BigInt
@@ -254,19 +291,25 @@ BnetSRP3::setSalt(BigInt salt_)
 {
     s = salt_;
     s.getData(raw_salt, 32);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Updated Salt s: {}", s.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Updated raw_salt (LE): {}", debug_buf_to_hex(raw_salt, 32));
 }
 
 BigInt
 BnetSRP3::getClientSessionPublicKey() const
 {
-    return g.powm(a, N);
+    BigInt A = g.powm(a, N);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Client PubKey A: {}", A.toHexString());
+    return A;
 }
 
 BigInt
 BnetSRP3::getServerSessionPublicKey(BigInt& v)
 {
-    if (!B)
+    if (!B) {
         B = new BigInt((v + g.powm(b, N)) % N);
+        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Calculated Server PubKey B: {}", B->toHexString());
+    }
 
     return *B;
 }
@@ -291,18 +334,35 @@ BnetSRP3::getClientPasswordProof(BigInt& A, BigInt& B, BigInt& K) const
     unsigned char proofData[176];
     t_hash usernameHash, proofHash;
 
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Calculating M1 Proof...");
+
     little_endian_sha1_hash(&usernameHash, username_length, username);
 
     I.getData(&proofData[0], 20, 4, false);
     std::memcpy(&proofData[20], usernameHash, 20);
+
+    // LOG DETAILS FOR DEBUGGING M1
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > I:           {}", debug_buf_to_hex(&proofData[0], 20));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > H(U):        {}", debug_buf_to_hex(&proofData[20], 20));
+
     s.getData(&proofData[40], 32);
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > Salt (LE):   {}", debug_buf_to_hex(&proofData[40], 32));
+
     A.getData(&proofData[72], 32, 4, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > A (LE):      {}", debug_buf_to_hex(&proofData[72], 32));
+
     B.getData(&proofData[104], 32, 4, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > B (LE):      {}", debug_buf_to_hex(&proofData[104], 32));
+
     K.getData(&proofData[136], 40, 4, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > K (LE):      {}", debug_buf_to_hex(&proofData[136], 40));
 
     little_endian_sha1_hash(&proofHash, 176, proofData);
 
-    return BigInt((unsigned char*)proofHash, 20, 1, false);
+    BigInt M1((unsigned char*)proofHash, 20, 1, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] M1 Result: {}", M1.toHexString());
+
+    return M1;
 }
 
 BigInt
@@ -311,13 +371,23 @@ BnetSRP3::getServerPasswordProof(BigInt& A, BigInt& M, BigInt& K) const
     unsigned char proofData[92];
     t_hash proofHash;
 
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] Calculating M2 Proof...");
+
     A.getData(&proofData[0], 32, 4, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > A (LE): {}", debug_buf_to_hex(&proofData[0], 32));
+
     M.getData(&proofData[32], 20, 4, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > M1(LE): {}", debug_buf_to_hex(&proofData[32], 20));
+
     K.getData(&proofData[52], 40, 4, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > K (LE): {}", debug_buf_to_hex(&proofData[52], 40));
 
     little_endian_sha1_hash(&proofHash, 92, proofData);
 
-    return BigInt((unsigned char*)proofHash, 20, 1, false);
+    BigInt M2((unsigned char*)proofHash, 20, 1, false);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP] M2 Result: {}", M2.toHexString());
+
+    return M2;
 }
 
 }
