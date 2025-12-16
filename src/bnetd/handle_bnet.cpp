@@ -1880,7 +1880,7 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
         conn_client_public_key = (char *)packet_get_data_const(packet, offsetof(t_client_loginreq_w3, client_public_key), 32);
 
         // [LOGIN DEBUG] 打印客户端发来的原始 A (32字节二进制)
-        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] Client sent A (Raw): {}", debug_buf_to_hex((const unsigned char*)conn_client_public_key, 32));
+        eventlog(eventlog_level_debug, __FUNCTION__, "[登录调试] 客户端发送 A (原始数据/Raw): {}", debug_buf_to_hex((const unsigned char*)conn_client_public_key, 32));
 
         if (!(username = packet_get_str_const(packet, sizeof(t_client_loginreq_w3), MAX_USERNAME_LEN))) {
             eventlog(eventlog_level_error, __FUNCTION__, "[{}] got bad CLIENT_LOGINREQ_W3 (missing or too long username)", conn_get_socket(c));
@@ -1933,37 +1933,34 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
                     }
                     else {
                         // [LOGIN DEBUG] 打印从数据库取出的原始指针内容
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] DB Salt (String?): \"{}\"", account_salt);
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] DB Salt (Raw Hex): {}", debug_buf_to_hex((const unsigned char*)account_salt, 32));
-
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] DB Verifier (String?): \"{}\"", account_verifier);
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] DB Verifier (Raw Hex): {}", debug_buf_to_hex((const unsigned char*)account_verifier, 32));
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[登录调试] 数据库 Salt (原始数据/Raw): {}", debug_buf_to_hex((const unsigned char*)account_salt, 32));
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[登录调试] 数据库 Verifier (原始数据/Raw): {}", debug_buf_to_hex((const unsigned char*)account_verifier, 32));
 
                         for (i = 0; i < 32; i++){
                             bn_byte_set(&rpacket->u.server_loginreply_w3.salt[i], account_salt[i]);
                         }
 
                         // [LOGIN DEBUG] 打印刚才塞进数据包里的 Salt
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] Sent Salt to Client: {}", debug_buf_to_hex((const unsigned char*)rpacket->u.server_loginreply_w3.salt, 32));
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[登录调试] 服务端发送 Salt (原始数据/Raw): {}", debug_buf_to_hex((const unsigned char*)rpacket->u.server_loginreply_w3.salt, 32));
 
                         BigInt salt = BigInt((unsigned char*)account_salt, 32, 4, false);
                         BigInt verifier = BigInt((unsigned char*)account_verifier, 32, 1, false);
 
                         // [LOGIN DEBUG] 打印 BigInt 解释后的 Salt 和 Verifier
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] BigInt Interpretation of Salt: {}", salt.toHexString().c_str());
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] BigInt Interpretation of Verifier: {}", verifier.toHexString().c_str());
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[登录调试] Salt 转为 BigInt: {}", salt.toHexString().c_str());
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[登录调试] Verifier 转为 BigInt: {}", verifier.toHexString().c_str());
 
                         BnetSRP3 srp3 = BnetSRP3(username, salt);
 
                         BigInt client_public_key = BigInt((unsigned char*)conn_client_public_key, 32, 1, false);
 
                         // [LOGIN DEBUG] 打印 BigInt 解释后的客户端 A
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] BigInt Interpretation of Client A: {}", client_public_key.toHexString().c_str());
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[登录调试] 客户端 A 转为 BigInt: {}", client_public_key.toHexString().c_str());
 
                         BigInt server_public_key = srp3.getServerSessionPublicKey(verifier);
 
                         // [LOGIN DEBUG] 打印计算出的服务端 B
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[LOGIN DEBUG] Calculated Server B: {}", server_public_key.toHexString().c_str());
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[登录调试] 服务端 B 转为 BigInt: {}", server_public_key.toHexString().c_str());
 
                         server_public_key.getData((unsigned char*)&rpacket->u.server_loginreply_w3.server_public_key, 32, 4, false);
 
@@ -1972,8 +1969,8 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
                         BigInt server_proof = srp3.getServerPasswordProof(client_public_key, client_proof, hashed_server_secret_);
 
                         // [LOGIN DEBUG] 打印关键的中间计算结果 K 和 M1
-                        eventlog(eventlog_level_error, __FUNCTION__, "[LOGIN DEBUG] Calculated Session Key K: {}", hashed_server_secret_.toHexString().c_str());
-                        eventlog(eventlog_level_error, __FUNCTION__, "[LOGIN DEBUG] Expected Proof M1: {}", client_proof.toHexString().c_str());
+                        eventlog(eventlog_level_error, __FUNCTION__, "[登录调试] 计算出的会话密钥 K: {}", hashed_server_secret_.toHexString().c_str());
+                        eventlog(eventlog_level_error, __FUNCTION__, "[登录调试] 计算出的证明 M1:    {}", client_proof.toHexString().c_str());
 
                         char * conn_client_proof = (char*)client_proof.getData(20, 4, false);
                         char * conn_server_proof = (char*)server_proof.getData(20, 4, false);
@@ -1990,12 +1987,12 @@ static int _client_loginreqw3(t_connection * c, t_packet const *const packet)
                         conn_set_loggeduser(c, username);
                         bn_int_set(&rpacket->u.server_loginreply_w3.message, SERVER_LOGINREPLY_W3_MESSAGE_SUCCESS);
                     }
-                }
+        }
 
-                conn_push_outqueue(c, rpacket);
-                packet_del_ref(rpacket);
+        conn_push_outqueue(c, rpacket);
+        packet_del_ref(rpacket);
 
-            }
+    }
 
     return 0;
 }
@@ -2251,15 +2248,15 @@ static int _client_logonproofreq(t_connection * c, t_packet const *const packet)
             // ======================================================================
             const char* server_expected_proof = conn_get_client_proof(c);
 
-            eventlog(eventlog_level_error, __FUNCTION__, "=== PROOF DEBUG COMPARISON ===");
+            eventlog(eventlog_level_error, __FUNCTION__, "=== 验证调试 (比对结果) ===");
             // 客户端发来的
-            eventlog(eventlog_level_error, __FUNCTION__, "[PROOF DEBUG] Client Sent: {}", debug_buf_to_hex((const unsigned char*)client_password_proof, 20));
+            eventlog(eventlog_level_error, __FUNCTION__, "[验证调试] 客户端发送 M1:      {}", debug_buf_to_hex((const unsigned char*)client_password_proof, 20));
 
             // 服务端期望的
             if (server_expected_proof) {
-                eventlog(eventlog_level_error, __FUNCTION__, "[PROOF DEBUG] Server Want: {}", debug_buf_to_hex((const unsigned char*)server_expected_proof, 20));
+                eventlog(eventlog_level_error, __FUNCTION__, "[验证调试] 服务端期望 M1:      {}", debug_buf_to_hex((const unsigned char*)server_expected_proof, 20));
             } else {
-                eventlog(eventlog_level_error, __FUNCTION__, "[PROOF DEBUG] Server Want: NULL (SRP logic skipped in prev step?)");
+                eventlog(eventlog_level_error, __FUNCTION__, "[验证调试] 服务端期望 M1:      NULL (SRP logic skipped?)");
             }
             // ======================================================================
 

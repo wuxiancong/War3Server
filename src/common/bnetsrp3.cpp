@@ -1,22 +1,3 @@
-/*
- * Class that implements the SRP-3 based authentication schema
- * used by Blizzards WarCraft 3. Implementations is based upon
- * public information available under
- * http://www.javaop.com/@ron/documents/SRP.html
- *
- * Copyright (C) 2008 - Olaf Freyer
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- */
-
 #include "common/setup_before.h"
 #include "bnetsrp3.h"
 
@@ -42,8 +23,8 @@
 
 namespace pvpgn
 {
-// 2025年12月16日04:08:10
-// --- 添加辅助日志函数 (Start) ---
+
+// 辅助日志函数：转Hex
 static std::string debug_buf_to_hex(const unsigned char* buf, size_t len) {
     std::ostringstream ss;
     ss << std::hex << std::setfill('0');
@@ -52,7 +33,6 @@ static std::string debug_buf_to_hex(const unsigned char* buf, size_t len) {
     }
     return ss.str();
 }
-// --- 添加辅助日志函数 (End) ---
 
 std::uint8_t bnetsrp3_g = 0x2F;
 
@@ -80,8 +60,7 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
     const char* source;
     char* symbol;
 
-    // [SRP3 DEBUG] 打印最原始的输入参数，用于检查内存指针是否正确
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] Raw inputs -> username_: \"{}\", password_: \"{}\", salt_: {}",
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 初始化] 原始输入 -> 用户名: \"{}\", 密码: \"{}\", 盐: {}",
              username_ ? username_ : "NULL",
              password_ ? password_ : "NULL",
              salt_ ? "PRESENT" : "NULL");
@@ -102,16 +81,13 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
         *(symbol++) = safe_toupper(*(source++));
     }
 
-    // [SRP3 DEBUG] 打印处理后的大写用户名
-    eventlog(eventlog_level_info, __FUNCTION__, "[SRP Init] Processed Username (Upper): \"{}\"", username);
-
     if (!((password_ == NULL) ^ (salt_ == NULL))) {
         eventlog(eventlog_level_error, __FUNCTION__, "need to init with EITHER password_ OR salt_");
         return -1;
     }
 
     if (password_ != NULL) {
-        // ==================== 注册模式 / Server-Side Calc ====================
+        // ==================== 注册模式 ====================
         password_length = std::strlen(password_);
         password = (char*)xmalloc(password_length + 1);
         source = password_;
@@ -121,29 +97,25 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
             *(symbol++) = safe_toupper(*(source++));
         }
 
-        // [SRP3 DEBUG] 打印处理后的大写密码
-        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] Processed Password (Upper): \"{}\"", password);
-
         a = BigInt::random(32) % N;
         s = BigInt::random(32);
 
-        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] Generated privKey a: {}", a.toHexString());
-        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] Generated Salt s: {}", s.toHexString());
+        // 注册模式不常对比登录日志，简单带过
+        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 初始化] 生成私钥 a: {}", a.toHexString());
+        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 初始化] 生成盐值 s: {}", s.toHexString());
     }
     else {
-        // ==================== 登录模式 / Loaded form DB ====================
+        // ==================== 登录模式 ====================
         password = NULL;
         password_length = 0;
         b = BigInt::random(32) % N;
         s = *salt_;
-
-        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] Loaded Salt s: {}", s.toHexString());
     }
 
     B = NULL;
 
     s.getData(raw_salt, 32);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] raw_salt (Little Endian): {}", debug_buf_to_hex(raw_salt, 32));
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 初始化] 原始盐值 (小端序/LE): {}", debug_buf_to_hex(raw_salt, 32));
 
     return 0;
 }
@@ -151,31 +123,21 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
 
 BnetSRP3::BnetSRP3(const char* username_, BigInt& salt)
 {
-    // [SRP3 DEBUG] 构造函数跟踪
-    eventlog(eventlog_level_debug, __FUNCTION__, "[Ctor] Called (const char* username, BigInt& salt). User: \"{}\"", username_ ? username_ : "NULL");
     init(username_, NULL, &salt);
 }
 
 BnetSRP3::BnetSRP3(const std::string& username_, BigInt& salt)
 {
-    // [SRP3 DEBUG] 构造函数跟踪
-    eventlog(eventlog_level_debug, __FUNCTION__, "[Ctor] Called (std::string username, BigInt& salt). User: \"{}\"", username_.c_str());
     init(username_.c_str(), NULL, &salt);
 }
 
 BnetSRP3::BnetSRP3(const char* username_, const char* password_)
 {
-    // [SRP3 DEBUG] 构造函数跟踪
-    eventlog(eventlog_level_debug, __FUNCTION__, "[Ctor] Called (const char* username, const char* password). User: \"{}\", Pass: \"{}\"",
-             username_ ? username_ : "NULL", password_ ? password_ : "NULL");
     init(username_, password_, NULL);
 }
 
 BnetSRP3::BnetSRP3(const std::string& username_, const std::string& password_)
 {
-    // [SRP3 DEBUG] 构造函数跟踪
-    eventlog(eventlog_level_debug, __FUNCTION__, "[Ctor] Called (std::string username, std::string password). User: \"{}\", Pass: \"{}\"",
-             username_.c_str(), password_.c_str());
     init(username_.c_str(), password_.c_str(), NULL);
 }
 
@@ -204,19 +166,19 @@ BnetSRP3::getClientPrivateKey() const
     std::memcpy(userpass + username_length + 1, password, password_length);
     userpass[username_length + 1 + password_length] = '\0';
 
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Calculating x for {}", userpass);
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 正在计算 x, 输入: \"{}\"", userpass);
 
     little_endian_sha1_hash(&userpass_hash, username_length + 1 + password_length, userpass);
     xfree(userpass);
 
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] H(P) (BE in Hash): {}", debug_buf_to_hex((unsigned char*)userpass_hash, 20));
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] H(P) (Hash字节流): {}", debug_buf_to_hex((unsigned char*)userpass_hash, 20));
 
     std::memcpy(&private_value[0], raw_salt, 32);
     std::memcpy(&private_value[32], userpass_hash, 20);
     little_endian_sha1_hash(&private_value_hash, 52, private_value);
 
     BigInt result((unsigned char const*)private_value_hash, 20, 1, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Calculated x: {}", result.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 计算出的 x (BigInt): {}", result.toHexString());
 
     return result;
 }
@@ -233,7 +195,7 @@ BnetSRP3::getScrambler(BigInt& B) const
     scrambler = *(std::uint32_t*)hash;
 
     BigInt u(scrambler);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Calculated Scrambler u: {}", u.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 计算出的扰码 u (BigInt): {}", u.toHexString());
 
     return u;
 }
@@ -245,7 +207,7 @@ BnetSRP3::getClientSecret(BigInt& B) const
     BigInt u = getScrambler(B);
     BigInt S = (N + B - g.powm(x, N)).powm((x*u) + a, N);
 
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Calculated Pre-Master Secret S: {}", S.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 计算出的预主密钥 S (BigInt): {}", S.toHexString());
     return S;
 }
 
@@ -254,9 +216,9 @@ BnetSRP3::getServerSecret(BigInt& A, BigInt& v)
 {
     BigInt B = getServerSessionPublicKey(v);
     BigInt u = getScrambler(B);
-    // 这里计算 S
     BigInt S = ((A * v.powm(u, N)) % N).powm(b, N);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Calculated Pre-Master Secret S (Server side): {}", S.toHexString());
+
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 计算出的预主密钥 S (BigInt): {}", S.toHexString());
     return S;
 }
 
@@ -297,7 +259,7 @@ BnetSRP3::hashSecret(BigInt& secret) const
     }
 
     BigInt K(hashedSecret, 40, 1, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Calculated Session Key K: {}", K.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 计算出的会话密钥 K (BigInt): {}", K.toHexString());
 
     return K;
 }
@@ -319,15 +281,15 @@ BnetSRP3::setSalt(BigInt salt_)
 {
     s = salt_;
     s.getData(raw_salt, 32);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Updated Salt s: {}", s.toHexString());
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Updated raw_salt (LE): {}", debug_buf_to_hex(raw_salt, 32));
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 更新 BigInt 盐值 s: {}", s.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 更新原始盐值 (小端序/LE): {}", debug_buf_to_hex(raw_salt, 32));
 }
 
 BigInt
 BnetSRP3::getClientSessionPublicKey() const
 {
     BigInt A = g.powm(a, N);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Step 1.1 Internal] Client PubKey A: {}", A.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 步骤 1.1] 客户端公钥 A (BigInt): {}", A.toHexString());
     return A;
 }
 
@@ -335,9 +297,9 @@ BigInt
 BnetSRP3::getServerSessionPublicKey(BigInt& v)
 {
     if (!B) {
-        // 这是 Step 2 的核心计算 B = (v + g^b) % N
+        // B = (v + g^b) % N
         B = new BigInt((v + g.powm(b, N)) % N);
-        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Step 2.2 Internal] Calculated Server PubKey B: {}", B->toHexString());
+        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 步骤 2.2] 服务端公钥 B (BigInt): {}", B->toHexString());
     }
 
     return *B;
@@ -363,7 +325,7 @@ BnetSRP3::getClientPasswordProof(BigInt& A, BigInt& B, BigInt& K) const
     unsigned char proofData[176];
     t_hash usernameHash, proofHash;
 
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Calculating M1 Proof...");
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 开始计算 M1 证明...");
 
     little_endian_sha1_hash(&usernameHash, username_length, username);
 
@@ -371,25 +333,25 @@ BnetSRP3::getClientPasswordProof(BigInt& A, BigInt& B, BigInt& K) const
     std::memcpy(&proofData[20], usernameHash, 20);
 
     // LOG DETAILS FOR DEBUGGING M1
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > I:           {}", debug_buf_to_hex(&proofData[0], 20));
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > H(U):        {}", debug_buf_to_hex(&proofData[20], 20));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > I (Buffer):        {}", debug_buf_to_hex(&proofData[0], 20));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > H(U) (Buffer):     {}", debug_buf_to_hex(&proofData[20], 20));
 
     s.getData(&proofData[40], 32);
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > Salt (LE):   {}", debug_buf_to_hex(&proofData[40], 32));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > 盐值 (小端序/LE):   {}", debug_buf_to_hex(&proofData[40], 32));
 
     A.getData(&proofData[72], 32, 4, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > A (LE):      {}", debug_buf_to_hex(&proofData[72], 32));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > A (小端序/LE):     {}", debug_buf_to_hex(&proofData[72], 32));
 
     B.getData(&proofData[104], 32, 4, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > B (LE):      {}", debug_buf_to_hex(&proofData[104], 32));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > B (小端序/LE):     {}", debug_buf_to_hex(&proofData[104], 32));
 
     K.getData(&proofData[136], 40, 4, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > K (LE):      {}", debug_buf_to_hex(&proofData[136], 40));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > K (小端序/LE):     {}", debug_buf_to_hex(&proofData[136], 40));
 
     little_endian_sha1_hash(&proofHash, 176, proofData);
 
     BigInt M1((unsigned char*)proofHash, 20, 1, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] M1 Result: {}", M1.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] M1 结果 (BigInt): {}", M1.toHexString());
 
     return M1;
 }
@@ -400,21 +362,21 @@ BnetSRP3::getServerPasswordProof(BigInt& A, BigInt& M, BigInt& K) const
     unsigned char proofData[92];
     t_hash proofHash;
 
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] Calculating M2 Proof...");
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 开始计算 M2 证明...");
 
     A.getData(&proofData[0], 32, 4, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > A (LE): {}", debug_buf_to_hex(&proofData[0], 32));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > A (小端序/LE): {}", debug_buf_to_hex(&proofData[0], 32));
 
     M.getData(&proofData[32], 20, 4, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > M1(LE): {}", debug_buf_to_hex(&proofData[32], 20));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > M1 (小端序/LE): {}", debug_buf_to_hex(&proofData[32], 20));
 
     K.getData(&proofData[52], 40, 4, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "  > K (LE): {}", debug_buf_to_hex(&proofData[52], 40));
+    eventlog(eventlog_level_debug, __FUNCTION__, "  > K (小端序/LE): {}", debug_buf_to_hex(&proofData[52], 40));
 
     little_endian_sha1_hash(&proofHash, 92, proofData);
 
     BigInt M2((unsigned char*)proofHash, 20, 1, false);
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Internal] M2 Result: {}", M2.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] M2 结果 (BigInt): {}", M2.toHexString());
 
     return M2;
 }
