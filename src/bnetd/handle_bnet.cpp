@@ -283,6 +283,18 @@ static const t_htable_row bnet_htable_log[] = {
     { -1, NULL }
 };
 
+// 2025年12月16日23:48:01
+// ===================== 调试函数 =======================================
+static std::string debug_buf_to_hex(const unsigned char* buf, size_t len) {
+    std::ostringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (size_t i = 0; i < len; ++i) {
+        ss << std::setw(2) << (int)buf[i];
+    }
+    return ss.str();
+}
+// ===================== 调试函数 =======================================
+
 /* main handler function */
 static int handle(const t_htable_row * htable, int type, t_connection * c, t_packet const *const packet);
 
@@ -699,6 +711,12 @@ static int _client_createaccountw3(t_connection * c, t_packet const *const packe
     account_salt = (const char *)packet_get_data_const(packet, offsetof(t_client_createaccount_w3, salt), 32);
     account_verifier = (const char *)packet_get_data_const(packet, offsetof(t_client_createaccount_w3, password_verifier), 32);
 
+    // 2025年12月16日23:50:04
+    // ===================== Salt 和 Verifier =======================================
+    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [注册] Client sent Salt: {}", conn_get_socket(c), debug_buf_to_hex((const unsigned char*)account_salt, 32));
+    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [注册] Client sent Verifier/PwdBuf: {}", conn_get_socket(c), debug_buf_to_hex((const unsigned char*)account_verifier, 32));
+    // ===================== Salt 和 Verifier =======================================
+
     for (i = 0; i<16; i++){
         int value = (unsigned char)account_verifier[i];
         if (value == 0)
@@ -710,6 +728,11 @@ static int _client_createaccountw3(t_connection * c, t_packet const *const packe
         int value = account_verifier[i];
         presume_plainpass &= (value == 0);
     }
+
+    // 2025年12月16日23:50:14
+    // ===================== 数据包中的密码是否为明文 =======================================
+    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [注册] presume_plainpass detection result: {}", conn_get_socket(c), presume_plainpass);
+    // ===================== 数据包中的密码是否为明文 =======================================
 
     if (presume_plainpass)
         eventlog(eventlog_level_debug, __FUNCTION__, "This looks more like a plaintext password than like a verifier");
@@ -753,10 +776,15 @@ static int _client_createaccountw3(t_connection * c, t_packet const *const packe
         /* convert plaintext password to lowercase for sc etc. */
         std::snprintf(lpass, sizeof lpass, "%s", plainpass);
         strtolower(lpass);
+        // [DEBUG] 打印转换后的小写密码
+        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [DEBUG_HASH] Plaintext password extracted: '{}' (lower: '{}')", conn_get_socket(c), plainpass, lpass);
     }
 
     //set password hash for sc etc.
     bnet_hash(&sc_hash, std::strlen(lpass), lpass);
+    // [DEBUG] 打印即将存储的 SC Hash
+    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [DEBUG_HASH] Calculated SC Hash: {}", conn_get_socket(c), hash_get_str(sc_hash));
+
     if (!(account = accountlist_create_account(username, hash_get_str(sc_hash))))
     {
         bn_int_set(&rpacket->u.server_createaccount_w3.result, SERVER_CREATEACCOUNT_W3_RESULT_EXIST);
@@ -765,15 +793,22 @@ static int _client_createaccountw3(t_connection * c, t_packet const *const packe
     {
         if (presume_plainpass)
         {
+            eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [SRP_GEN] Mode: Server-Side Calculation. Generating Verifier from plaintext...", conn_get_socket(c));
+
             BigInt salt = BigInt((unsigned char*)account_salt, 32, 4, false);
             BnetSRP3 srp3 = BnetSRP3(username, plainpass);
             srp3.setSalt(salt);
             BigInt verifier = srp3.getVerifier();
             account_verifier = (const char*)verifier.getData(32, 4, false);
+
+            eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [SRP_GEN] Server calculated Verifier: {}", conn_get_socket(c), debug_buf_to_hex((const unsigned char*)account_verifier, 32));
         }
         else {
             //NEED TO TAG ACCOUNT AS "SC PASS BROKEN"
+            eventlog(eventlog_level_warn, __FUNCTION__, "[{}] [SRP_SKIP] Mode: Client-Side SRP. Accepting Client Verifier directly.", conn_get_socket(c));
+            eventlog(eventlog_level_warn, __FUNCTION__, "[{}] [SRP_SKIP] Note: SC Password Hash will be invalid (based on empty string).", conn_get_socket(c));
         }
+
         account_set_salt(account, account_salt);
         account_set_verifier(account, account_verifier);
         eventlog(eventlog_level_debug, __FUNCTION__, "[{}] account created", conn_get_socket(c));
