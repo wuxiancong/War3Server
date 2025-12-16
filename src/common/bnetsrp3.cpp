@@ -80,6 +80,12 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
     const char* source;
     char* symbol;
 
+    // [SRP3 DEBUG] 打印最原始的输入参数，用于检查内存指针是否正确
+    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] Raw inputs -> username_: \"{}\", password_: \"{}\", salt_: {}",
+             username_ ? username_ : "NULL",
+             password_ ? password_ : "NULL",
+             salt_ ? "PRESENT" : "NULL");
+
     if (!username_) {
         eventlog(eventlog_level_error, __FUNCTION__, "got NULL username_");
         return -1;
@@ -89,12 +95,15 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
     username = (char*)xmalloc(username_length + 1);
     source = username_;
     symbol = username;
+
+    // 转换为大写
     for (i = 0; i < username_length; i++)
     {
         *(symbol++) = safe_toupper(*(source++));
     }
 
-    eventlog(eventlog_level_info, __FUNCTION__, "[SRP Init] Username: {}", username);
+    // [SRP3 DEBUG] 打印处理后的大写用户名
+    eventlog(eventlog_level_info, __FUNCTION__, "[SRP Init] Processed Username (Upper): \"{}\"", username);
 
     if (!((password_ == NULL) ^ (salt_ == NULL))) {
         eventlog(eventlog_level_error, __FUNCTION__, "need to init with EITHER password_ OR salt_");
@@ -102,6 +111,7 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
     }
 
     if (password_ != NULL) {
+        // ==================== 注册模式 / Server-Side Calc ====================
         password_length = std::strlen(password_);
         password = (char*)xmalloc(password_length + 1);
         source = password_;
@@ -110,6 +120,10 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
         {
             *(symbol++) = safe_toupper(*(source++));
         }
+
+        // [SRP3 DEBUG] 打印处理后的大写密码
+        eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] Processed Password (Upper): \"{}\"", password);
+
         a = BigInt::random(32) % N;
         s = BigInt::random(32);
 
@@ -117,6 +131,7 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
         eventlog(eventlog_level_debug, __FUNCTION__, "[SRP Init] Generated Salt s: {}", s.toHexString());
     }
     else {
+        // ==================== 登录模式 / Loaded form DB ====================
         password = NULL;
         password_length = 0;
         b = BigInt::random(32) % N;
@@ -136,21 +151,31 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
 
 BnetSRP3::BnetSRP3(const char* username_, BigInt& salt)
 {
+    // [SRP3 DEBUG] 构造函数跟踪
+    eventlog(eventlog_level_debug, __FUNCTION__, "[Ctor] Called (const char* username, BigInt& salt). User: \"{}\"", username_ ? username_ : "NULL");
     init(username_, NULL, &salt);
 }
 
 BnetSRP3::BnetSRP3(const std::string& username_, BigInt& salt)
 {
+    // [SRP3 DEBUG] 构造函数跟踪
+    eventlog(eventlog_level_debug, __FUNCTION__, "[Ctor] Called (std::string username, BigInt& salt). User: \"{}\"", username_.c_str());
     init(username_.c_str(), NULL, &salt);
 }
 
 BnetSRP3::BnetSRP3(const char* username_, const char* password_)
 {
+    // [SRP3 DEBUG] 构造函数跟踪
+    eventlog(eventlog_level_debug, __FUNCTION__, "[Ctor] Called (const char* username, const char* password). User: \"{}\", Pass: \"{}\"",
+             username_ ? username_ : "NULL", password_ ? password_ : "NULL");
     init(username_, password_, NULL);
 }
 
 BnetSRP3::BnetSRP3(const std::string& username_, const std::string& password_)
 {
+    // [SRP3 DEBUG] 构造函数跟踪
+    eventlog(eventlog_level_debug, __FUNCTION__, "[Ctor] Called (std::string username, std::string password). User: \"{}\", Pass: \"{}\"",
+             username_.c_str(), password_.c_str());
     init(username_.c_str(), password_.c_str(), NULL);
 }
 
