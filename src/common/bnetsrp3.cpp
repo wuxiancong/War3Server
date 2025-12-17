@@ -70,16 +70,23 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
         return -1;
     }
 
+    // =========== 修改开始 ===========
+    // [修复] 处理用户名：防止宏副作用导致字符被跳过
     username_length = std::strlen(username_);
     username = (char*)xmalloc(username_length + 1);
+
     source = username_;
     symbol = username;
 
-    // 转换为大写
-    for (i = 0; i < username_length; i++)
-    {
-        *(symbol++) = safe_toupper(*(source++));
+    for (i = 0; i < username_length; i++) {
+        char c = *source; // 1. 先把字符取出来
+        source++;         // 2. 指针只移动一次
+
+        *symbol = safe_toupper(c); // 3. 安全转换
+        symbol++;
     }
+    *symbol = '\0'; // 4. 手动封口，保证字符串完整
+    // =========== 修改结束 ===========
 
     if (!((password_ == NULL) ^ (salt_ == NULL))) {
         eventlog(eventlog_level_error, __FUNCTION__, "need to init with EITHER password_ OR salt_");
