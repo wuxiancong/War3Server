@@ -3953,6 +3953,13 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
                 bn_int_set(&glgame.unknown5, SERVER_GAMELISTREPLY_GAME_UNKNOWN5);
                 bn_int_set(&glgame.unknown6, SERVER_GAMELISTREPLY_GAME_UNKNOWN6);
 
+                eventlog(eventlog_level_info, __FUNCTION__,
+                    "[{}] Sending Game Info to Client: HostIP={:x} (Raw), Port={}",
+                    conn_get_socket(c),
+                    addr,
+                    port
+                );
+
                 packet_append_data(rpacket, &glgame, sizeof(glgame));
                 packet_append_string(rpacket, game_get_name(game));
                 packet_append_string(rpacket, game_get_pass(game));
