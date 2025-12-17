@@ -214,25 +214,74 @@ BnetSRP3::getScrambler(BigInt& B) const
     return u;
 }
 
-BigInt
-BnetSRP3::getClientSecret(BigInt& B) const
+BigInt BnetSRP3::getClientSecret(BigInt& B) const
 {
+    // SRP 客户端公式: S = (B - g^x)^(a + u * x) % N
+
+    // 1. 获取私钥 x 和 扰码 u
     BigInt x = getClientPrivateKey();
     BigInt u = getScrambler(B);
-    BigInt S = (N + B - g.powm(x, N)).powm((x*u) + a, N);
 
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 计算出的预主密钥 S (BigInt): {}", S.toHexString());
+    // 2. 计算底数 Base = (B - g^x) % N
+    // 防止无符号减法溢出: (N + B - g^x) % N
+    BigInt g_pow_x = g.powm(x, N);
+    BigInt N_plus_B = N + B;
+    BigInt base = (N_plus_B - g_pow_x) % N;
+
+    // 3. 计算指数 Exp = a + u * x
+    BigInt x_mul_u = x * u;
+    BigInt exp = x_mul_u + a;
+
+    // 4. 计算 S
+    BigInt S = base.powm(exp, N);
+
+    eventlog(eventlog_level_debug, __FUNCTION__, "=== [服务端(ClientLogic) S 计算细节] ===");
+    eventlog(eventlog_level_debug, __FUNCTION__, "B:       {}", B.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "x:       {}", x.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "u:       {}", u.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "a:       {}", a.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "g^x%N:   {}", g_pow_x.toHexString());
+    eventlog(eventlog_level_debug, __FUNCTION__, "Base:    {}", base.toHexString());    // (N+B-g^x)%N
+    eventlog(eventlog_level_debug, __FUNCTION__, "x*u:     {}", x_mul_u.toHexString()); // 检查乘法精度
+    eventlog(eventlog_level_debug, __FUNCTION__, "Exp:     {}", exp.toHexString());     // (x*u)+a
+    eventlog(eventlog_level_debug, __FUNCTION__, "S:       {}", S.toHexString());
+
     return S;
 }
 
 BigInt
 BnetSRP3::getServerSecret(BigInt& A, BigInt& v)
 {
+    // 1. 先计算 B 和 u (这是之前缺失的部分)
     BigInt B = getServerSessionPublicKey(v);
     BigInt u = getScrambler(B);
-    BigInt S = ((A * v.powm(u, N)) % N).powm(b, N);
 
-    eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 内部] 计算出的预主密钥 S (BigInt): {}", S.toHexString());
+    // 2. 拆解公式: S = ((A * v^u) % N)^b % N
+
+    // v^u % N
+    BigInt v_pow_u = v.powm(u, N);
+
+    // A * (v^u)
+    BigInt base_unmod = A * v_pow_u;
+
+    // (A * v^u) % N
+    BigInt base = base_unmod % N;
+
+    // S = base^b % N
+    BigInt S = base.powm(b, N);
+
+    // 3. 打印详细日志
+    eventlog(eventlog_level_error, __FUNCTION__, "=== [服务端 S 计算细节] ===");
+    eventlog(eventlog_level_error, __FUNCTION__, "A:       {}", A.toHexString());
+    eventlog(eventlog_level_error, __FUNCTION__, "v:       {}", v.toHexString());
+    eventlog(eventlog_level_error, __FUNCTION__, "B:       {}", B.toHexString());
+    eventlog(eventlog_level_error, __FUNCTION__, "u:       {}", u.toHexString());
+    eventlog(eventlog_level_error, __FUNCTION__, "b:       {}", b.toHexString());
+    eventlog(eventlog_level_error, __FUNCTION__, "v^u%N:   {}", v_pow_u.toHexString());
+    eventlog(eventlog_level_error, __FUNCTION__, "A*v^u:   {}", base_unmod.toHexString());
+    eventlog(eventlog_level_error, __FUNCTION__, "Base:    {}", base.toHexString());
+    eventlog(eventlog_level_error, __FUNCTION__, "S (Result): {}", S.toHexString());
+
     return S;
 }
 
