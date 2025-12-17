@@ -337,8 +337,7 @@ namespace pvpgn
 					/* Auto-create account */
 					t_account * tempacct;
 					t_hash pass_hash;
-					char * pass = xstrdup(conn_wol_get_apgar(conn)); /* FIXME: Do not use bnet passhash when we have wol passhash */
-					strtolower(pass);
+                    char * pass = xstrdup(conn_wol_get_apgar(conn)); /* FIXME: Do not use bnet passhash when we have wol passhash */
 
 					bnet_hash(&pass_hash, std::strlen(pass), pass);
 					xfree((void *)pass);

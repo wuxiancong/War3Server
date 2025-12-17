@@ -277,7 +277,6 @@ namespace pvpgn
 															if (pass) {
 																t_hash h;
 
-																strtolower(pass);
 																bnet_hash(&h, std::strlen(pass), pass);
 																irc_authenticate(conn, hash_get_str(h));
 															}
@@ -313,9 +312,7 @@ namespace pvpgn
 							if (!pass || pass[0] == '\0' || (std::strlen(pass)>16)) {
 								message_send_text(conn, message_type_error, conn, "Syntax: REGISTER <password> (max 16 characters)");
 								break;
-							}
-
-							strtolower(pass);
+                            }
 
 							bnet_hash(&passhash, std::strlen(pass), pass);
 

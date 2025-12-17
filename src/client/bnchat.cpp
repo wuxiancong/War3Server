@@ -922,8 +922,7 @@ extern int main(int argc, char * argv[])
 			{
 				std::printf("password must not be more than %u characters long. Try again.\n", MAX_USERPASS_LEN);
 				continue;
-			}
-			strtolower(password);
+            }
 
 			client.munged = 1;
 			client.commpos = 0;
@@ -941,8 +940,7 @@ extern int main(int argc, char * argv[])
 				client.munged = 0;
 			std::printf("\n");
 			if (status < 0)
-				continue;
-			strtolower(passwordvrfy);
+                continue;
 
 			if (std::strcmp(password, passwordvrfy) != 0)
 			{
@@ -1046,8 +1044,7 @@ extern int main(int argc, char * argv[])
 				client.munged = 0;
 			std::printf("\n");
 			if (status < 0)
-				continue;
-			strtolower(passwordprev);
+                continue;
 
 			client.munged = 1;
 			client.commpos = 0;
@@ -1065,8 +1062,7 @@ extern int main(int argc, char * argv[])
 				client.munged = 0;
 			std::printf("\n");
 			if (status < 0)
-				continue;
-			strtolower(password);
+                continue;
 
 			client.munged = 1;
 			client.commpos = 0;
@@ -1084,8 +1080,7 @@ extern int main(int argc, char * argv[])
 				client.munged = 0;
 			std::printf("\n");
 			if (status < 0)
-				continue;
-			strtolower(passwordvrfy);
+                continue;
 
 			if (std::strcmp(password, passwordvrfy) != 0)
 			{
@@ -1185,8 +1180,7 @@ extern int main(int argc, char * argv[])
 				client.munged = 0;
 			std::printf("\n");
 			if (status < 0)
-				continue;
-			strtolower(password);
+                continue;
 		}
 
 		/* now login */

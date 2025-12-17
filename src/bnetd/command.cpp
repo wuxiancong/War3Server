@@ -3181,11 +3181,7 @@ namespace pvpgn
 				msgtemp = localize(c, "Maximum password length allowed is {}", MAX_USERPASS_LEN);
 				message_send_text(c, message_type_error, c, msgtemp);
 				return -1;
-			}
-			for (i = 0; i < args[2].length(); i++)
-				args[2][i] = safe_tolower(args[2][i]);
-			pass = args[2].c_str(); // password
-
+            }
 
 			bnet_hash(&passhash, std::strlen(pass), pass);
 
