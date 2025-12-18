@@ -3844,19 +3844,19 @@ static int _glist_cb(t_game * game, void *data)
     switch (game_get_status(game)) {
     case game_status_started:
         bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_STARTED);
-        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_STARTED; // 0x04
+        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_STARTED; // 0x0e
         break;
     case game_status_full:
         bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_FULL);
-        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_FULL; // 0x02
+        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_FULL; // 0x06
         break;
     case game_status_open:
         bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_OPEN);
-        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_OPEN; // 0x10
+        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_OPEN; // 0x04
         break;
     case game_status_done:
         bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_DONE);
-        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_DONE;
+        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_DONE; // 0x0c
         break;
     default:
         eventlog(eventlog_level_warn, __FUNCTION__, "[{}] game \"{}\" has bad status={}", conn_get_socket(cbdata->c), game_get_name(game), (int)game_get_status(game));
@@ -3922,8 +3922,14 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
     gtype = bngreqtype_to_gtype(clienttag, bngtype);
 
     eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [列表请求] 客户端请求游戏列表. Filter=\"{}\", Type=0x{:04x}",
-             conn_get_socket(c), gamename, bngtype);
+             "[{}] [列表请求] 用户=\"{}\" Tag=\"{}\" Filter=\"{}\" Pass=\"{}\" RawType=0x{:04x} InternalType={}",
+             conn_get_socket(c),
+             conn_get_username(c),                        /* 请求者用户名 */
+             tag_uint_to_str(clienttag_str, clienttag),   /* 客户端标识 (如 W3XP) */
+             gamename,                                    /* 游戏名过滤器 (空表示请求所有) */
+             gamepass,                                    /* 密码过滤器 */
+             bngtype,                                     /* 原始协议类型 */
+             (int)gtype);                                 /* 服务器内部映射的类型 */
 
     if (!(rpacket = packet_create(packet_class_bnet)))
         return -1;
