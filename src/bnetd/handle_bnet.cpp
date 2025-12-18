@@ -3795,29 +3795,36 @@ static int _glist_cb(t_game * game, void *data)
     bn_int game_spacer = { 1, 0, 0, 0 };
 
     cbdata->tcount++;
-    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] considering listing game=\"{}\", pass=\"{}\" clienttag=\"{}\" gtype={}", conn_get_socket(cbdata->c), game_get_name(game), game_get_pass(game), tag_uint_to_str(clienttag_str, game_get_clienttag(game)), (int)game_get_type(game));
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 正在检查游戏: Name=\"{}\", Pass=\"{}\", ClientTag=\"{}\", GType={}, 内部Status={}",
+             conn_get_socket(cbdata->c), game_get_name(game), game_get_pass(game),
+             tag_uint_to_str(clienttag_str, game_get_clienttag(game)), (int)game_get_type(game),
+             (int)game_get_status(game));
 
     if (prefs_get_hide_pass_games() && game_get_flag(game) == game_flag_private) {
-        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] not listing because game is passworded or has private flag", conn_get_socket(cbdata->c));
+        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [列表调试] 跳过: 游戏有密码或私有", conn_get_socket(cbdata->c));
         return 0;
     }
+
     if (prefs_get_hide_started_games() && game_get_status(game) != game_status_open) {
-        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] not listing because game is not open", conn_get_socket(cbdata->c));
+        eventlog(eventlog_level_info, __FUNCTION__, "[{}] [列表调试] 跳过: 游戏状态不是 OPEN (当前状态: {}), 且配置了隐藏已开始游戏",
+                 conn_get_socket(cbdata->c), (int)game_get_status(game));
         return 0;
     }
     if (game_get_clienttag(game) != conn_get_clienttag(cbdata->c)) {
-        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] not listing because game is for a different client", conn_get_socket(cbdata->c));
+        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [列表调试] 跳过: 客户端 Tag 不匹配", conn_get_socket(cbdata->c));
         return 0;
     }
     if (cbdata->gtype != game_type_all && game_get_type(game) != cbdata->gtype) {
-        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] not listing because game is wrong type", conn_get_socket(cbdata->c));
+        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [列表调试] 跳过: 游戏类型不匹配", conn_get_socket(cbdata->c));
         return 0;
     }
     if (conn_get_versioncheck(cbdata->c) &&
             conn_get_versioncheck(game_get_owner(game)) &&
             conn_get_versioncheck(cbdata->c)->get_version_tag() != conn_get_versioncheck(game_get_owner(game))->get_version_tag())
     {
-        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] not listing because game is wrong versiontag", conn_get_socket(cbdata->c));
+        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] [列表调试] 跳过: 版本 Tag 不匹配", conn_get_socket(cbdata->c));
         return 0;
     }
 
@@ -3831,28 +3838,41 @@ static int _glist_cb(t_game * game, void *data)
     bn_int_nset(&glgame.game_ip, addr);
     bn_int_set(&glgame.unknown4, SERVER_GAMELISTREPLY_GAME_UNKNOWN4);
     bn_int_set(&glgame.unknown5, SERVER_GAMELISTREPLY_GAME_UNKNOWN5);
+
+    // [调试日志] 状态转换逻辑
+    int final_status_code = 0;
     switch (game_get_status(game)) {
     case game_status_started:
         bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_STARTED);
+        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_STARTED; // 0x04
         break;
     case game_status_full:
         bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_FULL);
+        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_FULL; // 0x02
         break;
     case game_status_open:
         bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_OPEN);
+        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_OPEN; // 0x10
         break;
     case game_status_done:
         bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_DONE);
+        final_status_code = SERVER_GAMELISTREPLY_GAME_STATUS_DONE;
         break;
     default:
         eventlog(eventlog_level_warn, __FUNCTION__, "[{}] game \"{}\" has bad status={}", conn_get_socket(cbdata->c), game_get_name(game), (int)game_get_status(game));
         bn_int_set(&glgame.status, 0);
+        final_status_code = 0;
     }
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 决定发送游戏 \"{}\", 最终发送状态码: 0x{:08x} (0x10=Open, 0x04=Started)",
+             conn_get_socket(cbdata->c), game_get_name(game), final_status_code);
+
     bn_int_set(&glgame.unknown6, SERVER_GAMELISTREPLY_GAME_UNKNOWN6);
 
     if (packet_get_size(cbdata->rpacket) + sizeof(glgame)+std::strlen(game_get_name(game)) + 1 + std::strlen(game_get_pass(game)) + 1 + std::strlen(game_get_info(game)) + 1 > MAX_PACKET_SIZE) {
         eventlog(eventlog_level_debug, __FUNCTION__, "[{}] out of room for games", conn_get_socket(cbdata->c));
-        return -1;			/* no more room */
+        return -1;                        /* no more room */
     }
 
     if (cbdata->counter) {
@@ -3900,6 +3920,11 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
     bngtype = bn_short_get(packet->u.client_gamelistreq.gametype);
     clienttag = conn_get_clienttag(c);
     gtype = bngreqtype_to_gtype(clienttag, bngtype);
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表请求] 客户端请求游戏列表. Filter=\"{}\", Type=0x{:04x}",
+             conn_get_socket(c), gamename, bngtype);
+
     if (!(rpacket = packet_create(packet_class_bnet)))
         return -1;
     packet_set_size(rpacket, sizeof(t_server_gamelistreply));
@@ -3913,6 +3938,11 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
         if ((game = gamelist_find_game(gamename, clienttag, gtype))) {
             /* game found but first we need to make sure everything is OK */
             bn_int_set(&rpacket->u.server_gamelistreply.gamecount, 0);
+
+            eventlog(eventlog_level_info, __FUNCTION__,
+                     "[{}] [特定游戏查找] 找到游戏 \"{}\", 内部状态: {}",
+                     conn_get_socket(c), gamename, (int)game_get_status(game));
+
             switch (game_get_status(game)) {
             case game_status_started:
                 bn_int_set(&rpacket->u.server_gamelistreply.sstatus, SERVER_GAMELISTREPLY_GAME_SSTATUS_STARTED);
@@ -3928,7 +3958,7 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
                 break;
             case game_status_open:
             case game_status_loaded:
-                if (std::strcmp(gamepass, game_get_pass(game))) {	/* passworded game must match password in request */
+                if (std::strcmp(gamepass, game_get_pass(game))) {        /* passworded game must match password in request */
                     bn_int_set(&rpacket->u.server_gamelistreply.sstatus, SERVER_GAMELISTREPLY_GAME_SSTATUS_PASS);
                     eventlog(eventlog_level_debug, __FUNCTION__, "[{}] GAMELISTREPLY found but is password protected and wrong password given", conn_get_socket(c));
                     break;
@@ -3953,13 +3983,6 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
                 bn_int_set(&glgame.unknown5, SERVER_GAMELISTREPLY_GAME_UNKNOWN5);
                 bn_int_set(&glgame.unknown6, SERVER_GAMELISTREPLY_GAME_UNKNOWN6);
 
-                eventlog(eventlog_level_info, __FUNCTION__,
-                         "[{}] Sending Game Info to Client: HostIP={:x} (Raw), Port={}",
-                         conn_get_socket(c),
-                         addr,
-                         port
-                         );
-
                 packet_append_data(rpacket, &glgame, sizeof(glgame));
                 packet_append_string(rpacket, game_get_name(game));
                 packet_append_string(rpacket, game_get_pass(game));
@@ -3976,7 +3999,7 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
             eventlog(eventlog_level_debug, __FUNCTION__, "[{}] GAMELISTREPLY specific game doesn't seem to exist", conn_get_socket(c));
         }
     }
-    else {			/* list all public games of this type */
+    else {                        /* list all public games of this type */
         struct glist_cbdata cbdata;
 
         if (gtype == game_type_all)
@@ -4296,23 +4319,28 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
         status = bn_int_get(packet->u.client_startgame4.status);
         flag = bn_short_get(packet->u.client_startgame4.flag);
 
-        eventlog(eventlog_level_debug, __FUNCTION__,
-                 "[{}] 处理创建房间请求: GameName=\"{}\", Status=0x{:08x}, Type=0x{:04x}, Option=0x{:04x}, Flag=0x{:04x}",
+        // [调试日志] 打印接收到的原始包信息
+        eventlog(eventlog_level_info, __FUNCTION__,
+                 "[{}] [建房调试] 收到STARTGAME4: Name=\"{}\", 客户端发来的Status=0x{:08x}, Type=0x{:04x}, Option=0x{:04x}, Flag=0x{:04x}",
                  conn_get_socket(c), gamename, status, bngtype, option, flag);
 
         if ((currgame = conn_get_game(c))) {
-            // 这里是处理 "更新游戏状态" 的逻辑 (例如游戏开始、满员等)
+            // [调试日志] 这是一个“更新”已有游戏的请求
+            eventlog(eventlog_level_info, __FUNCTION__,
+                     "[{}] [建房调试] 正在更新现有游戏 \"{}\" (原状态: {})",
+                     conn_get_socket(c), game_get_name(currgame), (int)game_get_status(currgame));
+
             if ((status & CLIENT_STARTGAME4_STATUSMASK_OPEN_VALID) == status) {
                 if (status & CLIENT_STARTGAME4_STATUS_START) {
-                    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 标记游戏为 STARTED (0x04)", conn_get_socket(c));
+                    eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> STARTED (0x04)", conn_get_socket(c));
                     game_set_status(currgame, game_status_started);
                 }
                 else if (status & CLIENT_STARTGAME4_STATUS_FULL) {
-                    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 标记游戏为 FULL (0x02)", conn_get_socket(c));
+                    eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> FULL (0x02)", conn_get_socket(c));
                     game_set_status(currgame, game_status_full);
                 }
                 else {
-                    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 标记游戏为 OPEN (Wait)", conn_get_socket(c));
+                    eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> OPEN (0x10/Wait)", conn_get_socket(c));
                     game_set_status(currgame, game_status_open);
                 }
             }
@@ -4322,55 +4350,48 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
 
         }
         else if ((status & CLIENT_STARTGAME4_STATUSMASK_INIT_VALID) == status) {
-            // 这里是处理 "新建游戏" 的逻辑
-            /*valid creation status would be:
-                       0x00, 0x01, 0x02, 0x03, 0x10, 0x11, 0x12, 0x13, 0x80, 0x81, 0x82, 0x83 */
+            // [调试日志] 这是一个“新建”游戏的请求
+            eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 尝试创建新游戏 \"{}\"", conn_get_socket(c), gamename);
 
             t_game_type gtype;
             bool allow_create_custom = false;
             t_game *game;
 
             gtype = bngtype_to_gtype(conn_get_clienttag(c), bngtype);
-
-            // 权限检查日志
             if ((gtype == game_type_ladder && account_get_auth_createladdergame(conn_get_account(c)) == 0) || (gtype != game_type_ladder && account_get_auth_createnormalgame(conn_get_account(c)) == 0)) {
                 eventlog(eventlog_level_info, __FUNCTION__, "[{}] game start for \"{}\" refused (no authority)", conn_get_socket(c), conn_get_username(c));
             }
             else
             {
-                // 检查同名游戏
-                game = gamelist_find_game_available(gamename, conn_get_clienttag(c), game_type_all);
-
-                if (game) {
-                    // 如果同名游戏已存在，打印日志
-                    eventlog(eventlog_level_warn, __FUNCTION__,
-                             "[{}] 拒绝创建同名房间: \"{}\" 已存在 (Status: {})",
-                             conn_get_socket(c), gamename, game_get_status(game));
+                // 检查游戏是否已存在
+                if ((game = gamelist_find_game_available(gamename, conn_get_clienttag(c), game_type_all))) {
+                    eventlog(eventlog_level_warn, __FUNCTION__, "[{}] [建房调试] 拒绝创建: 同名游戏已存在 (State: {})", conn_get_socket(c), (int)game_get_status(game));
                 }
                 else if (conn_set_game(c, gamename, gamepass, gameinfo, gtype, STARTVER_GW4) == 0)
                 {
-                    // 创建成功
+                    // 游戏对象创建成功，开始设置属性
                     game_set_option(conn_get_game(c), bngoption_to_goption(conn_get_clienttag(c), gtype, option));
 
                     if (status & CLIENT_STARTGAME4_STATUS_PRIVATE) {
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 设置为私有房间 (Private)", conn_get_socket(c));
+                        eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 设置为私有 (Private)", conn_get_socket(c));
                         game_set_flag(conn_get_game(c), game_flag_private);
                     }
-
                     if (status & CLIENT_STARTGAME4_STATUS_FULL) {
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 初始状态为已满 (Full)", conn_get_socket(c));
+                        eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 初始状态设为 FULL", conn_get_socket(c));
                         game_set_status(conn_get_game(c), game_status_full);
                     }
-
                     if (bngtype == CLIENT_GAMELISTREQ_LOADED) {
-                        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 初始状态为载入中 (Loaded)", conn_get_socket(c));
+                        eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 初始状态设为 LOADED", conn_get_socket(c));
                         game_set_status(conn_get_game(c), game_status_loaded);
                     }
 
-                    eventlog(eventlog_level_info, __FUNCTION__, "[{}] 房间创建成功: \"{}\" (默认状态: OPEN)", conn_get_socket(c), gamename);
+                    // 默认情况下 conn_set_game 应该会把状态设为 OPEN，这里我们打印一下最终状态
+                    eventlog(eventlog_level_info, __FUNCTION__,
+                             "[{}] [建房调试] 创建完成. 最终内部状态: {}",
+                             conn_get_socket(c), (int)game_get_status(conn_get_game(c)));
                 }
                 else {
-                    eventlog(eventlog_level_error, __FUNCTION__, "[{}] conn_set_game 失败", conn_get_socket(c));
+                    eventlog(eventlog_level_error, __FUNCTION__, "[{}] [建房调试] conn_set_game 失败 (内存不足或未知错误)", conn_get_socket(c));
                 }
             }
         }
