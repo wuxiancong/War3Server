@@ -3954,11 +3954,11 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
                 bn_int_set(&glgame.unknown6, SERVER_GAMELISTREPLY_GAME_UNKNOWN6);
 
                 eventlog(eventlog_level_info, __FUNCTION__,
-                    "[{}] Sending Game Info to Client: HostIP={:x} (Raw), Port={}",
-                    conn_get_socket(c),
-                    addr,
-                    port
-                );
+                         "[{}] Sending Game Info to Client: HostIP={:x} (Raw), Port={}",
+                         conn_get_socket(c),
+                         addr,
+                         port
+                         );
 
                 packet_append_data(rpacket, &glgame, sizeof(glgame));
                 packet_append_string(rpacket, game_get_name(game));
@@ -4252,10 +4252,6 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
 
     if (conn_get_clienttag(c) == CLIENTTAG_STARCRAFT_UINT || conn_get_clienttag(c) == CLIENTTAG_BROODWARS_UINT)
     {
-        // FIXME: (HarpyWar) Protection from hack attempt
-        // Large map name size will cause crash Starcraft client for user who select an item in game list ("Join" area)
-        // It occurs when the packet size of packet 0x0c in length interval 161-164
-        // https://github.com/pvpgn/pvpgn-server/issues/159
         if (packet_get_size(packet) > 160)
         {
             eventlog(eventlog_level_error, __FUNCTION__, "[{}] got abnormal STARTGAME4 packet length (got {} bytes, hack attempt?)", conn_get_socket(c), packet_get_size(packet));
@@ -4293,23 +4289,32 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
             if (watchlist->dispatch(conn_get_account(c), gamename, conn_get_clienttag(c), Watch::ET_joingame) == 0)
                 eventlog(eventlog_level_info, "handle_bnet", "Told Mutual Friends your in game {}", gamename);
 
-            conn_set_joingamewhisper_ack(c, 1);	//1 = already whispered. We reset this each time user joins a channel
+            conn_set_joingamewhisper_ack(c, 1);
         }
         bngtype = bn_short_get(packet->u.client_startgame4.gametype);
         option = bn_short_get(packet->u.client_startgame4.option);
         status = bn_int_get(packet->u.client_startgame4.status);
         flag = bn_short_get(packet->u.client_startgame4.flag);
 
-        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] got startgame4 status for game \"{}\" is 0x{:08x} (gametype=0x{:04x} option=0x{:04x}, flag=0x{:04x})", conn_get_socket(c), gamename, status, bngtype, option, flag);
+        eventlog(eventlog_level_debug, __FUNCTION__,
+                 "[{}] 处理创建房间请求: GameName=\"{}\", Status=0x{:08x}, Type=0x{:04x}, Option=0x{:04x}, Flag=0x{:04x}",
+                 conn_get_socket(c), gamename, status, bngtype, option, flag);
 
         if ((currgame = conn_get_game(c))) {
+            // 这里是处理 "更新游戏状态" 的逻辑 (例如游戏开始、满员等)
             if ((status & CLIENT_STARTGAME4_STATUSMASK_OPEN_VALID) == status) {
-                if (status & CLIENT_STARTGAME4_STATUS_START)
+                if (status & CLIENT_STARTGAME4_STATUS_START) {
+                    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 标记游戏为 STARTED (0x04)", conn_get_socket(c));
                     game_set_status(currgame, game_status_started);
-                else if (status & CLIENT_STARTGAME4_STATUS_FULL)
+                }
+                else if (status & CLIENT_STARTGAME4_STATUS_FULL) {
+                    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 标记游戏为 FULL (0x02)", conn_get_socket(c));
                     game_set_status(currgame, game_status_full);
-                else
+                }
+                else {
+                    eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 标记游戏为 OPEN (Wait)", conn_get_socket(c));
                     game_set_status(currgame, game_status_open);
+                }
             }
             else {
                 eventlog(eventlog_level_error, __FUNCTION__, "[{}] unknown startgame4 status {} (clienttag: {})", conn_get_socket(c), status, clienttag_uint_to_str(conn_get_clienttag(c)));
@@ -4317,6 +4322,7 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
 
         }
         else if ((status & CLIENT_STARTGAME4_STATUSMASK_INIT_VALID) == status) {
+            // 这里是处理 "新建游戏" 的逻辑
             /*valid creation status would be:
                        0x00, 0x01, 0x02, 0x03, 0x10, 0x11, 0x12, 0x13, 0x80, 0x81, 0x82, 0x83 */
 
@@ -4325,29 +4331,52 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
             t_game *game;
 
             gtype = bngtype_to_gtype(conn_get_clienttag(c), bngtype);
-            if ((gtype == game_type_ladder && account_get_auth_createladdergame(conn_get_account(c)) == 0) || (gtype != game_type_ladder && account_get_auth_createnormalgame(conn_get_account(c)) == 0))
+
+            // 权限检查日志
+            if ((gtype == game_type_ladder && account_get_auth_createladdergame(conn_get_account(c)) == 0) || (gtype != game_type_ladder && account_get_auth_createnormalgame(conn_get_account(c)) == 0)) {
                 eventlog(eventlog_level_info, __FUNCTION__, "[{}] game start for \"{}\" refused (no authority)", conn_get_socket(c), conn_get_username(c));
+            }
             else
             {
-                //find is there any existing game with same name and allow the host to create game
-                // with same name only when another game is already started or already done
-                if ((!(game = gamelist_find_game_available(gamename, conn_get_clienttag(c), game_type_all))) &&
-                        (conn_set_game(c, gamename, gamepass, gameinfo, gtype, STARTVER_GW4) == 0))
-                {
-                    game_set_option(conn_get_game(c), bngoption_to_goption(conn_get_clienttag(c), gtype, option));
-                    if (status & CLIENT_STARTGAME4_STATUS_PRIVATE)
-                        game_set_flag(conn_get_game(c), game_flag_private);
-                    if (status & CLIENT_STARTGAME4_STATUS_FULL)
-                        game_set_status(conn_get_game(c), game_status_full);
-                    if (bngtype == CLIENT_GAMELISTREQ_LOADED) /* PELISH: seems strange but it is really needed for loaded games */
-                        game_set_status(conn_get_game(c), game_status_loaded);
-                    //FIXME: still need special handling for status disc-is-loss and replay
+                // 检查同名游戏
+                game = gamelist_find_game_available(gamename, conn_get_clienttag(c), game_type_all);
 
+                if (game) {
+                    // 如果同名游戏已存在，打印日志
+                    eventlog(eventlog_level_warn, __FUNCTION__,
+                             "[{}] 拒绝创建同名房间: \"{}\" 已存在 (Status: {})",
+                             conn_get_socket(c), gamename, game_get_status(game));
+                }
+                else if (conn_set_game(c, gamename, gamepass, gameinfo, gtype, STARTVER_GW4) == 0)
+                {
+                    // 创建成功
+                    game_set_option(conn_get_game(c), bngoption_to_goption(conn_get_clienttag(c), gtype, option));
+
+                    if (status & CLIENT_STARTGAME4_STATUS_PRIVATE) {
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 设置为私有房间 (Private)", conn_get_socket(c));
+                        game_set_flag(conn_get_game(c), game_flag_private);
+                    }
+
+                    if (status & CLIENT_STARTGAME4_STATUS_FULL) {
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 初始状态为已满 (Full)", conn_get_socket(c));
+                        game_set_status(conn_get_game(c), game_status_full);
+                    }
+
+                    if (bngtype == CLIENT_GAMELISTREQ_LOADED) {
+                        eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 初始状态为载入中 (Loaded)", conn_get_socket(c));
+                        game_set_status(conn_get_game(c), game_status_loaded);
+                    }
+
+                    eventlog(eventlog_level_info, __FUNCTION__, "[{}] 房间创建成功: \"{}\" (默认状态: OPEN)", conn_get_socket(c), gamename);
+                }
+                else {
+                    eventlog(eventlog_level_error, __FUNCTION__, "[{}] conn_set_game 失败", conn_get_socket(c));
                 }
             }
         }
-        else
+        else {
             eventlog(eventlog_level_info, __FUNCTION__, "[{}] client tried to set game status 0x{:x} to unexistent game (clienttag: {})", conn_get_socket(c), status, clienttag_uint_to_str(conn_get_clienttag(c)));
+        }
     }
 
     if ((rpacket = packet_create(packet_class_bnet))) {
