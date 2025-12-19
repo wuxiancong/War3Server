@@ -3829,6 +3829,14 @@ static int _glist_cb(t_game * game, void *data)
     }
 
     bn_short_set(&glgame.gametype, gtype_to_bngtype(game_get_type(game)));
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [TypeDebug] 游戏: \"{}\", 内部类型: {} (Enum), 转换后BNET类型: 0x{:04x} (Settings)",
+             conn_get_socket(cbdata->c),
+             game_get_name(game),
+             (int)game_get_type(game),
+             (int)gtype_to_bngtype(game_get_type(game)));
+
     bn_short_set(&glgame.unknown1, SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
     bn_short_set(&glgame.unknown3, SERVER_GAMELISTREPLY_GAME_UNKNOWN3);
     addr = game_get_addr(game);
