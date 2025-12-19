@@ -3831,7 +3831,7 @@ static int _glist_cb(t_game * game, void *data)
     bn_short_set(&glgame.gametype, gtype_to_bngtype(game_get_type(game)));
 
     eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [TypeDebug] 游戏: \"{}\", 内部类型: {} (Enum), 转换后BNET类型: 0x{:04x} (Settings)",
+             "[{}] [列表调试] 游戏: \"{}\", 内部类型: {} (Enum), 转换后BNET类型: 0x{:04x} (Settings)",
              conn_get_socket(cbdata->c),
              game_get_name(game),
              (int)game_get_type(game),
