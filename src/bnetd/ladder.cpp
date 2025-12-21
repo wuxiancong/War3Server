@@ -286,7 +286,7 @@ namespace pvpgn
 
 				LadderReferencedObject reference(account);
 				wins = account_get_ladder_wins(account, clienttag, id);
-				losses = account_get_ladder_losses(account, clienttag, id);
+                // losses = account_get_ladder_losses(account, clienttag, id);
 				points = account_get_ladder_points(account, clienttag, id);
 
 				LadderList* ladderlist = ladders.getLadderList(LadderKey(id, clienttag, ladder_sort_default, ladder_time_default));
@@ -359,63 +359,40 @@ namespace pvpgn
 
 			/* finally, lets read from the files */
 
-			while (std::fgets(buffer, 256, fd1)) {
-				len = std::strlen(buffer);
-				if (len < 2) continue;
-				if (buffer[len - 1] == '\n') buffer[len - 1] = '\0';
 
-				/* support comments */
-				for (p = buffer; *p && *p != '#'; p++);
-				if (*p == '#') *p = '\0';
-
-				if (std::sscanf(buffer, "%d %d %d %f %d", &level, &startxp, &neededxp, &lossfactor, &mingames) != 5)
-					continue;
-
-				if (level < 1 || level > W3_XPCALC_MAXLEVEL) { /* invalid level */
-					eventlog(eventlog_level_error, "ladder_createxptable", "read INVALID player level : {}", level);
-					continue;
-				}
-
-				level--; /* the index in a C array starts from 0 */
-				xplevels[level].startxp = startxp;
-				xplevels[level].neededxp = neededxp;
-				xplevels[level].lossfactor = (int)(lossfactor * 100); /* we store the loss factor as % */
-				xplevels[level].mingames = mingames;
-				eventlog(eventlog_level_trace, "ladder_createxptable", "inserting level XP info (level: {}, startxp: {} neededxp: {} lossfactor: {} mingames: {})", level + 1, xplevels[level].startxp, xplevels[level].neededxp, xplevels[level].lossfactor, xplevels[level].mingames);
-			}
 			std::fclose(fd1);
 
-			while (std::fgets(buffer, 256, fd2)) {
-				len = std::strlen(buffer);
-				if (len < 2) continue;
-				if (buffer[len - 1] == '\n') buffer[len - 1] = '\0';
+            while (std::fgets(buffer, 256, fd2)) {
+                len = std::strlen(buffer);
+                if (len < 2) continue;
+                if (buffer[len - 1] == '\n') buffer[len - 1] = '\0';
 
-				/* support comments */
-				for (p = buffer; *p && *p != '#'; p++);
-				if (*p == '#') *p = '\0';
+                /* support comments */
+                for (p = buffer; *p && *p != '#'; p++);
+                if (*p == '#') *p = '\0';
 
-				if (std::sscanf(buffer, " %d %d %d %d %d %d ", &minlevel, &leveldiff, &higher_xpgained, &higher_xplost, &lower_xpgained, &lower_xplost) != 6)
-					continue;
+                if (std::sscanf(buffer, " %d %d %d %d %d %d ", &minlevel, &leveldiff, &higher_xpgained, &higher_xplost, &lower_xpgained, &lower_xplost) != 6)
+                    continue;
 
-				eventlog(eventlog_level_trace, "ladder_createxptable", "parsed xpcalc leveldiff : {}", leveldiff);
+                eventlog(eventlog_level_trace, "ladder_createxptable", "parsed xpcalc leveldiff : {}", leveldiff);
 
-				if (leveldiff <0) {
-					eventlog(eventlog_level_error, "ladder_createxptable", "got invalid level diff : {}", leveldiff);
-					continue;
-				}
+                if (leveldiff <0) {
+                    eventlog(eventlog_level_error, "ladder_createxptable", "got invalid level diff : {}", leveldiff);
+                    continue;
+                }
 
-				if (leveldiff>(w3_xpcalc_maxleveldiff + 1)) {
-					eventlog(eventlog_level_error, __FUNCTION__, "expected entry for leveldiff={} but found {}", w3_xpcalc_maxleveldiff + 1, leveldiff);
-					continue;
-				}
+                if (leveldiff>(w3_xpcalc_maxleveldiff + 1)) {
+                    eventlog(eventlog_level_error, __FUNCTION__, "expected entry for leveldiff={} but found {}", w3_xpcalc_maxleveldiff + 1, leveldiff);
+                    continue;
+                }
 
-				w3_xpcalc_maxleveldiff = leveldiff;
+                w3_xpcalc_maxleveldiff = leveldiff;
 
-				xpcalc[leveldiff].higher_winxp = higher_xpgained;
-				xpcalc[leveldiff].higher_lossxp = higher_xplost;
-				xpcalc[leveldiff].lower_winxp = lower_xpgained;
-				xpcalc[leveldiff].lower_lossxp = lower_xplost;
-			}
+                xpcalc[leveldiff].higher_winxp = higher_xpgained;
+                xpcalc[leveldiff].higher_lossxp = higher_xplost;
+                xpcalc[leveldiff].lower_winxp = lower_xpgained;
+                xpcalc[leveldiff].lower_lossxp = lower_xplost;
+            }
 			std::fclose(fd2);
 
 			newxpcalc = (t_xpcalc_entry*)xrealloc(xpcalc, sizeof(t_xpcalc_entry)* (w3_xpcalc_maxleveldiff + 1));
@@ -1259,18 +1236,17 @@ namespace pvpgn
 			}
 
 
-		unsigned int
-			LadderList::getRank(unsigned int uid_) const
-		{
-				unsigned int rank;
-				LList::const_iterator lit(ladder.begin());
-				for (rank = 1; lit != ladder.end() && lit->getUid() != uid_; lit++);
+            unsigned int
+            LadderList::getRank(unsigned int uid_) const
+            {
+                auto it = std::find_if(ladder.begin(), ladder.end(),
+                                       [uid_](const LadderEntry& entry) { return entry.getUid() == uid_; });
 
-				if (lit == ladder.end())
-					return 0;
-				else
-					return lit->getRank();
-			}
+                if (it == ladder.end())
+                    return 0;
+                else
+                    return it->getRank();
+            }
 
 
 		const LadderKey&

@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "setup.h"
 #include "handle_signal.h"
 
 #include <ctime>
@@ -49,6 +48,11 @@ static volatile struct
 	unsigned char	restart_d2gs;
 	time_t			exit_time;
 } signal_data ={ 0, 0, 0, 0, 0, 0 };
+
+void d2dbs_handle_signal_init()
+{
+
+}
 
 extern int handle_signal(void)
 {

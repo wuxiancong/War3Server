@@ -19,7 +19,6 @@
 
 #include <windows.h>
 #include <Dbghelp.h>
-#include <stdio.h>
 
 void make_minidump(struct _EXCEPTION_POINTERS* e)
 {

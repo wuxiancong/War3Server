@@ -258,71 +258,83 @@ using namespace pvpgn;
 using namespace pvpgn::d2cs;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-	LPSTR lpszCmdLine, int nCmdShow)
+                   LPSTR lpszCmdLine, int nCmdShow)
 {
-	HWND		hwnd;
-	MSG			msg;
-	Console     console;
+    HWND		hwnd;
+    MSG			msg;
+    Console     console;
 
-	if (cmdline_load(__argc, __argv) != 1) {
-		return -1;
-	}
+    if (cmdline_load(__argc, __argv) != 1) {
+        return -1;
+    }
 
-	if (cmdline_get_console()){
-		console.RedirectIOToConsole();
-		return app_main(__argc, __argv);
-	}
+    if (cmdline_get_console()){
+        console.RedirectIOToConsole();
+        return app_main(__argc, __argv);
+    }
 
-	if (LoadLibraryW(L"RichEd20.dll") == NULL)
-	{
-		return -1;
-	}
+    if (LoadLibraryW(L"RichEd20.dll") == NULL)
+    {
+        return -1;
+    }
 
-	WNDCLASSEXW	wc = {};
-	wc.cbSize = sizeof(WNDCLASSEXW);
-	wc.style = 0;
-	wc.lpfnWndProc = WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = sizeof(LPVOID);
-	wc.hInstance = hInstance;
-	wc.hIcon = LoadIconW(hInstance, MAKEINTRESOURCEW(ID_ICON1));
-	wc.hCursor = LoadCursorW(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	wc.lpszMenuName = MAKEINTRESOURCEW(ID_MENU);
-	wc.lpszClassName = L"BnetWndClass";
+    WNDCLASSEXW	wc = {};
+    wc.cbSize = sizeof(WNDCLASSEXW);
+    wc.style = 0;
+    wc.lpfnWndProc = WndProc;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = sizeof(LPVOID);
+    wc.hInstance = hInstance;
+    wc.hIcon = LoadIconW(hInstance, MAKEINTRESOURCEW(ID_ICON1));
+    wc.hCursor = LoadCursorW(NULL, (LPCWSTR)IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+    wc.lpszMenuName = MAKEINTRESOURCEW(ID_MENU);
+    wc.lpszClassName = L"BnetWndClass";
 
-	if (!RegisterClassExW(&wc))
-		RegisterClassW((LPWNDCLASS)&wc.style);
+    if (!RegisterClassExW(&wc)) {
+        WNDCLASSW wc2 = {};
+        wc2.style = wc.style;
+        wc2.lpfnWndProc = wc.lpfnWndProc;
+        wc2.cbClsExtra = wc.cbClsExtra;
+        wc2.cbWndExtra = wc.cbWndExtra;
+        wc2.hInstance = wc.hInstance;
+        wc2.hIcon = wc.hIcon;
+        wc2.hCursor = wc.hCursor;
+        wc2.hbrBackground = wc.hbrBackground;
+        wc2.lpszMenuName = wc.lpszMenuName;
+        wc2.lpszClassName = wc.lpszClassName;
+        RegisterClassW(&wc2);
+    }
 
-	hwnd = CreateWindowExW(0L, L"BnetWndClass", L"Diablo II Character Server",
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		NULL,
-		LoadMenuW(hInstance, MAKEINTRESOURCEW(ID_MENU)),
-		hInstance, NULL);
+    hwnd = CreateWindowExW(0L, L"BnetWndClass", L"Diablo II Character Server",
+                           WS_OVERLAPPEDWINDOW,
+                           CW_USEDEFAULT, CW_USEDEFAULT,
+                           CW_USEDEFAULT, CW_USEDEFAULT,
+                           NULL,
+                           LoadMenuW(hInstance, MAKEINTRESOURCEW(ID_MENU)),
+                           hInstance, NULL);
 
-	if (hwnd) {
-		ShowWindow(hwnd, nCmdShow);
-		UpdateWindow(hwnd);
-	}
+    if (hwnd) {
+        ShowWindow(hwnd, nCmdShow);
+        UpdateWindow(hwnd);
+    }
 
-	while (GetMessageW(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
+    while (GetMessageW(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
 
-		if (!d2cs_running && d2cs_run && gui_run) {
-			d2cs_running = TRUE;
-			_beginthread(pvpgn::d2cs::d2cs, 0, NULL);
-		}
+        if (!d2cs_running && d2cs_run && gui_run) {
+            d2cs_running = TRUE;
+            _beginthread(pvpgn::d2cs::d2cs, 0, NULL);
+        }
 
-		if (!gui_run && !d2cs_running) {
-			KillTrayIcon(hwnd);
-			exit(0);
-		}
-	}
-	return ((int)msg.wParam);
+        if (!gui_run && !d2cs_running) {
+            KillTrayIcon(hwnd);
+            exit(0);
+        }
+    }
+    return ((int)msg.wParam);
 }
 
 #endif

@@ -22,10 +22,6 @@
 #include <cerrno>
 #include <cstring>
 
-#include "compat/socket.h"
-#include "compat/recv.h"
-#include "compat/send.h"
-#include "compat/netinet_in.h"
 #include "compat/psock.h"
 #include "common/packet.h"
 #include "common/eventlog.h"

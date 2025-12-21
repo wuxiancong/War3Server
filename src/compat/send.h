@@ -28,17 +28,16 @@
 /* Linux / Unix Platform */
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <cstddef> /* Ensure NULL is defined */
 #endif
 
 /*
  * Compatibility Mapping:
  * The original code maps send() to sendto().
- * We apply this mapping unconditionally for both platforms.
+ * We remove this mapping and let each platform use its native send().
  */
 #ifdef send
 #undef send
 #endif
-#define send(s, b, l, f) sendto(s, b, l, f, NULL, NULL)
+/* Don't redefine send() - use the platform's native send() function */
 
 #endif

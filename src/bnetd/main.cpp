@@ -529,7 +529,7 @@ extern int app_main(int argc, char ** argv)
 extern int main(int argc, char ** argv)
 #endif
 {
-    #ifdef WIN32
+    #if defined(_WIN32) || defined(WIN32)
 	// create a dump file whenever the gateway crashes
     SetUnhandledExceptionFilter(unhandled_handler);
 	#endif

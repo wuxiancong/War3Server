@@ -22,22 +22,19 @@
 #include <cstring>
 
 #ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
+#include <sys/types.h>
 #endif
 #ifdef HAVE_UNISTD_H
-# include <unistd.h>
+#include <unistd.h>
 #endif
 #ifdef HAVE_SYS_STAT_H
-# include <sys/stat.h>
+#include <sys/stat.h>
 #endif
 #if defined(_WIN32) || defined(WIN32)
-# include "win32/service.h"
+#include "win32/service.h"
 #endif
 #ifdef WIN32_GUI
-# include "win32/winmain.h"
-#endif
-#if defined(_WIN32) || defined(WIN32)
-# include "win32/windump.h"
+#include "win32/winmain.h"
 #endif
 
 #include "common/eventlog.h"
@@ -53,12 +50,15 @@
 #include "game.h"
 #include "server.h"
 #include "version.h"
+#if defined(_WIN32) || defined(WIN32)
+#include "win32/windump.h"
+#endif
 #include "common/setup_after.h"
 
 using namespace pvpgn::d2cs;
 using namespace pvpgn;
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 char serviceLongName[] = "d2cs service";
 char serviceName[] = "d2cs";
 char serviceDescription[] = "Diablo 2 Character Server";
@@ -77,93 +77,93 @@ static char * write_to_pidfile(void);
 #ifdef DO_DAEMONIZE
 static int setup_daemon(void)
 {
-	int pid;
+    int pid;
 
-	if (chdir("/")<0) {
-		eventlog(eventlog_level_error,__FUNCTION__,"can not change working directory to root directory (chdir: {})",std::strerror(errno));
-		return -1;
-	}
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	if (!cmdline_get_foreground()) {
-		close(STDERR_FILENO);
-	}
-	switch ((pid = fork())) {
-		case 0:
-			break;
-		case -1:
-			eventlog(eventlog_level_error,__FUNCTION__,"error create child process (fork: {})",std::strerror(errno));
-			return -1;
-		default:
-			return pid;
-	}
-	umask(0);
-	setsid();
-	return 0;
+    if (chdir("/")<0) {
+        eventlog(eventlog_level_error,__FUNCTION__,"can not change working directory to root directory (chdir: {})",std::strerror(errno));
+        return -1;
+    }
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    if (!cmdline_get_foreground()) {
+        close(STDERR_FILENO);
+    }
+    switch ((pid = fork())) {
+    case 0:
+        break;
+    case -1:
+        eventlog(eventlog_level_error,__FUNCTION__,"error create child process (fork: {})",std::strerror(errno));
+        return -1;
+    default:
+        return pid;
+    }
+    umask(0);
+    setsid();
+    return 0;
 }
 #endif
 
 
 static char * write_to_pidfile(void)
 {
-	char *pidfile = xstrdup(prefs_get_pidfile());
+    char *pidfile = xstrdup(prefs_get_pidfile());
 
-	if (pidfile)
-	{
-		if (pidfile[0] == '\0') {
-			xfree((void *)pidfile); /* avoid warning */
-			return NULL;
-		}
+    if (pidfile)
+    {
+        if (pidfile[0] == '\0') {
+            xfree((void *)pidfile); /* avoid warning */
+            return NULL;
+        }
 #ifdef HAVE_GETPID
-		std::FILE * fp;
+        std::FILE * fp;
 
-		if (!(fp = std::fopen(pidfile,"w"))) {
-			eventlog(eventlog_level_error,__FUNCTION__,"unable to open pid file \"{}\" for writing (std::fopen: {})",pidfile,std::strerror(errno));
-			xfree((void *)pidfile); /* avoid warning */
-			return NULL;
-		} else {
-			std::fprintf(fp,"%u",(unsigned int)getpid());
-			if (std::fclose(fp)<0)
-				eventlog(eventlog_level_error,__FUNCTION__,"could not close pid file \"{}\" after writing (std::fclose: {})",pidfile,std::strerror(errno));
-		}
+        if (!(fp = std::fopen(pidfile,"w"))) {
+            eventlog(eventlog_level_error,__FUNCTION__,"unable to open pid file \"{}\" for writing (std::fopen: {})",pidfile,std::strerror(errno));
+            xfree((void *)pidfile); /* avoid warning */
+            return NULL;
+        } else {
+            std::fprintf(fp,"%u",(unsigned int)getpid());
+            if (std::fclose(fp)<0)
+                eventlog(eventlog_level_error,__FUNCTION__,"could not close pid file \"{}\" after writing (std::fclose: {})",pidfile,std::strerror(errno));
+        }
 
 #else
-		eventlog(eventlog_level_warn,__FUNCTION__,"no getpid() std::system call, disable pid file in d2cs.conf");
-		xfree((void *)pidfile); /* avoid warning */
-		return NULL;
+        eventlog(eventlog_level_warn,__FUNCTION__,"no getpid() std::system call, disable pid file in d2cs.conf");
+        xfree((void *)pidfile); /* avoid warning */
+        return NULL;
 #endif
-	}
+    }
 
-	return pidfile;
+    return pidfile;
 }
 
 
 static int init(void)
 {
-	d2cs_connlist_create();
-	d2cs_gamelist_create();
-	sqlist_create();
-	d2gslist_create();
-	gqlist_create();
-	d2ladder_init();
-	if(trans_load(d2cs_prefs_get_transfile(),TRANS_D2CS)<0)
-	    eventlog(eventlog_level_error,__FUNCTION__,"could not load trans list");
-	fdwatch_init(prefs_get_max_connections());
-	return 0;
+    d2cs_connlist_create();
+    d2cs_gamelist_create();
+    sqlist_create();
+    d2gslist_create();
+    gqlist_create();
+    d2ladder_init();
+    if(trans_load(d2cs_prefs_get_transfile(),TRANS_D2CS)<0)
+        eventlog(eventlog_level_error,__FUNCTION__,"could not load trans list");
+    fdwatch_init(prefs_get_max_connections());
+    return 0;
 }
 
 
 static int cleanup(void)
 {
-	d2ladder_destroy();
-	d2cs_connlist_destroy();
-	d2cs_gamelist_destroy();
-	sqlist_destroy();
-	d2gslist_destroy();
-	gqlist_destroy();
-	trans_unload();
-	fdwatch_close();
-	return 0;
+    d2ladder_destroy();
+    d2cs_connlist_destroy();
+    d2cs_gamelist_destroy();
+    sqlist_destroy();
+    d2gslist_destroy();
+    gqlist_destroy();
+    trans_unload();
+    fdwatch_close();
+    return 0;
 }
 
 
@@ -173,24 +173,24 @@ static int config_init(int argc, char * * argv)
     char *       temp;
     char const * tok;
 
-	if (cmdline_load(argc, argv) != 1) {
-		return -1;
-	}
+    if (cmdline_load(argc, argv) != 1) {
+        return -1;
+    }
 
 #ifdef DO_DAEMONIZE
-	int		 pid;
+    int		 pid;
 
-	if ((!cmdline_get_foreground())) {
-		if (!((pid = setup_daemon()) == 0)) {
-			return pid;
-		}
-	}
+    if ((!cmdline_get_foreground())) {
+        if (!((pid = setup_daemon()) == 0)) {
+            return pid;
+        }
+    }
 #endif
 
-	if (d2cs_prefs_load(cmdline_get_preffile())<0) {
-		eventlog(eventlog_level_error,__FUNCTION__,"error loading configuration file {}",cmdline_get_preffile());
-		return -1;
-	}
+    if (d2cs_prefs_load(cmdline_get_preffile())<0) {
+        eventlog(eventlog_level_error,__FUNCTION__,"error loading configuration file {}",cmdline_get_preffile());
+        return -1;
+    }
 
     eventlog_clear_level();
     if ((levels = d2cs_prefs_get_loglevels()))
@@ -200,48 +200,48 @@ static int config_init(int argc, char * * argv)
 
         while (tok)
         {
-        if (eventlog_add_level(tok)<0)
-            eventlog(eventlog_level_error,__FUNCTION__,"could not add std::log level \"{}\"",tok);
-        tok = std::strtok(NULL,",");
+            if (eventlog_add_level(tok)<0)
+                eventlog(eventlog_level_error,__FUNCTION__,"could not add std::log level \"{}\"",tok);
+            tok = std::strtok(NULL,",");
         }
 
         xfree(temp);
     }
 
 #ifdef WIN32_GUI
-	if (cmdline_get_gui()){
-		eventlog_add_level(eventlog_get_levelname_str(eventlog_level_gui));
-	}
+    if (cmdline_get_gui()){
+        eventlog_add_level(eventlog_get_levelname_str(eventlog_level_gui));
+    }
 #endif
 
 #ifdef DO_DAEMONIZE
-	if (cmdline_get_foreground()) {
-		eventlog_set(stderr);
-	}
-	else
+    if (cmdline_get_foreground()) {
+        eventlog_set(stderr);
+    }
+    else
 #endif
-	{
-	    if (cmdline_get_logfile()) {
-		if (eventlog_open(cmdline_get_logfile())<0) {
-			eventlog(eventlog_level_error,__FUNCTION__,"error open eventlog file {}",cmdline_get_logfile());
-			return -1;
-		}
-	    } else {
-		if (eventlog_open(d2cs_prefs_get_logfile())<0) {
-			eventlog(eventlog_level_error,__FUNCTION__,"error open eventlog file {}",d2cs_prefs_get_logfile());
-			return -1;
-		}
-	    }
-	}
-	return 0;
+    {
+        if (cmdline_get_logfile()) {
+            if (eventlog_open(cmdline_get_logfile())<0) {
+                eventlog(eventlog_level_error,__FUNCTION__,"error open eventlog file {}",cmdline_get_logfile());
+                return -1;
+            }
+        } else {
+            if (eventlog_open(d2cs_prefs_get_logfile())<0) {
+                eventlog(eventlog_level_error,__FUNCTION__,"error open eventlog file {}",d2cs_prefs_get_logfile());
+                return -1;
+            }
+        }
+    }
+    return 0;
 }
 
 
 static int config_cleanup(void)
 {
-	d2cs_prefs_unload();
-	cmdline_unload();
-	return 0;
+    d2cs_prefs_unload();
+    cmdline_unload();
+    return 0;
 }
 
 
@@ -251,41 +251,41 @@ extern int app_main(int argc, char ** argv)
 extern int main(int argc, char ** argv)
 #endif
 {
-	int pid;
+    int pid;
 
-#ifdef WIN32
-	// create a dump file whenever the gateway crashes
-	SetUnhandledExceptionFilter(unhandled_handler);
+#if defined(_WIN32) || defined(WIN32)
+    // create a dump file whenever the gateway crashes
+    SetUnhandledExceptionFilter(unhandled_handler);
 #endif
 
-	eventlog_set(stderr);
-	if (!((pid = config_init(argc, argv)) == 0)) {
-//		if (pid==1) pid=0;
-		return pid;
-	}
-	const char* const pidfile = write_to_pidfile();
-	eventlog(eventlog_level_info,__FUNCTION__,D2CS_VERSION);
-	if (init()<0) {
-		eventlog(eventlog_level_error,__FUNCTION__,"failed to init");
-		if (pidfile)
-			xfree((void*)pidfile);
-		return -1;
-	} else {
-		eventlog(eventlog_level_info,__FUNCTION__,"server initialized");
-	}
-	if (d2cs_server_process()<0) {
-		eventlog(eventlog_level_error,__FUNCTION__,"failed to run server");
-		if (pidfile)
-			xfree((void*)pidfile);
-		return -1;
-	}
-	cleanup();
-	if (pidfile) {
-		if (std::remove(pidfile)<0)
-			eventlog(eventlog_level_error,__FUNCTION__,"could not remove pid file \"{}\" (std::remove: {})",pidfile,std::strerror(errno));
-		xfree((void *)pidfile); /* avoid warning */
-	}
-	config_cleanup();
-	eventlog_close();
-	return 0;
+    eventlog_set(stderr);
+    if (!((pid = config_init(argc, argv)) == 0)) {
+        //		if (pid==1) pid=0;
+        return pid;
+    }
+    const char* const pidfile = write_to_pidfile();
+    eventlog(eventlog_level_info,__FUNCTION__,D2CS_VERSION);
+    if (init()<0) {
+        eventlog(eventlog_level_error,__FUNCTION__,"failed to init");
+        if (pidfile)
+            xfree((void*)pidfile);
+        return -1;
+    } else {
+        eventlog(eventlog_level_info,__FUNCTION__,"server initialized");
+    }
+    if (d2cs_server_process()<0) {
+        eventlog(eventlog_level_error,__FUNCTION__,"failed to run server");
+        if (pidfile)
+            xfree((void*)pidfile);
+        return -1;
+    }
+    cleanup();
+    if (pidfile) {
+        if (std::remove(pidfile)<0)
+            eventlog(eventlog_level_error,__FUNCTION__,"could not remove pid file \"{}\" (std::remove: {})",pidfile,std::strerror(errno));
+        xfree((void *)pidfile); /* avoid warning */
+    }
+    config_cleanup();
+    eventlog_close();
+    return 0;
 }

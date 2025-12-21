@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
+#include "connection.h"
 #include "setup.h"
 #include "handle_d2cs.h"
 
@@ -191,7 +192,7 @@ static int on_client_createcharreq(t_connection * c, t_packet * packet)
 		reply=D2CS_CLIENT_CREATECHARREPLY_FAILED;
 	} else {
 		eventlog(eventlog_level_info,__FUNCTION__,"character {}(*{}) created",charname,account);
-		reply=D2CS_CLIENT_CREATECHARREPLY_SUCCEED;
+        // reply=D2CS_CLIENT_CREATECHARREPLY_SUCCEED;
 		conn_set_charinfo(c,&data.summary);
 		if ((bnpacket=packet_create(packet_class_d2cs_bnetd))) {
 			if ((sq=sq_create(d2cs_conn_get_sessionnum(c),packet,0))) {
@@ -692,7 +693,6 @@ static int d2cs_send_client_ladder(t_connection * c, unsigned char type, unsigne
 	npacket=count/count_per_packet;
 	if (count % count_per_packet) npacket++;
 
-	curr_len=0;
 	cont_len=0;
 	total_len = count * sizeof(*ladderinfo) + sizeof(ladderheader) + sizeof(infoheader) * npacket;
 	total_len -= 4;

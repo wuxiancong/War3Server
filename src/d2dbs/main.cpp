@@ -32,13 +32,11 @@
 # include <sys/stat.h>
 #endif
 #if defined(_WIN32) || defined(WIN32)
-# include "win32/service.h"
+#include "win32/windump.h"
+#include "win32/service.h"
 #endif
 #ifdef WIN32_GUI
 # include "win32/winmain.h"
-#endif
-#if defined(_WIN32) || defined(WIN32)
-# include "win32/windump.h"
 #endif
 
 #include "common/eventlog.h"
@@ -233,7 +231,7 @@ extern int main(int argc, char ** argv)
 	int pid;
 	char * pidfile;
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 	// create a dump file whenever the gateway crashes
 	SetUnhandledExceptionFilter(unhandled_handler);
 #endif
