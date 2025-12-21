@@ -31,6 +31,9 @@
 #ifdef HAVE_SYS_WAIT_H
 # include <sys/wait.h>
 #endif
+#ifdef DO_SUBPROC
+#include "compat/stdfileno.h"
+#endif
 
 #include "common/eventlog.h"
 #include "common/setup_after.h"

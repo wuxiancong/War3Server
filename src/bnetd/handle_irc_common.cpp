@@ -178,11 +178,11 @@ namespace pvpgn
 			// too long irc-lines
 			//PELISH: According to RFC2812 we do truncation on 512 byte
 
-			if (std::strlen(ircline) > MAX_IRC_MESSAGE_LEN) {
-				char * tmp = (char *)ircline;
-				eventlog(eventlog_level_warn, __FUNCTION__, "line too long, truncation...");
-				tmp[MAX_IRC_MESSAGE_LEN] = '\0';
-			}
+            if (std::strlen(ircline) >= MAX_IRC_MESSAGE_LEN) {
+                char * tmp = (char *)ircline;
+                eventlog(eventlog_level_warn, __FUNCTION__, "line too long, truncation...");
+                tmp[MAX_IRC_MESSAGE_LEN - 1] = '\0';
+            }
 
 			line = xstrdup(ircline);
 
@@ -284,7 +284,7 @@ namespace pvpgn
 					linelen = std::strlen(ircline);
 					bnet_command = (char*)xmalloc(linelen + 2);
 					bnet_command[0] = '/';
-					std::strcpy(bnet_command + 1, ircline);
+                    std::snprintf(bnet_command + 1, sizeof(bnet_command) - 1, "%s", ircline);
 					handle_command(conn, bnet_command);
 					xfree((void*)bnet_command);
 				}

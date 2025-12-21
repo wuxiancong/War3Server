@@ -2972,7 +2972,7 @@ static int _client_motdw3(t_connection * c, t_packet const *const packet)
             while (char* buff = file_get_line(fp))
             {
                 char* line = message_format_line(c, buff);
-                fmt::format_to(serverinfo, "{}" + '\n', (line + 1));
+                fmt::format_to(serverinfo, "{}\n", (line + 1));
                 xfree((void*)line);
             }
 
@@ -4640,7 +4640,7 @@ static int _client_ladderreq(t_connection * c, t_packet const *const packet)
             ladderList_active = ladders.getLadderList(LadderKey(id, clienttag, sort, ladder_time_active));
             ladderList_current = ladders.getLadderList(LadderKey(id, clienttag, sort, ladder_time_current));
         }
-        if (!ladderList_active || ladderList_current)
+        if (!ladderList_active || !ladderList_current)
             error = true;
 
         for (i = start; i < start + count; i++) {
@@ -5375,7 +5375,7 @@ static int _client_clan_invitereq(t_connection * c, t_packet const *const packet
         return -1;
     }
 
-    if (rpacket = packet_create(packet_class_bnet)) {
+    if ((rpacket = packet_create(packet_class_bnet))) {
 
         // user not authorized
         if (!((account = conn_get_account(c)) &&
@@ -5485,7 +5485,7 @@ static int _client_clan_invitereply(t_connection * c, t_packet const *const pack
         return -1;
     }
 
-    if (rpacket = packet_create(packet_class_bnet)) {
+    if ((rpacket = packet_create(packet_class_bnet))) {
         packet_set_size(rpacket, sizeof(t_server_clan_invitereply));
         packet_set_type(rpacket, SERVER_CLAN_INVITEREPLY);
         bn_int_set(&rpacket->u.server_clan_invitereply.count, bn_int_get(packet->u.client_clan_invitereply.count));
