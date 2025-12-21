@@ -198,9 +198,99 @@ endif(WITH_ODBC)
 
 if(WITH_MYSQL)
     message(STATUS "${Color_Gray}[检查]${Color_Reset} 查找 MySQL 库...")
-    find_package(MySQL REQUIRED)
+
+    # 先尝试自动查找
+    find_package(MySQL)
+
+    # 如果没有自动找到，尝试手动指定
+    if(NOT MySQL_FOUND)
+	message(STATUS "${Color_Yellow}[警告]${Color_Reset} find_package 未找到 MySQL，尝试手动查找...")
+
+	# 尝试常见路径
+	set(MYSQL_POSSIBLE_PATHS
+	    "/usr/include/mysql"
+	    "/usr/local/include/mysql"
+	    "/usr/include/mariadb"
+	    "/usr/local/mysql/include"
+	    "/opt/homebrew/include/mysql"
+	    "$ENV{MYSQL_DIR}/include"
+	)
+
+        set(MYSQL_LIB_POSSIBLE_PATHS
+	    "/usr/lib/x86_64-linux-gnu"
+	    "/usr/lib64"
+	    "/usr/lib"
+	    "/usr/local/mysql/lib"
+	    "/opt/homebrew/lib"
+	    "$ENV{MYSQL_DIR}/lib"
+	)
+
+        # 查找头文件
+	find_path(MYSQL_INCLUDE_DIR mysql.h
+	    PATHS ${MYSQL_POSSIBLE_PATHS}
+	    NO_DEFAULT_PATH
+	)
+
+        # 查找库文件
+	find_library(MYSQL_LIBRARY NAMES mysqlclient mysqlclient_r
+	    PATHS ${MYSQL_LIB_POSSIBLE_PATHS}
+	    NO_DEFAULT_PATH
+	)
+
+        # 查找额外的库
+	find_library(MYSQL_EXTRA_LIBRARY NAMES m z)
+
+	if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARY)
+	    set(MySQL_FOUND TRUE)
+	    set(MySQL_INCLUDE_DIRS ${MYSQL_INCLUDE_DIR})
+	    set(MySQL_LIBRARIES ${MYSQL_LIBRARY})
+	    if(MYSQL_EXTRA_LIBRARY)
+		list(APPEND MySQL_LIBRARIES ${MYSQL_EXTRA_LIBRARY})
+	    endif()
+
+	    message(STATUS "${Color_Green}[手动找到]${Color_Reset} MySQL 库")
+	    message(STATUS "${Color_Cyan}[头文件]${Color_Reset} ${MYSQL_INCLUDE_DIR}")
+	    message(STATUS "${Color_Cyan}[库文件]${Color_Reset} ${MYSQL_LIBRARY}")
+	endif()
+    endif()
+
     if(MySQL_FOUND)
 	message(STATUS "${Color_Green}[找到]${Color_Reset} MySQL 库")
+
+	# 验证 MySQL 库是否可用
+	include(CheckLibraryExists)
+	set(CMAKE_REQUIRED_LIBRARIES ${MySQL_LIBRARIES})
+	set(CMAKE_REQUIRED_INCLUDES ${MySQL_INCLUDE_DIRS})
+
+	check_library_exists(mysqlclient mysql_init "" HAVE_MYSQL_INIT)
+	if(NOT HAVE_MYSQL_INIT)
+	    message(STATUS "${Color_Red}[验证失败]${Color_Reset} MySQL 库无法使用 mysql_init 函数")
+
+	    # 尝试其他可能的函数名
+	    check_library_exists(mysqlclient mysql_library_init "" HAVE_MYSQL_LIBRARY_INIT)
+	    if(HAVE_MYSQL_LIBRARY_INIT)
+		message(STATUS "${Color_Green}[验证通过]${Color_Reset} 使用 mysql_library_init")
+		set(HAVE_MYSQL_INIT TRUE)
+	    endif()
+	else()
+	    message(STATUS "${Color_Green}[验证通过]${Color_Reset} MySQL 库可用")
+	endif()
+
+	if(HAVE_MYSQL_INIT)
+	    # 检查版本
+	    try_run(MYSQL_TEST_RUN_RESULT MYSQL_TEST_COMPILE_RESULT
+		${CMAKE_BINARY_DIR}
+		${CMAKE_SOURCE_DIR}/cmake/test_mysql_version.cpp
+		CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${MySQL_INCLUDE_DIRS}"
+		LINK_LIBRARIES ${MySQL_LIBRARIES}
+		COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT
+		RUN_OUTPUT_VARIABLE RUN_OUTPUT
+	    )
+
+	    if(MYSQL_TEST_COMPILE_RESULT AND MYSQL_TEST_RUN_RESULT EQUAL 0)
+		message(STATUS "${Color_Green}[版本]${Color_Reset} ${RUN_OUTPUT}")
+	    endif()
+	endif()
     else()
 	message(FATAL_ERROR "${Color_Red}[错误]${Color_Reset} 未找到 MySQL 库")
     endif()
@@ -237,25 +327,25 @@ enhanced_check_library_exists(bind __inet_aton "" HAVE_LIBBIND)
 # 将找到的网络库添加到所需的库列表中
 message(STATUS "${Color_Gray}[配置]${Color_Reset} 配置网络库链接...")
 if(HAVE_LIBNSL)
-	SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} nsl)
+        SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} nsl)
 	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} nsl)
     message(STATUS "${Color_Cyan}[添加]${Color_Reset} nsl 到网络库列表")
 endif(HAVE_LIBNSL)
 
 if(HAVE_LIBSOCKET)
-	SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} socket)
+        SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} socket)
 	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} socket)
     message(STATUS "${Color_Cyan}[添加]${Color_Reset} socket 到网络库列表")
 endif(HAVE_LIBSOCKET)
 
 if(HAVE_LIBRESOLV)
-	SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} resolv)
+        SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} resolv)
 	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} resolv)
     message(STATUS "${Color_Cyan}[添加]${Color_Reset} resolv 到网络库列表")
 endif(HAVE_LIBRESOLV)
 
 if(HAVE_LIBBIND)
-	# 该库用于 BeOS BONE 系统，如果有人想在 BeOS 上
+        # 该库用于 BeOS BONE 系统，如果有人想在 BeOS 上
 	# 使用 CMake 测试 War3Server，请联系我们
 	SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} bind)
 	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} bind)
@@ -264,7 +354,7 @@ endif(HAVE_LIBBIND)
 
 # 对于 Win32 平台，无条件添加网络库链接 "ws2_32"
 if(WIN32)
-	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} ws2_32)
+        SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} ws2_32)
     message(STATUS "${Color_Cyan}[添加]${Color_Reset} ws2_32 到网络库列表 (Windows平台)")
 endif(WIN32)
 
@@ -364,7 +454,7 @@ message(STATUS "${Color_Magenta}[=== 网络函数检查 ===]${Color_Reset}")
 
 # 网络相关函数检查（Win32 平台特殊处理）
 if(HAVE_WINSOCK2_H)
-	# 如果包含 WinSock2 头文件，则假定这些网络函数存在
+        # 如果包含 WinSock2 头文件，则假定这些网络函数存在
     message(STATUS "${Color_Green}[自动设置]${Color_Reset} Win32 网络函数 (WinSock2)")
         set(HAVE_GETHOSTNAME ON)
 	set(HAVE_SELECT ON)
@@ -376,7 +466,7 @@ if(HAVE_WINSOCK2_H)
 	set(HAVE_GETHOSTBYNAME ON)
 	set(HAVE_GETSERVBYNAME ON)
 else(HAVE_WINSOCK2_H)
-	# 其他平台检查这些网络函数
+        # 其他平台检查这些网络函数
 	enhanced_check_function_exists(gethostname HAVE_GETHOSTNAME)
 	enhanced_check_function_exists(select HAVE_SELECT)
 	enhanced_check_function_exists(socket HAVE_SOCKET)
