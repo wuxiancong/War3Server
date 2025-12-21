@@ -25,6 +25,7 @@
 
 #include <cstring>
 #ifdef HAVE_POLL
+#include "common/fdwatch.h"
 #include "common/fdwatch_poll.h"
 #endif
 #include "common/eventlog.h"
