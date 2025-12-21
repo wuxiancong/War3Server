@@ -41,11 +41,11 @@
 
 #ifdef HAVE_ARPA_INET_H
 # include <arpa/inet.h>
+#include "compat/stdfileno.h"
 #endif
 #ifdef HAVE_WS2TCPIP_H
 # include <Ws2tcpip.h>
 #endif
-
 #include "common/setup_after.h"
 
 using namespace pvpgn;
