@@ -117,8 +117,8 @@ EXIT;
 ```
 
 ### 3. 编译与安装 War3Server
-## 一次性清理脚本
-···bash
+#### 一次性清理脚本
+```bash
  #!/bin/bash
 # 清理所有git进程
 echo "清理git进程..."
@@ -138,6 +138,21 @@ fi
 
 echo "清理完成！现在可以重新克隆："
 echo "git clone https://github.com/wuxiancong/War3Server.git"
+```
+
+#### 克隆失败
+```bash
+# 1. 先终止所有作业
+for i in {1..11}; do kill %$i 2>/dev/null; done
+
+# 2. 强制杀死git进程
+pkill -9 git
+
+# 3. 清理目录
+rm -rf War3Server
+
+# 4. 重新克隆（使用浅克隆）
+git clone --depth=1 https://github.com/wuxiancong/War3Server.git
 ```
 
 ```bash
