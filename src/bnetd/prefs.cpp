@@ -1285,8 +1285,8 @@ namespace pvpgn
 			unsigned int rez;
 
 			conf_set_int(&prefs_runtime_config.track, valstr, 0);
-			rez = prefs_runtime_config.track;
-			if (rez > 0 && rez < 60) rez = 60;
+            // rez = prefs_runtime_config.track;
+            // if (rez > 0 && rez < 60) rez = 60;
 			return 0;
 		}
 

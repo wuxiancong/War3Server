@@ -18,11 +18,11 @@
 #ifndef INCLUDED_CONNECTION_H
 #define INCLUDED_CONNECTION_H
 
+#include "common/d2cs_d2gs_character.h"
 #include "common/queue.h"
 #include "common/hashtable.h"
 #include "common/packet.h"
 #include "common/fdwatch.h"
-#include "d2charfile.h"
 #include "gamequeue.h"
 
 namespace pvpgn

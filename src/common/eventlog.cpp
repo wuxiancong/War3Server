@@ -24,13 +24,9 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <iomanip>
-#include <string>
-#include <sstream>
 
 #include <fmt/format.h>
 
-#include "compat/strcasecmp.h"
 #include "common/hexdump.h"
 #ifdef WIN32_GUI
 # include "common/gui_printf.h"

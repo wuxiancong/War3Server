@@ -22,7 +22,7 @@
 #include <cstring>
 #include <ctime>
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include <conio.h>
 #endif
 
@@ -47,7 +47,7 @@
 
 #include "common/setup_after.h"
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 extern int g_ServiceStatus;
 #endif
 
@@ -308,7 +308,7 @@ namespace pvpgn
 
 			while (1) {
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 				if (g_ServiceStatus < 0 && kbhit() && getch() == 'q')
 					d2dbs_signal_quit_wrapper();
 				if (g_ServiceStatus == 0) d2dbs_signal_quit_wrapper();

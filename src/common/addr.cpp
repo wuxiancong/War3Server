@@ -15,6 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
 #define ADDR_INTERNAL_ACCESS
 #include "common/setup_before.h"
 #include "common/addr.h"
@@ -46,6 +47,50 @@ namespace pvpgn
 
 
 #define HACK_SIZE 4
+
+
+#if defined(_WIN32) && _WIN32_WINNT < 0x0600
+    extern char * const inet_ntop(int af, const void* src, char* dst, int cnt)
+    {
+        if (af == AF_INET)
+        {
+            struct sockaddr_in in;
+            memset(&in, 0, sizeof(in));
+            in.sin_family = AF_INET;
+            memcpy(&in.sin_addr, src, sizeof(struct in_addr));
+            char* str = inet_ntoa(in.sin_addr);
+            if (str) {
+                strncpy(dst, str, cnt);
+                dst[cnt - 1] = 0;
+                return dst;
+            }
+        }
+        return NULL;
+    }
+    extern int const inet_pton(int af, const char *src, void *dst)
+    {
+        struct sockaddr_storage ss;
+        int size = sizeof(ss);
+        char src_copy[INET6_ADDRSTRLEN + 1];
+
+        ZeroMemory(&ss, sizeof(ss));
+        /* WSAStringToAddress 可能会修改字符串，所以拷贝一份 */
+        strncpy(src_copy, src, INET6_ADDRSTRLEN);
+        src_copy[INET6_ADDRSTRLEN] = 0;
+
+        if (WSAStringToAddressA(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0) {
+            switch (af) {
+            case AF_INET:
+                *(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;
+                return 1;
+            case AF_INET6:
+                *(struct in6_addr *)dst = ((struct sockaddr_in6 *)&ss)->sin6_addr;
+                return 1;
+            }
+        }
+        return 0;
+    }
+#endif
 
 	/* both arguments are in host byte order */
 	extern char const * addr_num_to_addr_str(unsigned int ipaddr, unsigned short port)
@@ -135,7 +180,7 @@ namespace pvpgn
         tsa.sin_port = htons(0);
 
 #ifdef HAVE_GETHOSTBYNAME
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
         psock_init();
 #endif
         hp = gethostbyname(hoststr);

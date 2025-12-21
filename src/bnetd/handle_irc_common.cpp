@@ -24,7 +24,6 @@
 #include <cstdlib>
 #include <string>
 
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "common/util.h"
 #include "common/irc_protocol.h"

@@ -27,16 +27,13 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "compat/strcasecmp.h"
 #include "common/irc_protocol.h"
 #include "common/eventlog.h"
 #include "common/bnethash.h"
 #include "common/tag.h"
-#include "common/util.h"
 #include "common/list.h"
 #include "common/addr.h"
 #include "common/trans.h"
-#include "common/xstring.h"
 
 #include "common/packet.h"
 
@@ -48,7 +45,6 @@
 #include "command_groups.h"
 #include "channel.h"
 #include "message.h"
-#include "tick.h"
 #include "topic.h"
 #include "server.h"
 #include "friends.h"

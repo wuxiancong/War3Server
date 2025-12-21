@@ -19,7 +19,7 @@
 #define INCLUDED_READ_PROTOS
 
 /* Unix puts this in unistd.h */
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include <io.h>
 #endif
 

@@ -16,9 +16,34 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
+/*
+ * Fix: undefine PACKED_ATTR if it was defined in setup_before.h
+ * to avoid "macro redefined" warnings.
+ */
+#ifdef PACKED_ATTR
+#undef PACKED_ATTR
+#endif
+
+/*
+ * Cross-platform packing definition
+ */
+#if defined(_MSC_VER)
+// Windows (Visual Studio)
+// MSVC uses pragma pack for alignment
+#define PACKED_ATTR()
+#pragma pack(push, 1)
+#elif defined(__GNUC__) || defined(__clang__)
+// Linux / MinGW (GCC / Clang)
+// GCC uses __attribute__
+#define PACKED_ATTR() __attribute__((packed))
+#else
+// Unknown compiler
+#define PACKED_ATTR()
+#endif
+
 #ifndef INCLUDED_BNET_PROTOCOL_TYPES
 #define INCLUDED_BNET_PROTOCOL_TYPES
-
 #ifdef JUST_NEED_TYPES
 # include "common/bn_type.h"
 #else

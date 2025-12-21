@@ -23,13 +23,12 @@
 #include <cstdio>
 
 #include "common/xalloc.h"
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include "win32/service.h"
 #endif
 #ifdef WIN32_GUI
 # include "common/gui_printf.h"
 #endif
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "common/conf.h"
 #include "common/setup_after.h"
@@ -76,7 +75,7 @@ namespace pvpgn
 		static int conf_set_version(const char *valstr);
 		static int conf_setdef_version(void);
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 		static int conf_set_service(const char *valstr);
 		static int conf_setdef_service(void);
 
@@ -108,7 +107,7 @@ namespace pvpgn
 			{ "usage", conf_set_help, NULL, conf_setdef_help },
 			{ "v", conf_set_version, NULL, conf_setdef_version },
 			{ "version", conf_set_version, NULL, conf_setdef_version },
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 			{ "service", conf_set_service, NULL, conf_setdef_service },
 			{ "s", conf_set_servaction, NULL, conf_setdef_servaction },
 #endif
@@ -131,7 +130,7 @@ namespace pvpgn
 				"    -D, --debug              run in debug mode (run in foreground and log to stdout)\n"
 				"    -h, --help, --usage      show this information and exit\n"
 				"    -v, --version            print version number and exit\n"
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 				"    Running as service functions:\n"
 				"    --service                run as service\n"
 				"    -s install               install service\n"
@@ -270,7 +269,7 @@ namespace pvpgn
 			return 0;
 		}
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 		static int conf_set_service(const char *valstr)
 		{
 			unsigned tmp = 0;

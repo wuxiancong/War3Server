@@ -31,6 +31,7 @@
 #include "common/packet.h"
 #include "common/field_sizes.h"
 #include "common/util.h"
+#include "common/addr.h"
 #include "common/init_protocol.h"
 #include "common/bn_type.h"
 #include "common/network.h"

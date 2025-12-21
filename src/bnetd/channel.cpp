@@ -25,8 +25,6 @@
 #include <cerrno>
 #include <cstdlib>
 
-#include "compat/strdup.h"
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "common/list.h"
 #include "common/util.h"
@@ -39,7 +37,6 @@
 #include "account.h"
 #include "account_wrap.h"
 #include "prefs.h"
-#include "irc.h"
 #include "i18n.h"
 #include "common/setup_after.h"
 

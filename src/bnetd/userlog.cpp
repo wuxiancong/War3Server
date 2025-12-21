@@ -26,8 +26,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "compat/strcasecmp.h"
-#include "compat/pdir.h"
 #include "compat/mkdir.h"
 #include "common/util.h"
 #include "common/eventlog.h"

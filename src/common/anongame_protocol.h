@@ -26,6 +26,7 @@
 # include "common/bn_type.h"
 # undef JUST_NEED_TYPES
 #endif
+#include "common/bnet_protocol.h"
 
 namespace pvpgn
 {

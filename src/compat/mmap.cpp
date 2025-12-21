@@ -29,7 +29,7 @@
 #ifdef HAVE_WINDOWS_H
 #include <Windows.h>
 #endif
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include <io.h>
 #endif
 #include "common/setup_after.h"
@@ -40,7 +40,7 @@ namespace pvpgn
 	extern void * pmmap(void *addr, unsigned len, int prot, int flags, int fd, unsigned offset)
 	{
 		void *mem;
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 		HANDLE	hFile, hMapping;
 
 		/* under win32 we only support readonly mappings, the only ones used in pvpgn now :) */
@@ -71,7 +71,7 @@ namespace pvpgn
 
 	extern int pmunmap(void *addr, unsigned len)
 	{
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 		UnmapViewOfFile(addr);
 #else
 		xfree(addr);

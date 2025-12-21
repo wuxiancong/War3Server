@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 /*****/
 #ifndef JUST_NEED_TYPES
 #ifndef INCLUDED_GAME_CONV_PROTOS
@@ -24,6 +23,7 @@
 
 #define JUST_NEED_TYPES
 #include "game.h"
+#include "common/tag.h"
 #undef JUST_NEED_TYPES
 
 namespace pvpgn

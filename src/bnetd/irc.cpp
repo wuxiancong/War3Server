@@ -28,7 +28,6 @@
 #include <cstring>
 #include <ctime>
 
-#include "compat/strcasecmp.h"
 
 #include "common/irc_protocol.h"
 #include "common/packet.h"

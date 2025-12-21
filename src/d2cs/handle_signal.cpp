@@ -134,7 +134,7 @@ extern int handle_signal(void)
 
 	return 0;
 }
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 extern void signal_quit_wrapper(void)
 {
   signal_data.do_quit=1;

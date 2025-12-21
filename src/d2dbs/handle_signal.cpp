@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "setup.h"
 #include "handle_signal.h"
 
 #include <cstring>
@@ -119,7 +118,7 @@ namespace pvpgn
 			return 0;
 		}
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 		extern void d2dbs_signal_quit_wrapper(void)
 		{
 			signal_data.do_quit = 1;

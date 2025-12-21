@@ -17,16 +17,12 @@
 */
 #include "common/setup_before.h"
 
-#include <algorithm>
 #include <cctype>
 #include <cstdio>
 #include <cerrno>
 #include <cstring>
 #include <ctime>
 #include <cstdlib>
-#include <sstream>
-#include <iostream>
-#include <fstream>
 #include <vector>
 #include <utility>
 #include <map>
@@ -38,16 +34,12 @@
 
 #include <fmt/format.h>
 
-#include "compat/strcasecmp.h"
 #include "compat/pdir.h"
 
-#include "common/token.h"
 
 #include "common/list.h"
 #include "common/eventlog.h"
 #include "common/xalloc.h"
-#include "common/xstring.h"
-#include "common/util.h"
 #include "common/tag.h"
 #include "common/pugixml.h"
 

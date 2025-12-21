@@ -1,5 +1,19 @@
 /*
  * Copyright (C) 2001,2006  Dizzy
+ * ... (版权注释保持不变)
+ */
+#define PDIR_INTERNAL_ACCESS
+#include "common/setup_before.h"
+#include "pdir.h"
+
+#include <cstring>
+#include <vector>
+#include <string>
+
+#include "common/eventlog.h"
+#include "common/setup_after.h"
+/*
+ * Copyright (C) 2001,2006  Dizzy
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,17 +29,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#define PDIR_INTERNAL_ACCESS
-#include "common/setup_before.h"
-#include "pdir.h"
-
-#include <cstring>
-
-#include "common/eventlog.h"
-#include "common/setup_after.h"
-#include "compat/strcasecmp.h"
-
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 #include "win32/dirent.h"
 #else
 #include <dirent.h>
@@ -34,191 +38,134 @@
 namespace pvpgn
 {
 
-	Directory::Directory(const std::string& path_, bool lazyread_)
-	{
-		open(path_, lazyread_);
-	}
+    Directory::Directory(const std::string& path_, bool lazyread_)
+        : path(path_), lazyread(lazyread_), dir(NULL)
+    {
+        if (!lazyread)
+            open(path_, lazyread_);
+    }
 
-	Directory::~Directory() throw()
-	{
-		close();
-	}
+    Directory::~Directory() throw()
+    {
+        close();
+    }
 
-	void
-		Directory::close()
-	{
-#ifdef WIN32
-			if (lFindHandle >= 0)
-				_findclose(lFindHandle);
-#else /* POSIX */
-			if (dir) closedir(dir);
-#endif /* WIN32-POSIX */
-		}
+    void Directory::close()
+    {
+        if (dir) {
+            closedir(dir);
+            dir = NULL;
+        }
+    }
 
-	void
-		Directory::open(const std::string& path_, bool lazyread_)
-	{
-#ifdef WIN32
-			std::string tmp(path_);
+    void Directory::open(const std::string& path_, bool lazyread_)
+    {
+        close();
+        path = path_;
+        lazyread = lazyread_;
 
-			if (tmp.size() + 1 + 3 >= _MAX_PATH)
-				throw std::runtime_error("pvpgn::Directory::Directory(): WIN32: path too long");
-			tmp += "/*.*";
+        if (!lazyread) {
+            dir = opendir(path.c_str());
+            if (!dir) {
+                throw OpenError(path);
+            }
+        }
+    }
 
-			status = 0;
-			std::memset(&fileinfo, 0, sizeof(fileinfo));
-			lFindHandle = _findfirst(tmp.c_str(), &fileinfo);
-			if (lFindHandle < 0 && !lazyread_)
-				throw OpenError(tmp);
+    void Directory::rewind()
+    {
+        if (dir) {
+            rewinddir(dir);
+        } else if (lazyread) {
+            open(path, false);
+        }
+    }
 
-			path = tmp;
-#else /* POSIX style */
-			if (!(dir = opendir(path_.c_str())) && !lazyread_)
-				throw OpenError(path);
-			path = path_;
-#endif /* WIN32-POSIX */
+    char const * Directory::read() const
+    {
+        if (!dir && lazyread) {
+            const_cast<Directory*>(this)->open(path, false);
+        }
 
-			lazyread = lazyread_;
-		}
+        if (!dir) return NULL;
 
-	void
-		Directory::rewind()
-	{
-#ifdef WIN32
-			close();
-			status = 0;
-			std::memset(&fileinfo, 0, sizeof(fileinfo));
-			lFindHandle = _findfirst(path.c_str(), &fileinfo);
-			if (lFindHandle < 0 && !lazyread) {
-				ERROR0("WIN32: couldn't rewind directory");
-				status = -1;
-			}
-#else /* POSIX */
-			if (dir) rewinddir(dir);
-#endif
-		}
+        struct dirent *dentry = readdir(dir);
+        if (!dentry) return NULL;
 
+        const char* result = dentry->d_name;
 
-	char const *
-		Directory::read() const
-	{
-			const char * result;
+        if (strcmp(result, ".") == 0 || strcmp(result, "..") == 0)
+            return read();
 
-#ifdef WIN32
-			switch (status) {
-			default:
-			case -1: /* couldn't rewind */
-				ERROR0("got status -1");
-				return 0;
-			case 0: /* freshly opened */
-				status = 1;
-				if (lFindHandle < 0) return 0;
-				result = fileinfo.name;
-				break;
-			case 1: /* reading */
-				if (lFindHandle < 0) return 0;
+        return result;
+    }
 
-				if (_findnext(lFindHandle, &fileinfo) < 0) {
-					status = 2;
-					return 0;
-				}
-				else result = fileinfo.name;
-				break;
-			case 2: /* EOF */
-				return 0;
-			}
-#else /* POSIX */
-			struct dirent *dentry = dir ? readdir(dir) : 0;
-			if (!dentry) return 0;
+    Directory::operator bool() const
+    {
+        return dir != NULL;
+    }
 
-			result = dentry->d_name;
-#endif /* WIN32-POSIX */
+    bool is_directory(const char* pzPath);
 
-			if (!(strcmp(result, ".") && strcmp(result, "..")))
-				/* here we presume we don't get an infinite number of "." or ".." ;) */
-				return read();
-			return result;
-		}
+    extern std::vector<std::string> dir_getfiles(const char * directory, const char* ext, bool recursive)
+    {
+        std::vector<std::string> files, dfiles;
+        const char* _ext;
 
-	Directory::operator bool() const
-	{
-#ifdef WIN32
-		return lFindHandle >= 0;
-#else
-		return dir != 0;
-#endif
-	}
+        DIR *dir;
+        struct dirent* ent;
 
-	bool is_directory(const char* pzPath);
+        dir = opendir(directory);
+        if (!dir)
+            return files;
 
+        while ((ent = readdir(dir)) != NULL)
+        {
+            const std::string file_name = ent->d_name;
+            std::string full_file_name = directory;
+            if (full_file_name.length() > 0 && full_file_name.back() != '/' && full_file_name.back() != '\\') {
+                full_file_name += "/";
+            }
+            full_file_name += file_name;
 
+            if (file_name == "." || file_name == "..")
+                continue;
 
-	/* Returns a list of files in a directory (except the ones that begin with a dot) */
-	extern std::vector<std::string> dir_getfiles(const char * directory, const char* ext, bool recursive)
-	{
-		std::vector<std::string> files, dfiles;
-		const char* _ext;
+            if (is_directory(full_file_name.c_str()))
+            {
+                if (recursive)
+                {
+                    std::vector<std::string> subfiles = dir_getfiles(full_file_name.c_str(), ext, recursive);
+                    dfiles.insert(dfiles.end(), subfiles.begin(), subfiles.end());
+                }
+                continue;
+            }
 
-		DIR *dir;
-		struct dirent* ent;
+            _ext = strrchr(file_name.c_str(), '.');
+            if (ext && strcmp(ext, "*") != 0) {
+                if (!_ext || strcasecmp(_ext, ext) != 0)
+                    continue;
+            }
 
-		dir = opendir(directory);
-		if (!dir)
-			return files;
+            files.push_back(full_file_name);
+        }
+        closedir(dir);
 
-		while ((ent = readdir(dir)) != NULL)
-		{
-			const std::string file_name = ent->d_name;
-			const std::string full_file_name = std::string(directory) + "/" + file_name;
+        files.insert(files.begin(), dfiles.begin(), dfiles.end());
 
-			if (file_name[0] == '.')
-				continue;
+        return files;
+    }
 
-			if (is_directory(full_file_name.c_str()))
-			{
-				// iterate subdirectories
-				if (recursive)
-				{
-					std::vector<std::string> subfiles = dir_getfiles(full_file_name.c_str(), ext, recursive);
+    bool is_directory(const char* pzPath)
+    {
+        if (pzPath == NULL) return false;
 
-					for (std::size_t i = 0; i < subfiles.size(); ++i)
-						dfiles.push_back(subfiles[i]);
-				}
-				continue;
-			}
-
-			// filter by extension
-			_ext = strrchr(file_name.c_str(), '.');
-			if (strcmp(ext, "*") != 0)
-			if (!_ext || strcasecmp(_ext, ext) != 0)
-				continue;
-
-			files.push_back(full_file_name);
-		}
-		closedir(dir);
-
-		// merge files and files from directories, so we will receive directories at begin, files at the end
-		//  (otherwise files and directories are read alphabetically - as is)
-		files.insert(files.begin(), dfiles.begin(), dfiles.end());
-
-		return files;
-	}
-
-	bool is_directory(const char* pzPath)
-	{
-		if (pzPath == NULL) return false;
-
-		DIR *pDir;
-		bool bExists = false;
-
-		pDir = opendir(pzPath);
-
-		if (pDir != NULL)
-		{
-			bExists = true;
-			(void)closedir(pDir);
-		}
-
-		return bExists;
-	}
+        DIR *pDir = opendir(pzPath);
+        if (pDir != NULL)
+        {
+            closedir(pDir);
+            return true;
+        }
+        return false;
+    }
 }

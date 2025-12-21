@@ -18,7 +18,6 @@
  */
 #include "common/setup_before.h"
 #include "watch.h"
-#include "common/field_sizes.h"
 #include "common/eventlog.h"
 #include "common/list.h"
 #include "message.h"

@@ -29,14 +29,13 @@
 # include <unistd.h>
 #endif
 
-#include "compat/stdfileno.h"
 #include "compat/psock.h"
-#include "compat/pgetpid.h"
 #include "common/tracker.h"
 #include "common/eventlog.h"
 #include "common/list.h"
 #include "common/xalloc.h"
 #include "common/util.h"
+#include "common/addr.h"
 #include "common/version.h"
 #include "common/bn_type.h"
 

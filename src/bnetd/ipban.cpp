@@ -30,14 +30,12 @@
 #include <vector>
 
 #include "compat/strsep.h"
-#include "compat/strcasecmp.h"
 
 #include "common/list.h"
 #include "common/util.h"
 #include "common/eventlog.h"
 #include "common/xalloc.h"
 #include "common/field_sizes.h"
-#include "common/xstring.h"
 
 #include "message.h"
 #include "server.h"

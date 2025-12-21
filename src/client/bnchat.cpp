@@ -23,7 +23,7 @@
 #include <cstdarg>
 #include <cstdlib>
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include <conio.h>
 #endif
 #ifdef HAVE_TERMIOS_H
@@ -35,7 +35,6 @@
 
 #include "compat/psock.h"
 #include "compat/termios.h"
-#include "compat/strcasecmp.h"
 #include "common/field_sizes.h"
 #include "common/bnet_protocol.h"
 #include "common/packet.h"
@@ -50,7 +49,6 @@
 #include "common/network.h"
 #include "common/hexdump.h"
 #include "common/version.h"
-#include "common/xstring.h"
 #ifdef CLIENTDEBUG
 # include "common/eventlog.h"
 #endif
@@ -1325,7 +1323,7 @@ extern int main(int argc, char * argv[])
 		unsigned int   i;
 		int            highest_fd;
 		t_psock_fd_set rfds;
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 		static struct timeval tv;
 
 		tv.tv_sec = 50 / 1000;

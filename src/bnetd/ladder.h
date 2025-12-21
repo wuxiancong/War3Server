@@ -25,7 +25,6 @@
 #include <list>
 #include <map>
 #include <string>
-#include <utility>
 
 #define W3_XPCALC_MAXLEVEL	65
 

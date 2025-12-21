@@ -38,7 +38,7 @@
  * headers and any other compat socket fixup headers.
  */
 
-#ifdef WIN32 /* winsock2 */
+#if defined(_WIN32) || defined(WIN32) /* winsock2 */
 
 #include <winsock2.h>
 

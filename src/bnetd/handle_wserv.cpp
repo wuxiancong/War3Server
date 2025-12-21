@@ -25,11 +25,9 @@
 #include <cctype>
 #include <cstdlib>
 
-#include "compat/strcasecmp.h"
 #include "common/irc_protocol.h"
 #include "common/eventlog.h"
 #include "common/tag.h"
-#include "common/util.h"
 #include "common/list.h"
 #include "common/addr.h"
 #include "common/trans.h"
@@ -37,7 +35,6 @@
 #include "prefs.h"
 #include "irc.h"
 #include "message.h"
-#include "tick.h"
 #include "server.h"
 #include "autoupdate.h"
 #include "common/setup_after.h"

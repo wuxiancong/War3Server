@@ -24,7 +24,6 @@
 #include <cerrno>
 #include <string>
 
-#include "compat/gethostname.h"
 #include "common/xalloc.h"
 #include "common/eventlog.h"
 #include "common/addr.h"

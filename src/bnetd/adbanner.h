@@ -18,8 +18,6 @@
 #ifndef INCLUDED_ADBANNER_H
 #define INCLUDED_ADBANNER_H
 
-#include <array>
-#include <cstdint>
 #include <string>
 #include <vector>
 

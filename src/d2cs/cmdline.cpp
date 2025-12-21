@@ -17,16 +17,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "setup.h"
 #include "cmdline.h"
 
 #include <cstdio>
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include "win32/service.h"
 #endif
 
-#include "compat/strcasecmp.h"
 #include "common/conf.h"
 #include "common/xalloc.h"
 #include "common/eventlog.h"

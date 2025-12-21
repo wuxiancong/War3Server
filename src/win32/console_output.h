@@ -17,7 +17,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.         *
  ***************************************************************************/
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 
 #ifndef CONSOLE_OUTPUT_INCLUDED
 #define CONSOLE_OUTPUT_INCLUDED

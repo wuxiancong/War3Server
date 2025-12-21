@@ -103,6 +103,8 @@ namespace pvpgn
 	extern t_addrlist * addrlist_create(char const * str, unsigned int defipaddr, unsigned short defport);
 	extern int addrlist_destroy(t_addrlist * addrlist);
 	extern int addrlist_get_length(t_addrlist const * addrlist);
+    extern char * const inet_ntop(int af, const void* src, char* dst, int cnt);
+    extern int const inet_pton(int af, const char *src, void *dst);
 }
 
 #endif

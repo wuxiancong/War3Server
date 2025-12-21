@@ -31,9 +31,6 @@
 #include <cstring>
 #include <ctime>
 #include <fstream>
-#include <iomanip>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -42,13 +39,9 @@
 #include "json/json.hpp"
 
 #include "common/eventlog.h"
-#include "common/field_sizes.h"
 #include "common/hash_tuple.hpp"
 #include "common/proginfo.h"
-#include "compat/strcasecmp.h"
 #include "common/tag.h"
-#include "common/token.h"
-#include "common/util.h"
 
 #include "prefs.h"
 #include "common/setup_after.h"

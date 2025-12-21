@@ -25,16 +25,12 @@
 
 #include <cctype>
 #include <cerrno>
-#include <cinttypes>
 #include <cstdint>
 #include <cstring>
-#include <fstream>
 #include <limits>
 #include <sstream>
 #include <tuple>
 
-#include "compat/strcasecmp.h"
-#include "compat/strncasecmp.h"
 #include "common/packet.h"
 #include "common/eventlog.h"
 #include "common/tag.h"
@@ -1680,11 +1676,10 @@ static int _client_loginreq1(t_connection * c, t_packet const *const packet)
 void client_init_email(t_connection * c, t_account * account)
 {
     t_packet *packet;
-    char const *email;
 
     if (!c || !account)
         return;
-    if (!(email = account_get_email(account))) {
+    if (!account_get_email(account)) {
         if ((packet = packet_create(packet_class_bnet))) {
             packet_set_size(packet, sizeof(t_server_setemailreq));
             packet_set_type(packet, SERVER_SETEMAILREQ);
@@ -2765,7 +2760,7 @@ static int _client_atinvitefriend(t_connection * c, t_packet const *const packet
             if (!(dest_c = account_get_conn(team_get_member(team, i))))
                 continue;
 
-            if ((dest_c == c))
+            if (dest_c == c)
                 continue;
 
             if (!(rpacket = packet_create(packet_class_bnet)))
@@ -2838,14 +2833,14 @@ static int _client_atinvitefriend(t_connection * c, t_packet const *const packet
 static int _client_atacceptdeclineinvite(t_connection * c, t_packet const *const packet)
 {
     t_packet *rpacket;
-    t_clienttag ctag;
+    // t_clienttag ctag;
 
     if (packet_get_size(packet) < sizeof(t_client_arrangedteam_accept_decline_invite)) {
         eventlog(eventlog_level_error, __FUNCTION__, "[{}] got bad ARRANGEDTEAM_ACCEPT_DECLINE_INVITE packet (expected {} bytes, got {})", conn_get_socket(c), sizeof(t_client_arrangedteam_accept_decline_invite), packet_get_size(packet));
         return -1;
     }
 
-    ctag = conn_get_clienttag(c);
+    // ctag = conn_get_clienttag(c);
 
     {
         char const *inviter;
@@ -2929,7 +2924,7 @@ static int _news_cb(std::time_t date, t_lstr * lstr, void *data)
 static int _client_motdw3(t_connection * c, t_packet const *const packet)
 {
     t_packet *rpacket;
-    t_clienttag ctag;
+    // t_clienttag ctag;
     t_motd_data motdd;
 
     if (packet_get_size(packet) < sizeof(t_client_motd_w3)) {
@@ -2937,7 +2932,7 @@ static int _client_motdw3(t_connection * c, t_packet const *const packet)
         return -1;
     }
 
-    ctag = conn_get_clienttag(c);
+    // ctag = conn_get_clienttag(c);
     /* if in a game, remove user from his game */
     if (conn_get_game(c) != NULL)
         conn_set_game(c, NULL, NULL, NULL, game_type_none, 0);

@@ -23,10 +23,8 @@
 #include <cstdlib>
 #include <cctype>
 #include <cstdio>
-#include <string>
+#include <cstring>
 
-#include "compat/strcasecmp.h"
-#include "compat/strncasecmp.h"
 #include "common/xalloc.h"
 #include "common/setup_after.h"
 

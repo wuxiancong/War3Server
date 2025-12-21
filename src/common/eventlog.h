@@ -51,11 +51,11 @@ namespace pvpgn
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <utility>
 
 #ifdef WIN32_GUI
-# include "common/gui_printf.h"
+# include "gui_printf.h"
 #endif
+#include "setup_before.h"
 
 #include <fmt/format.h>
 

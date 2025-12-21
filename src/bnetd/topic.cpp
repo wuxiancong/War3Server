@@ -20,12 +20,10 @@
 
 #include <fstream>
 #include <memory>
-#include <new>
 #include <regex>
 #include <string>
 #include <utility>
 
-#include "compat/strcasecmp.h"
 
 #include "common/eventlog.h"
 #include "common/field_sizes.h"

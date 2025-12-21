@@ -23,7 +23,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "compat/strdup.h"
 #include "common/packet.h"
 #include "common/eventlog.h"
 #include "common/tag.h"
@@ -1141,9 +1140,9 @@ namespace pvpgn
 						number = gameresult_get_player_number(results, j) - 1;
 						result = gameresult_get_player_result(results, j);
 
-						if ((result == W3_GAMERESULT_WIN))
+                        if (result == W3_GAMERESULT_WIN)
 							wins[number]++;
-						if ((result == W3_GAMERESULT_LOSS))
+                        if (result == W3_GAMERESULT_LOSS)
 							losses[number]++;
 					}
 				}

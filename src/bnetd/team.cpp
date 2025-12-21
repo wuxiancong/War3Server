@@ -134,14 +134,13 @@ namespace pvpgn
 
 		int teams_destroy(t_list * teams)
 		{
-			t_elem *curr;
-			t_team *team;
+            t_elem *curr;
 
 			if ((teams))
 			{
 				LIST_TRAVERSE(teams, curr)
 				{
-					if (!(team = (t_team*)elem_get_data(curr)))
+                    if (!(t_team*)elem_get_data(curr))
 					{
 						eventlog(eventlog_level_error, __FUNCTION__, "found NULL entry in list");
 						continue;
@@ -229,7 +228,7 @@ namespace pvpgn
 						found = 0;
 						for (j = 0; j < MAX_TEAMSIZE; j++)
 						{
-							if ((accounts[i] == cteam->members[j]))
+                            if (accounts[i] == cteam->members[j])
 							{
 								found = 1;
 								break;
@@ -281,7 +280,7 @@ namespace pvpgn
 						found = 0;
 						for (j = 0; j < MAX_TEAMSIZE; j++)
 						{
-							if ((uids[i] == cteam->teammembers[j]))
+                            if (uids[i] == cteam->teammembers[j])
 							{
 								found = 1;
 								break;
@@ -320,7 +319,7 @@ namespace pvpgn
 						continue;
 					}
 
-					if ((cteam->teamid == teamid))
+                    if (cteam->teamid == teamid)
 						return cteam;
 
 				}

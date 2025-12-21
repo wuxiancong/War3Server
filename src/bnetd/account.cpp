@@ -26,23 +26,17 @@
 #include <cctype>
 #include <chrono>
 
-#include "compat/strdup.h"
-#include "compat/strcasecmp.h"
-#include "compat/strncasecmp.h"
-#include "compat/pdir.h"
 #include "common/list.h"
 #include "common/elist.h"
 #include "common/eventlog.h"
 #include "common/util.h"
 #include "common/field_sizes.h"
 #include "common/bnethash.h"
-#include "common/introtate.h"
 
 #include "prefs.h"
 #include "account_wrap.h"
 #include "common/hashtable.h"
 #include "connection.h"
-#include "watch.h"
 #include "friends.h"
 #include "team.h"
 #include "common/tag.h"

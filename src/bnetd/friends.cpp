@@ -19,7 +19,6 @@
 
 #include <new>
 
-#include "compat/strcasecmp.h"
 #include "common/list.h"
 #include "common/eventlog.h"
 

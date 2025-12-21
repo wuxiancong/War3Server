@@ -32,7 +32,6 @@
 # include <sys/wait.h>
 #endif
 
-#include "compat/stdfileno.h"
 #include "common/eventlog.h"
 #include "common/setup_after.h"
 

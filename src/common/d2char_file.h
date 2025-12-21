@@ -1,6 +1,7 @@
 #ifndef INCLUDED_COMMON_D2CHAR_FILE
 #define INCLUDED_COMMON_D2CHAR_FILE
 
+#include "common/bn_type.h"
 #define D2CHARFILE_PADBYTE              0xff
 
 namespace pvpgn

@@ -28,8 +28,6 @@
 #include "common/eventlog.h"
 #include "common/flags.h"
 #include "common/xalloc.h"
-#include "compat/strcasecmp.h"
-#include "compat/strncasecmp.h"
 #include "attr.h"
 #include "attrlayer.h"
 #include "storage.h"

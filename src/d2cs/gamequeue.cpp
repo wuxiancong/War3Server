@@ -21,7 +21,6 @@
 
 #include <cstring>
 
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "common/xalloc.h"
 #include "connection.h"

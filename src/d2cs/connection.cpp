@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
+#include "d2cs/d2charfile.h"
 #include "setup.h"
 #include "connection.h"
 
@@ -26,7 +27,6 @@
 #include <cassert>
 
 #include "compat/psock.h"
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "common/introtate.h"
 #include "common/addr.h"

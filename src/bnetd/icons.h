@@ -18,6 +18,8 @@
 #ifndef INCLUDED_ICONS_TYPES
 #define INCLUDED_ICONS_TYPES
 
+#include "bnetd/handle_irc.h"
+
 namespace pvpgn
 {
 

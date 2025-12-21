@@ -18,7 +18,7 @@
  */
 
 #ifndef __DDBS_CMDLINE_H_PROTOS__
-#define __D2DBS_CMDLINE_H_PROTOS__
+#define __DDBS_CMDLINE_H_PROTOS__
 
 namespace pvpgn
 {

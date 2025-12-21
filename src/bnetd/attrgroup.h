@@ -25,7 +25,6 @@
 #ifndef JUST_NEED_TYPES
 #define JUST_NEED_TYPES
 #include "storage.h"
-#include <vector>
 #undef JUST_NEED_TYPES
 #else
 #include "storage.h"

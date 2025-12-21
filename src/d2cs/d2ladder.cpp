@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include "common/d2cs_d2dbs_ladder.h"
 #include "common/setup_before.h"
-#include "setup.h"
 #include "d2ladder.h"
 
 #include <algorithm>
@@ -25,7 +25,6 @@
 #include <cstring>
 #include <cerrno>
 
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "common/xalloc.h"
 #include "common/tag.h"

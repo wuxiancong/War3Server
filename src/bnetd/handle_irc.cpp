@@ -25,25 +25,20 @@
 #include <cctype>
 #include <cstdlib>
 
-#include "compat/strcasecmp.h"
 #include "common/irc_protocol.h"
 #include "common/eventlog.h"
 #include "common/bnethash.h"
 #include "common/tag.h"
-#include "common/util.h"
 #include "common/list.h"
 #include "common/addr.h"
-#include "common/xstring.h"
 
 #include "prefs.h"
-#include "command.h"
 #include "irc.h"
 #include "account.h"
 #include "account_wrap.h"
 #include "command_groups.h"
 #include "channel.h"
 #include "message.h"
-#include "tick.h"
 #include "topic.h"
 #include "server.h"
 #include "common/setup_after.h"

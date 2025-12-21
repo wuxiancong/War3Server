@@ -18,8 +18,6 @@
 #ifndef INCLUDED_CHARACTER_TYPES
 #define INCLUDED_CHARACTER_TYPES
 
-#include <cstdint>
-
 namespace pvpgn
 {
 

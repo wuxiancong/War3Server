@@ -23,7 +23,6 @@
 #include <cstring>
 #include <map>
 
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "common/util.h"
 #include "common/xalloc.h"

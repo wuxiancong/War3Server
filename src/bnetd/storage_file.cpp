@@ -31,7 +31,6 @@
 # include <unistd.h>
 #endif
 
-#include "compat/strcasecmp.h"
 #include "compat/pdir.h"
 #include "compat/rename.h"
 #include "common/eventlog.h"

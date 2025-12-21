@@ -1600,9 +1600,9 @@ namespace pvpgn
 			}
 
 			{
-				t_clienttag gt;
+                t_clienttag gt = game_get_clienttag(game);
 
-				if (!(gt = game_get_clienttag(game)))
+                if (!gt)
 				{
 					eventlog(eventlog_level_error, __FUNCTION__, "could not get clienttag for game");
 					return -1;
@@ -1880,7 +1880,7 @@ namespace pvpgn
 
 			for (i = 0; i < game->count; i++)
 			{
-				if ((game->players[i] == account)) break;
+                if (game->players[i] == account) break;
 			}
 
 			if (i == game->count)
@@ -1961,7 +1961,7 @@ namespace pvpgn
 
 			for (i = 0; i < game->count; i++)
 			{
-				if ((game->players[i] == account))
+                if (game->players[i] == account)
 					results[i] = result;
 				else
 					results[i] = game_result_none;
@@ -2002,7 +2002,7 @@ namespace pvpgn
 
 			for (i = 0; i < game->count; i++)
 			{
-				if ((game->players[i] == account)) break;
+                if (game->players[i] == account) break;
 			}
 
 			if (i == game->count)
@@ -2168,8 +2168,7 @@ namespace pvpgn
 
 			elist_for_each(curr, &gamelist_head)
 			{
-				game = elist_entry(curr, t_game, glist_link);
-				status = game->status;
+                game = elist_entry(curr, t_game, glist_link);
 
 				if ((type == game_type_all || game->type == type) && (ctag == game->clienttag) && (game->name)
 					&& (!strcasecmp(name, game->name)) && (game->status != game_status_started) &&
@@ -2181,7 +2180,7 @@ namespace pvpgn
 		}
 
 		extern t_game * gamelist_find_game_byid(unsigned int id)
-		{
+        {
 			t_elist *curr;
 			t_game *game;
 

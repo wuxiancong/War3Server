@@ -31,6 +31,7 @@
 #include "common/bnet_protocol.h"
 #include "common/util.h"
 #include "common/tag.h"
+#include "common/addr.h"
 #include "common/packet.h"
 #include "common/bn_type.h"
 #include "common/bnettime.h"

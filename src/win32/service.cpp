@@ -14,11 +14,12 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 
 #include <cstring>
 #include <windows.h>
 
+/* Remove problematic WINADVAPI definition for internal typedefs */
 #if !defined(WINADVAPI)
 #if !defined(_ADVAPI32_)
 #define WINADVAPI DECLSPEC_IMPORT
@@ -42,200 +43,203 @@ extern int main(int argc, char** argv);
 SERVICE_STATUS serviceStatus;
 SERVICE_STATUS_HANDLE serviceStatusHandle = 0;
 
-typedef WINADVAPI BOOL(WINAPI* CSD_T)(SC_HANDLE, DWORD, LPCVOID);
+typedef BOOL(WINAPI* CSD_T)(SC_HANDLE, DWORD, LPCVOID);
 
 void Win32_ServiceInstall()
 {
-	SERVICE_DESCRIPTIONA sdBuf;
-	CSD_T ChangeServiceDescription;
-	HMODULE advapi32;
-	SC_HANDLE serviceControlManager = OpenSCManagerA(0, 0, SC_MANAGER_CREATE_SERVICE);
+    SERVICE_DESCRIPTIONA sdBuf;
+    CSD_T ChangeServiceDescription;
+    HMODULE advapi32;
+    SC_HANDLE serviceControlManager = OpenSCManagerA(0, 0, SC_MANAGER_CREATE_SERVICE);
 
-	if (serviceControlManager)
-	{
-		char path[_MAX_PATH + 10];
-		if (GetModuleFileNameA(0, path, sizeof(path) / sizeof(path[0])) > 0)
-		{
-			SC_HANDLE service;
-			std::strcat(path, " --service");
-			service = CreateServiceA(serviceControlManager,
-				serviceName, serviceLongName,
-				SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS,
-				SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, path,
-				0, 0, 0, 0, 0);
-			if (service)
-			{
-				sdBuf.lpDescription = serviceDescription;
+    if (serviceControlManager)
+    {
+        char path[_MAX_PATH + 10];
+        /* Initialize path to ensure safety */
+        memset(path, 0, sizeof(path));
 
-				if (!(advapi32 = GetModuleHandleA("ADVAPI32.DLL")))
-				{
-					CloseServiceHandle(service);
-					CloseServiceHandle(serviceControlManager);
-					return;
-				}
+        if (GetModuleFileNameA(0, path, _MAX_PATH) > 0)
+        {
+            SC_HANDLE service;
 
-				if (!(ChangeServiceDescription = (CSD_T)GetProcAddress(advapi32, "ChangeServiceConfig2A")))
-				{
-					CloseServiceHandle(service);
-					CloseServiceHandle(serviceControlManager);
-					return;
-				}
+            strcat_s(path, sizeof(path), " --service");
 
-				ChangeServiceDescription(
-					service,                // handle to service  
-					SERVICE_CONFIG_DESCRIPTION, // change: description  
-					&sdBuf);
-				CloseServiceHandle(service);
-			}
-		}
-		CloseServiceHandle(serviceControlManager);
-	}
+            service = CreateServiceA(serviceControlManager,
+                                     serviceName, serviceLongName,
+                                     SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS,
+                                     SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, path,
+                                     0, 0, 0, 0, 0);
+            if (service)
+            {
+                sdBuf.lpDescription = serviceDescription;
+
+                if (!(advapi32 = GetModuleHandleA("ADVAPI32.DLL")))
+                {
+                    CloseServiceHandle(service);
+                    CloseServiceHandle(serviceControlManager);
+                    return;
+                }
+
+                if (!(ChangeServiceDescription = (CSD_T)GetProcAddress(advapi32, "ChangeServiceConfig2A")))
+                {
+                    CloseServiceHandle(service);
+                    CloseServiceHandle(serviceControlManager);
+                    return;
+                }
+
+                ChangeServiceDescription(
+                    service,                // handle to service
+                    SERVICE_CONFIG_DESCRIPTION, // change: description
+                    &sdBuf);
+                CloseServiceHandle(service);
+            }
+        }
+        CloseServiceHandle(serviceControlManager);
+    }
 }
 
 void Win32_ServiceUninstall()
 {
-	SC_HANDLE serviceControlManager = OpenSCManagerA(0, 0, SC_MANAGER_CONNECT);
+    SC_HANDLE serviceControlManager = OpenSCManagerA(0, 0, SC_MANAGER_CONNECT);
 
-	if (serviceControlManager)
-	{
-		SC_HANDLE service = OpenServiceA(serviceControlManager,
-			serviceName, SERVICE_QUERY_STATUS | DELETE);
-		if (service)
-		{
-			SERVICE_STATUS serviceStatus;
-			if (QueryServiceStatus(service, &serviceStatus))
-			{
-				if (serviceStatus.dwCurrentState == SERVICE_STOPPED)
-					DeleteService(service);
-			}
-			//DeleteService(service);
+    if (serviceControlManager)
+    {
+        SC_HANDLE service = OpenServiceA(serviceControlManager,
+                                         serviceName, SERVICE_QUERY_STATUS | DELETE);
+        if (service)
+        {
+            SERVICE_STATUS serviceStatus;
+            if (QueryServiceStatus(service, &serviceStatus))
+            {
+                if (serviceStatus.dwCurrentState == SERVICE_STOPPED)
+                    DeleteService(service);
+            }
+            //DeleteService(service);
 
-			CloseServiceHandle(service);
-		}
+            CloseServiceHandle(service);
+        }
 
-		CloseServiceHandle(serviceControlManager);
-	}
+        CloseServiceHandle(serviceControlManager);
+    }
 
 }
 
 void WINAPI ServiceControlHandler(DWORD controlCode)
 {
-	switch (controlCode)
-	{
-	case SERVICE_CONTROL_INTERROGATE:
-		break;
+    switch (controlCode)
+    {
+    case SERVICE_CONTROL_INTERROGATE:
+        break;
 
-	case SERVICE_CONTROL_SHUTDOWN:
-	case SERVICE_CONTROL_STOP:
-		serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
-		SetServiceStatus(serviceStatusHandle, &serviceStatus);
+    case SERVICE_CONTROL_SHUTDOWN:
+    case SERVICE_CONTROL_STOP:
+        serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+        SetServiceStatus(serviceStatusHandle, &serviceStatus);
 
-		g_ServiceStatus = 0;
-		return;
+        g_ServiceStatus = 0;
+        return;
 
-	case SERVICE_CONTROL_PAUSE:
-		g_ServiceStatus = 2;
-		serviceStatus.dwCurrentState = SERVICE_PAUSED;
-		SetServiceStatus(serviceStatusHandle, &serviceStatus);
-		break;
+    case SERVICE_CONTROL_PAUSE:
+        g_ServiceStatus = 2;
+        serviceStatus.dwCurrentState = SERVICE_PAUSED;
+        SetServiceStatus(serviceStatusHandle, &serviceStatus);
+        break;
 
-	case SERVICE_CONTROL_CONTINUE:
-		serviceStatus.dwCurrentState = SERVICE_RUNNING;
-		SetServiceStatus(serviceStatusHandle, &serviceStatus);
-		g_ServiceStatus = 1;
-		break;
+    case SERVICE_CONTROL_CONTINUE:
+        serviceStatus.dwCurrentState = SERVICE_RUNNING;
+        SetServiceStatus(serviceStatusHandle, &serviceStatus);
+        g_ServiceStatus = 1;
+        break;
 
-	default:
-		if (controlCode >= 128 && controlCode <= 255)
-			// user defined control code
-			break;
-		else
-			// unrecognized control code
-			break;
-	}
+    default:
+        if (controlCode >= 128 && controlCode <= 255)
+            // user defined control code
+            break;
+        else
+            // unrecognized control code
+            break;
+    }
 
-	SetServiceStatus(serviceStatusHandle, &serviceStatus);
+    SetServiceStatus(serviceStatusHandle, &serviceStatus);
 }
 
 void WINAPI ServiceMain(DWORD argc, char* argv[])
 {
-	// initialise service status
-	serviceStatus.dwServiceType = SERVICE_WIN32;
-	serviceStatus.dwCurrentState = SERVICE_START_PENDING;
-	serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP |
-		SERVICE_ACCEPT_PAUSE_CONTINUE;
-	serviceStatus.dwWin32ExitCode = NO_ERROR;
-	serviceStatus.dwServiceSpecificExitCode = NO_ERROR;
-	serviceStatus.dwCheckPoint = 0;
-	serviceStatus.dwWaitHint = 0;
+    // initialise service status
+    serviceStatus.dwServiceType = SERVICE_WIN32;
+    serviceStatus.dwCurrentState = SERVICE_START_PENDING;
+    serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP |
+                                       SERVICE_ACCEPT_PAUSE_CONTINUE;
+    serviceStatus.dwWin32ExitCode = NO_ERROR;
+    serviceStatus.dwServiceSpecificExitCode = NO_ERROR;
+    serviceStatus.dwCheckPoint = 0;
+    serviceStatus.dwWaitHint = 0;
 
-	serviceStatusHandle = RegisterServiceCtrlHandlerA(serviceName, ServiceControlHandler);
+    serviceStatusHandle = RegisterServiceCtrlHandlerA(serviceName, ServiceControlHandler);
 
-	if (serviceStatusHandle)
-	{
-		char path[_MAX_PATH + 1];
-		unsigned int i, last_slash = 0;
+    if (serviceStatusHandle)
+    {
+        char path[_MAX_PATH + 1];
+        unsigned int i, last_slash = 0;
 
-		GetModuleFileNameA(0, path, sizeof(path) / sizeof(path[0]));
+        GetModuleFileNameA(0, path, sizeof(path) / sizeof(path[0]));
 
-		for (i = 0; i < std::strlen(path); i++) {
-			if (path[i] == '\\') last_slash = i;
-		}
+        for (i = 0; i < std::strlen(path); i++) {
+            if (path[i] == '\\') last_slash = i;
+        }
 
-		path[last_slash] = 0;
+        path[last_slash] = 0;
 
-		// service is starting
-		serviceStatus.dwCurrentState = SERVICE_START_PENDING;
-		SetServiceStatus(serviceStatusHandle, &serviceStatus);
+        // service is starting
+        serviceStatus.dwCurrentState = SERVICE_START_PENDING;
+        SetServiceStatus(serviceStatusHandle, &serviceStatus);
 
-		// do initialisation here
-		SetCurrentDirectoryA(path);
+        // do initialisation here
+        SetCurrentDirectoryA(path);
 
-		// running
-		serviceStatus.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
-		serviceStatus.dwCurrentState = SERVICE_RUNNING;
-		SetServiceStatus(serviceStatusHandle, &serviceStatus);
+        // running
+        serviceStatus.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
+        serviceStatus.dwCurrentState = SERVICE_RUNNING;
+        SetServiceStatus(serviceStatusHandle, &serviceStatus);
 
-		////////////////////////
-		// service main cycle //
-		////////////////////////
+        ////////////////////////
+        // service main cycle //
+        ////////////////////////
 
-		g_ServiceStatus = 1;
-		argc = 1;
+        g_ServiceStatus = 1;
+        argc = 1;
 
 
 #ifdef WIN32_GUI
-		app_main(argc, argv);
+        app_main(argc, argv);
 #else
-		main(argc, argv);
+        main(argc, argv);
 #endif
 
+        // service was stopped
+        serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+        SetServiceStatus(serviceStatusHandle, &serviceStatus);
 
+        // do cleanup here
 
-		// service was stopped
-		serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
-		SetServiceStatus(serviceStatusHandle, &serviceStatus);
-
-		// do cleanup here
-
-		// service is now stopped
-		serviceStatus.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
-		serviceStatus.dwCurrentState = SERVICE_STOPPED;
-		SetServiceStatus(serviceStatusHandle, &serviceStatus);
-	}
+        // service is now stopped
+        serviceStatus.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
+        serviceStatus.dwCurrentState = SERVICE_STOPPED;
+        SetServiceStatus(serviceStatusHandle, &serviceStatus);
+    }
 }
 
 void Win32_ServiceRun()
 {
-	SERVICE_TABLE_ENTRYA serviceTable[] =
-	{
-		{ serviceName, ServiceMain },
-		{ 0, 0 }
-	};
+    SERVICE_TABLE_ENTRYA serviceTable[] =
+        {
+            { serviceName, ServiceMain },
+            { 0, 0 }
+        };
 
-	if (!StartServiceCtrlDispatcherA(serviceTable))
-	{
-	}
+    if (!StartServiceCtrlDispatcherA(serviceTable))
+    {
+    }
 }
 
 #endif

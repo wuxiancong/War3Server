@@ -17,11 +17,7 @@
 #include "common/setup_before.h"
 #include "clan.h"
 
-#include <cstdint>
 
-#include "compat/strcasecmp.h"
-#include "compat/strncasecmp.h"
-#include "compat/pdir.h"
 
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -29,11 +25,9 @@
 
 #include "common/packet.h"
 #include "common/bnet_protocol.h"
-#include "common/util.h"
 #include "common/bnettime.h"
 #include "common/eventlog.h"
 #include "common/list.h"
-#include "common/proginfo.h"
 #include "common/bn_type.h"
 #include "common/xalloc.h"
 

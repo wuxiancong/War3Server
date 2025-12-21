@@ -35,6 +35,7 @@
 #include "common/bnettime.h"
 #include "common/hexdump.h"
 #include "common/util.h"
+#include "common/addr.h"
 #include "common/tag.h"
 #include "common/bn_type.h"
 #include "common/xalloc.h"

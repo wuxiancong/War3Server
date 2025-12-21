@@ -37,7 +37,6 @@
 #include "common/xalloc.h"
 #include "common/bnettime.h"
 #include "common/packet.h"
-#include "common/util.h"
 #include "common/bn_type.h"
 #include "common/tag.h"
 

@@ -18,21 +18,27 @@
 #ifndef INCLUDED_SEND_PROTOS
 #define INCLUDED_SEND_PROTOS
 
-#ifndef HAVE_SEND
-
-/* some sendto()s don't handle NULL, but send is called depreciated on BSD */
-#ifdef HAVE_SENDTO
-# include <cstddef>
-# define send(s, b, l, f) sendto(s, b, l, f, NULL, NULL)
+/*
+ * Platform Detection & Header Inclusion
+ */
+#ifdef _WIN32
+/* Windows Platform */
+#include <winsock2.h>
 #else
-# ifdef HAVE_WINSOCK2_H
-#  include <winsock2.h>
-#  define send(s, b, l, f) sendto(s, b, l, f, NULL, NULL)
-# else
-#   error "This program requires sendto()"
-# endif
+/* Linux / Unix Platform */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <cstddef> /* Ensure NULL is defined */
 #endif
 
+/*
+ * Compatibility Mapping:
+ * The original code maps send() to sendto().
+ * We apply this mapping unconditionally for both platforms.
+ */
+#ifdef send
+#undef send
 #endif
+#define send(s, b, l, f) sendto(s, b, l, f, NULL, NULL)
 
 #endif

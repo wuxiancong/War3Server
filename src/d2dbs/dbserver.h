@@ -19,6 +19,7 @@
 #define INCLUDED_DBSERVER_H
 
 #include "common/list.h"
+#include "d2dbs/setup.h"
 
 namespace pvpgn
 {

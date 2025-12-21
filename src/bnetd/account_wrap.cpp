@@ -20,10 +20,8 @@
 #include "account_wrap.h"
 
 #include <cstring>
-#include <memory>
 #include <string>
 
-#include "compat/strcasecmp.h"
 
 #include "common/bnet_protocol.h"
 #include "common/bnettime.h"
@@ -36,7 +34,6 @@
 #include "anongame_infos.h"
 #include "character.h"
 #include "clan.h"
-#include "command.h"
 #include "connection.h"
 #include "friends.h"
 #include "i18n.h"
@@ -396,7 +393,7 @@ namespace pvpgn
 		extern int account_get_auth_lock(t_account * account)
 		{
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 			// do not allow login with illegal Windows filenames
 			// 1) account will not created on plain file storage
 			// 2) it may cause a crash when writing a userlog commands into a file with that name

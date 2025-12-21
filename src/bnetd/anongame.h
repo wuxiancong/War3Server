@@ -21,10 +21,12 @@
 #ifdef JUST_NEED_TYPES
 # include "account.h"
 # include "connection.h"
+# include "../common/setup_before.h"
 #else
 # define JUST_NEED_TYPES
 # include "account.h"
 # include "connection.h"
+# include "../common/setup_before.h"
 # undef JUST_NEED_TYPES
 #endif
 # include "anongame_gameresult.h"

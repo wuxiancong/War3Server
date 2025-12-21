@@ -21,7 +21,6 @@
 #include <cstring>
 #include <cstdio>
 
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "common/bn_type.h"
 #include "common/addr.h"
@@ -289,22 +288,26 @@ namespace pvpgn
 				eventlog(eventlog_level_error, __FUNCTION__, "got NULL realm");
 				reply = BNETD_D2CS_CHARLOGINREPLY_FAILED;
 			}
-			else {
-				char revtag[8];
+            else {
+                char revtag[8];
 
-				realmname = realm_get_name(realm);
-				temp = (char*)xmalloc(std::strlen(clienttag) + std::strlen(realmname) + 1 + std::strlen(charname) + 1 +
-					std::strlen(portrait) + 1);
-				reply = BNETD_D2CS_CHARLOGINREPLY_SUCCEED;
-				std::strcpy(revtag, clienttag);
-				strreverse(revtag);
-				std::sprintf(temp, "%4s%s,%s,%s", revtag, realmname, charname, portrait);
-				conn_set_charname(client, charname);
-				conn_set_realminfo(client, temp);
-				xfree(temp);
-				eventlog(eventlog_level_debug, __FUNCTION__,
-					"loaded portrait for character {}", charname);
-			}
+                realmname = realm_get_name(realm);
+                temp = (char*)xmalloc(std::strlen(clienttag) + std::strlen(realmname) + 1 + std::strlen(charname) + 1 +
+                                        std::strlen(portrait) + 1);
+
+                reply = BNETD_D2CS_CHARLOGINREPLY_SUCCEED;
+                std::snprintf(revtag, sizeof(revtag), "%s", clienttag);
+
+                strreverse(revtag);
+                std::sprintf(temp, "%s%s,%s,%s", revtag, realmname, charname, portrait);
+                std::sprintf(temp, "%4s%s,%s,%s", revtag, realmname, charname, portrait);
+
+                conn_set_charname(client, charname);
+                conn_set_realminfo(client, temp);
+                xfree(temp);
+                eventlog(eventlog_level_debug, __FUNCTION__,
+                         "loaded portrait for character {}", charname);
+            }
 			if ((rpacket = packet_create(packet_class_d2cs_bnetd))) {
 				packet_set_size(rpacket, sizeof(t_bnetd_d2cs_charloginreply));
 				packet_set_type(rpacket, BNETD_D2CS_CHARLOGINREPLY);

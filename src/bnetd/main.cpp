@@ -21,7 +21,6 @@
 
 #include <exception>
 #include <iostream>
-#include <stdexcept>
 
 #include <cerrno>
 #include <cstring>
@@ -32,24 +31,21 @@
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include "win32/service.h"
 #endif
 #ifdef WIN32_GUI
 # include "common/gui_printf.h"
 #endif
 
-#include "compat/stdfileno.h"
 #include "compat/psock.h"
 #include "compat/uname.h"
-#include "compat/pgetpid.h"
 #include "common/eventlog.h"
 #include "common/xalloc.h"
 #include "common/fdwatch.h"
 #include "common/trans.h"
 #include "common/give_up_root_privileges.h"
 #include "common/version.h"
-#include "common/hexdump.h"
 
 #include "server.h"
 #include "prefs.h"
@@ -88,7 +84,7 @@
 #include "handle_apireg.h"
 #include "i18n.h"
 #include "userlog.h"
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 #include "win32/windump.h"
 #endif
 #include "common/setup_after.h"
@@ -533,7 +529,7 @@ extern int app_main(int argc, char ** argv)
 extern int main(int argc, char ** argv)
 #endif
 {
-	#ifdef WIN32
+    #ifdef WIN32
 	// create a dump file whenever the gateway crashes
     SetUnhandledExceptionFilter(unhandled_handler);
 	#endif

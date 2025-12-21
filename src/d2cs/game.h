@@ -19,7 +19,6 @@
 #define INCLUDED_GAME_H
 
 #include "d2gs.h"
-#include "connection.h"
 #include "bit.h"
 
 namespace pvpgn

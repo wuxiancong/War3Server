@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "setup.h"
 
 #include <cerrno>
 #include <cstdio>
@@ -31,18 +30,16 @@
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include "win32/service.h"
 #endif
 #ifdef WIN32_GUI
 # include "win32/winmain.h"
 #endif
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include "win32/windump.h"
 #endif
 
-#include "compat/stdfileno.h"
-#include "compat/pgetpid.h"
 #include "common/eventlog.h"
 #include "common/xalloc.h"
 #include "common/trans.h"

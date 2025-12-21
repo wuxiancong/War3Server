@@ -18,21 +18,28 @@
 #ifndef INCLUDED_RECV_PROTOS
 #define INCLUDED_RECV_PROTOS
 
-#ifndef HAVE_RECV
-
-/* some recvfrom()s don't handle NULL, but recv is called depreciated on BSD */
-#ifdef HAVE_RECVFROM
-# include <cstddef>
-# define recv(s, b, l, f) recvfrom(s, b, l, f, NULL, NULL)
+/*
+ * Platform Detection & Header Inclusion
+ */
+#ifdef _WIN32
+/* Windows Platform */
+#include <winsock2.h>
 #else
-# ifdef HAVE_WINSOCK2_H
-#  include <winsock2.h>
-#  define recv(s, b, l, f) recvfrom(s, b, l, f, NULL, NULL)
-# else
-#   error "This program requires recvfrom()"
-# endif
+/* Linux / Unix Platform */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <cstddef> /* Ensure NULL is defined */
 #endif
 
+/*
+ * Compatibility Mapping:
+ * The original code maps recv() to recvfrom() to avoid potential
+ * deprecation warnings on some BSD systems or to ensure consistent behavior.
+ * We apply this mapping unconditionally for both platforms.
+ */
+#ifdef recv
+#undef recv
 #endif
+#define recv(s, b, l, f) recvfrom(s, b, l, f, NULL, NULL)
 
 #endif

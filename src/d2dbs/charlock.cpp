@@ -16,14 +16,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "setup.h"
 #include "charlock.h"
 
 #include <limits>
 #include <cstring>
 #include <cctype>
 
-#include "compat/strcasecmp.h"
 #include "common/xalloc.h"
 #include "common/introtate.h"
 #include "common/xstring.h"

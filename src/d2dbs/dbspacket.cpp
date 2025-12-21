@@ -38,8 +38,6 @@
 #include "compat/mkdir.h"
 #include "compat/rename.h"
 #include "compat/access.h"
-#include "compat/statmacros.h"
-#include "compat/psock.h"
 #include "common/xstring.h"
 #include "common/eventlog.h"
 #include "common/d2cs_d2gs_character.h"

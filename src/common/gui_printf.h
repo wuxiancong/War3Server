@@ -23,12 +23,16 @@
 
 #include <cstdarg>
 #include <cwchar>
-#include <string>
-#include <utility>
 
 #include <fmt/format.h>
 
+#ifndef JUST_NEED_TYPES
+#define JUST_NEED_TYPES
 #include "common/eventlog.h"
+#undef JUST_NEED_TYPES
+#else
+#include "common/eventlog.h"
+#endif
 
 namespace pvpgn
 {

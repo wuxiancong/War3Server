@@ -18,7 +18,7 @@
 #ifndef INCLUDED_ACCESS_PROTOS
 #define INCLUDED_ACCESS_PROTOS
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include <io.h>
 /* Values for the second argument to access. These may be OR'd together. */
 # define R_OK	4	/* Test for read permission.	*/

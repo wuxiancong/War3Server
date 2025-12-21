@@ -24,7 +24,6 @@
 #include <cctype>
 
 #include "alias_command.h"
-#include "compat/strcasecmp.h"
 #include "common/field_sizes.h"
 #include "common/util.h"
 #include "common/eventlog.h"

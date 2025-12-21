@@ -17,7 +17,6 @@
    */
 
 #include "common/setup_before.h"
-#include "compat/strcasecmp.h"
 #include <cstring>
 #include <cstdlib>
 
@@ -27,7 +26,6 @@
 #include "storage_sql.h"
 #endif
 
-#include "compat/strdup.h"
 #include "common/eventlog.h"
 #include "common/xalloc.h"
 #include "common/setup_after.h"

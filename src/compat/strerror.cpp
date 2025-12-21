@@ -17,7 +17,7 @@
  */
 #include "common/setup_before.h"
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 #include <cstring>
 #include <winsock2.h>
 

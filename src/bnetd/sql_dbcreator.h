@@ -15,7 +15,7 @@
  */
 
 #ifndef INCLUDED_SQL_DBCREATOR_TYPES
-#define INCLUDED_SQL_DBCRETAOR_TYPES
+#define INCLUDED_SQL_DBCREATOR_TYPES
 
 #include "common/list.h"
 

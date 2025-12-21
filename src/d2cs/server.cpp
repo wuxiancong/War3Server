@@ -22,7 +22,7 @@
 #include <cstring>
 #include <ctime>
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include <conio.h>
 #endif
 
@@ -52,7 +52,7 @@
 #include "common/setup_after.h"
 
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 extern int g_ServiceStatus;
 #endif
 
@@ -265,7 +265,7 @@ static int server_loop(void)
 	count=0;
 	while (1) {
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 	if (g_ServiceStatus<0 && kbhit() && getch()=='q')
 	    signal_quit_wrapper();
 	if (g_ServiceStatus == 0) signal_quit_wrapper();

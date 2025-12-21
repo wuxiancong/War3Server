@@ -30,10 +30,8 @@
 #include "common/list.h"
 #include "common/packet.h"
 
-#include "compat/strcasecmp.h"
 
 #include "prefs.h"
-#include "irc.h"
 #include "account.h"
 #include "account_wrap.h"
 #include "message.h"
@@ -864,7 +862,7 @@ namespace pvpgn
                         std::snprintf(message, sizeof(message), "Pussword must be specifed!");
                         std::snprintf(hresult, sizeof(hresult), "-2147221248");
                     }
-                    else if (account = accountlist_find_account(newnick)) {
+                    else if (accountlist_find_account(newnick)) {
                         std::snprintf(message, sizeof(message), "That login is already in use! Please try another NICK name.");
                         std::snprintf(hresult, sizeof(hresult), "-2147221248");
                     }

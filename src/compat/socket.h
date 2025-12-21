@@ -19,7 +19,7 @@
 #ifndef INCLUDED_SOCKET_PROTOS
 #define INCLUDED_SOCKET_PROTOS
 
-#ifdef WIN32 /* assume winsock2 is available */
+#if defined(_WIN32) || defined(WIN32) /* assume winsock2 is available */
 
 # include <winsock2.h>
 /*

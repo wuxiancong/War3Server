@@ -28,7 +28,6 @@
 #include <vector>
 #include <string.h>
 
-#include "compat/strcasecmp.h"
 
 #include "common/token.h"
 

@@ -20,14 +20,13 @@
 
 #include "common/setup_before.h"
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 
 #include "console_output.h"
 #include <windows.h>
 #include <fcntl.h>
 #include <io.h>
 #include <iostream>
-#include <fstream>
 #include "common/setup_after.h"
 
 namespace pvpgn

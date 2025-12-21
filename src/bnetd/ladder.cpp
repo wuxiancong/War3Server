@@ -19,7 +19,6 @@
  */
 #include "common/setup_before.h"
 #define LADDER_INTERNAL_ACCESS
-#include "ladder.h"
 
 #include <cstdio>
 #include <cerrno>
@@ -38,8 +37,10 @@
 # include <sys/stat.h>
 #endif
 
-#include "compat/strerror.h"
+#include "bnetd/attrgroup.h"
+#include "bnetd/ladder.h"
 #include "common/tag.h"
+#include "common/xalloc.h"
 #include "common/eventlog.h"
 #include "common/list.h"
 #include "common/hashtable.h"
@@ -349,7 +350,7 @@ namespace pvpgn
 			}
 
 			/* then lets allocate mem for all the arrays */
-			xpcalc = (t_xpcalc_entry*)xmalloc(sizeof(t_xpcalc_entry)* W3_XPCALC_MAXLEVEL); //presume the maximal leveldiff is level number
+            xpcalc = (t_xpcalc_entry*)xmalloc(sizeof(t_xpcalc_entry)* W3_XPCALC_MAXLEVEL); //presume the maximal leveldiff is level number
 
 			w3_xpcalc_maxleveldiff = -1;
 			std::memset(xpcalc, 0, sizeof(t_xpcalc_entry)* W3_XPCALC_MAXLEVEL);

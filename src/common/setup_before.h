@@ -241,7 +241,7 @@ const char * const BNETD_LOG_COMMAND_GROUPS = "2345678";
 const char * const BNETD_LOG_COMMAND_LIST = "";
 
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 // reserved filenames on Windows
 const char* const ILLEGALFILENAMES[] = {
 	"com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", "con", "nul", "prn", "aux"
@@ -257,7 +257,7 @@ const int BNTRACKD_GRANULARITY = 5;
 const int BNTRACKD_SERVER_PORT = 6114;
 const char * const BNTRACKD_PIDFILE = ""; /* this means "none" */
 const char * const BNTRACKD_OUTFILE = "pvpgnlist.txt";
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 const char * const BNTRACKD_PROCESS = "process.pl";
 const char * const BNTRACKD_LOGFILE = "bntrackd.log";
 #else
@@ -393,7 +393,7 @@ const int BNETD_MAX_SOCKVAL = 8192;
  */
 /* Win32 defaults to 64, BSD and Linux default to 1024 */
 /* FIXME: how big can this be before things break? */
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # define FD_SETSIZE BNETD_MAX_SOCKVAL
 #endif
 

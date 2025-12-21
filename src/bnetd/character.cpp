@@ -17,20 +17,18 @@
  */
 #define CHARACTER_INTERNAL_ACCESS
 #include "common/setup_before.h"
-#include "character.h"
-
+#include <cstdint>
 #include <cstdint>
 #include <cstring>
-
-#include "compat/strcasecmp.h"
-#include "common/eventlog.h"
-#include "common/list.h"
-#include "common/bnet_protocol.h"
 #include "account.h"
+#include "character.h"
 #include "account_wrap.h"
+#include "common/bnet_protocol.h"
+#include "common/eventlog.h"
 #include "common/bn_type.h"
-#include "common/util.h"
 #include "common/xalloc.h"
+#include "common/list.h"
+#include "common/util.h"
 #include "common/setup_after.h"
 
 

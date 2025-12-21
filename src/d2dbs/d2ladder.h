@@ -21,9 +21,8 @@
 #include <cstdio>
 #include <cstddef>
 #include "common/list.h"
-#include "common/d2cs_d2dbs_ladder.h"
+#include "common/field_sizes.h"
 #define JUST_NEED_TYPES
-#include "d2cs/d2charfile.h"
 #undef JUST_NEED_TYPES
 
 #define LADDER_BACKUP_PREFIX		"ladderbk"

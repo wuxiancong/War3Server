@@ -23,12 +23,7 @@
 #include <cctype>
 #include <cstring>
 #include <string>
-#include <vector>
-#include <sstream>
-#include <iomanip>
 
-#include "compat/strdup.h"
-#include "compat/strcasecmp.h"
 #include "common/xalloc.h"
 #include "common/setup_after.h"
 
@@ -257,18 +252,34 @@ namespace pvpgn
 		result[0] = '\0';
 
 		need_delim = 0;
-		for (i = 0; i < count; i++) {
-			if (!array[i]) continue;
-			if (std::strlen(result) + std::strlen(array[i]) + std::strlen(delim) >= n) {
-				n += COMBINE_STRING_INCREASEMENT;
-				result = (char*)xrealloc(result, n);
-			}
-			if (need_delim) {
-				std::strcat(result, delim);
-			}
-			std::strcat(result, array[i]);
-			need_delim = 1;
-		}
+        size_t current_len = std::strlen(result);
+        size_t delim_len = std::strlen(delim);
+
+        for (i = 0; i < count; i++) {
+            if (!array[i]) continue;
+
+            size_t part_len = std::strlen(array[i]);
+            size_t required_size = current_len + part_len + 1;
+            if (need_delim) required_size += delim_len;
+            if (required_size >= n) {
+                size_t new_n = n + COMBINE_STRING_INCREASEMENT;
+                if (required_size > new_n) {
+                    new_n = required_size + COMBINE_STRING_INCREASEMENT;
+                }
+                n = new_n;
+                result = (char*)xrealloc(result, n);
+            }
+            if (need_delim) {
+                std::memcpy(result + current_len, delim, delim_len);
+                current_len += delim_len;
+            }
+
+            std::memcpy(result + current_len, array[i], part_len);
+            current_len += part_len;
+            result[current_len] = '\0';
+
+            need_delim = 1;
+        }
 		result = (char*)xrealloc(result, std::strlen(result) + 1);
 		return result;
 	}

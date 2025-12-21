@@ -18,13 +18,13 @@
 
 #include "common/setup_before.h"
 #define ATTRGROUP_INTERNAL_ACCESS
-#include "attrlayer.h"
 #include "common/eventlog.h"
 #include "common/flags.h"
-#include "attr.h"
 #include "attrgroup.h"
+#include "attrlayer.h"
 #include "storage.h"
 #include "prefs.h"
+#include <vector>
 #include "common/setup_after.h"
 
 namespace pvpgn

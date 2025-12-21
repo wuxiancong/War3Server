@@ -15,20 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include "common/d2cs_d2dbs_ladder.h"
 #include "common/setup_before.h"
-#include "setup.h"
 #include "d2ladder.h"
 
 #include <cstring>
 #include <cstdio>
 #include <cerrno>
 
-#include "compat/strncasecmp.h"
-#include "compat/rename.h"
 #include "common/eventlog.h"
 #include "common/xalloc.h"
-#include "common/tag.h"
+#include "compat/rename.h"
 #include "prefs.h"
+#include "common/tag.h"
+#include "d2cs/d2charfile.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

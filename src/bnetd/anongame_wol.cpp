@@ -24,8 +24,6 @@
 #include <cctype>
 #include <cstdlib>
 
-#include "compat/strcasecmp.h"
-
 #include "common/irc_protocol.h"
 #include "common/packet.h"
 #include "common/eventlog.h"
@@ -33,7 +31,6 @@
 #include "common/list.h"
 #include "common/anongame_protocol.h"
 
-#include "irc.h"
 #include "handle_wol.h"
 #include "connection.h"
 #include "channel.h"

@@ -43,9 +43,8 @@
 #include "common/network.h"
 #include "common/list.h"
 #include "common/trans.h"
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # include "win32/service.h"
-# include "windows.h"
 #endif
 #include "common/util.h"
 
@@ -836,7 +835,7 @@ namespace pvpgn
 			hn = prefs_get_hostname();
 			if ((!hn) || (hn[0] == '\0')) {
 				if (gethostname(temp, sizeof(temp)) < 0) {
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 					std::sprintf(temp, "localhost");
 #else
 					eventlog(eventlog_level_error, __FUNCTION__, "could not get hostname: {}", pstrerror(errno));
@@ -1206,7 +1205,7 @@ namespace pvpgn
 		}
 #endif
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # ifndef WIN32_GUI
 		BOOL CtrlHandler(DWORD fdwCtrlType)
 		{
@@ -1258,7 +1257,7 @@ namespace pvpgn
 
 			for (;;)
 			{
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 				if (g_ServiceStatus == 0) server_quit_wraper();
 
 				while (g_ServiceStatus == 2) Sleep(1000);
@@ -1661,7 +1660,7 @@ namespace pvpgn
 			_setup_posixsig();
 #endif
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # ifndef WIN32_GUI
 			SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE);
 # endif
@@ -1669,7 +1668,7 @@ namespace pvpgn
 
 			_server_mainloop(laddrs);
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 # ifndef WIN32_GUI
 			SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, FALSE);
 # endif

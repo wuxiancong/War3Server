@@ -15,6 +15,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+// >>>>>>>> 新增修复代码开始 <<<<<<<<
+#if defined(_MSC_VER)
+// Windows / Visual Studio
+#define PACKED_ATTR()
+#pragma pack(push, 1) // 强制 1 字节对齐
+#elif defined(__GNUC__) || defined(__clang__)
+// Linux / GCC / Clang
+#define PACKED_ATTR() __attribute__((packed))
+#else
+#define PACKED_ATTR()
+#endif
+// >>>>>>>> 新增修复代码结束 <<<<<<<<
 #ifndef INCLUDED_FILE_PROTOCOL_TYPES
 #define INCLUDED_FILE_PROTOCOL_TYPES
 

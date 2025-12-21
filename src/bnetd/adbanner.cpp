@@ -33,7 +33,6 @@
 
 #include "common/bn_type.h"
 #include "common/tag.h"
-#include "compat/strcasecmp.h"
 #include "common/eventlog.h"
 #include "connection.h"
 #include "common/setup_after.h"
