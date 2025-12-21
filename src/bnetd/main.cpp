@@ -38,6 +38,10 @@
 # include "common/gui_printf.h"
 #endif
 
+#ifdef DO_DAEMONIZE
+#include "compat/stdfileno.h"
+#endif
+
 #include "compat/psock.h"
 #include "compat/uname.h"
 #include "common/eventlog.h"

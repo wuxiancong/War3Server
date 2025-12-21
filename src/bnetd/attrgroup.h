@@ -24,6 +24,7 @@
 #ifdef __linux__
 #include <vector>
 #endif
+
 #ifndef JUST_NEED_TYPES
 #define JUST_NEED_TYPES
 #include "storage.h"

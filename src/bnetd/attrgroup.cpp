@@ -403,7 +403,7 @@ namespace pvpgn
 		{
 			const char *val;
 			t_hlist *curr, *last, *last2;
-			t_attr *attr;
+            t_attr *attr = nullptr;
 
 			assert(attrgroup);
 			assert(pkey);
@@ -428,7 +428,7 @@ namespace pvpgn
 				attr = hlist_entry(curr, t_attr, link);
 
 				if (!strcasecmp(attr_get_key(attr), *pkey)) {
-					val = attr_get_val(attr);
+                    // val = attr_get_val(attr);
 					/* key found, promote it so it's found faster next time */
 					hlist_promote(curr, last, last2);
 					break;
