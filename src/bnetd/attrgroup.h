@@ -28,6 +28,7 @@
 #undef JUST_NEED_TYPES
 #else
 #include "storage.h"
+#include <vector>
 #endif
 
 #define ATTRGROUP_FLAG_NONE	0
