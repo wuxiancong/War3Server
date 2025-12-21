@@ -117,6 +117,29 @@ EXIT;
 ```
 
 ### 3. 编译与安装 War3Server
+## 一次性清理脚本
+···bash
+ #!/bin/bash
+# 清理所有git进程
+echo "清理git进程..."
+pkill -9 git 2>/dev/null
+pkill -f "git clone" 2>/dev/null
+
+# 清理作业
+echo "清理挂起的作业..."
+jobs -p | xargs -r kill 2>/dev/null
+
+# 删除可能的不完整目录
+echo "检查不完整克隆..."
+if [ -d "War3Server" ]; then
+    echo "删除不完整的War3Server目录..."
+    rm -rf War3Server
+fi
+
+echo "清理完成！现在可以重新克隆："
+echo "git clone https://github.com/wuxiancong/War3Server.git"
+```
+
 ```bash
 # 克隆项目代码
 git clone -v https://github.com/wuxiancong/War3Server.git
