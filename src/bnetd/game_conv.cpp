@@ -1076,7 +1076,7 @@ namespace pvpgn
 			 * need this.  Unlike std::strtok() all state is recorded in the first argument.
 			 */
 			currtok = line1;
-			if (!(unknown = strsep(&currtok, ","))) /* skip past first field (always empty?) */
+            if (!(strsep(&currtok, ","))) /* skip past first field (always empty?) */
 			{
 				eventlog(eventlog_level_error, __FUNCTION__, "bad gameinfo format (missing unknown)");
 				xfree(save);

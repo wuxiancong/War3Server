@@ -977,6 +977,7 @@ namespace pvpgn
 					eventlog(eventlog_level_error, __FUNCTION__, "failed to init... PANIC!");
 					return;
 				}
+                anongame_infos_URL = anongame_infos->anongame_infos_URL;
 			}
 
 			if (!(anongame_infos_DESC))
@@ -1971,7 +1972,7 @@ namespace pvpgn
 			int lorigdone;
 			int all_read_before;
 
-			ret = Z_OK;
+            // ret = Z_OK;
 			lorigtodo = srclen;
 			lorigdone = 0;
 			*dest = NULL;

@@ -1727,7 +1727,7 @@ namespace pvpgn
 				return 0;
 			}
 
-			gametype = anongame_get_queue(a);
+            // gametype = anongame_get_queue(a);
 			plnum = anongame_get_playernum(a);
 			tp = anongame_get_totalplayers(a);
 

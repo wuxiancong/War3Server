@@ -391,7 +391,7 @@ namespace pvpgn
 			bn_byte_set(&d2char_info.unknownb14, ch->unknownb14);
 
 			std::memcpy(playerinfo, &d2char_info, sizeof(d2char_info));
-			std::strcpy(&playerinfo[sizeof(d2char_info)], ch->guildname);
+            std::snprintf(&playerinfo[sizeof(d2char_info)], sizeof(playerinfo) - sizeof(d2char_info), "%s", ch->guildname);
 
 			return playerinfo;
 		}

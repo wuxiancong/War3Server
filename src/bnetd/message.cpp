@@ -24,6 +24,10 @@
 #include <cerrno>
 #include <string>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include "common/xalloc.h"
 #include "common/eventlog.h"
 #include "common/addr.h"

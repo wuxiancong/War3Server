@@ -786,92 +786,73 @@ namespace pvpgn
 
         static int _handle_end_apiregtag(t_apiregmember * apiregmember, char * param)
         {
-            char data[MAX_IRC_MESSAGE_LEN];
-            char temp[MAX_IRC_MESSAGE_LEN];
             t_connection * conn = apiregmember_get_conn(apiregmember);
             t_elem * curr;
-            t_account * account;
-            char const * newnick = apiregmember_get_newnick(apiregmember);
-            char const * newpass = apiregmember_get_newpass(apiregmember);
-            char const * email = apiregmember_get_email(apiregmember);
-            char const * request = apiregmember_get_request(apiregmember);
-            //    char const * newpass2 = apiregmember_get_newpass2(apiregmember);
-            char hresult[12];
+
+            const char * newnick_ptr = apiregmember_get_newnick(apiregmember);
+            const char * newpass_ptr = apiregmember_get_newpass(apiregmember);
+            const char * email_ptr = apiregmember_get_email(apiregmember);
+            const char * request = apiregmember_get_request(apiregmember);
+
+            const char * newnick = newnick_ptr ? newnick_ptr : "((NewNick))";
+            const char * newpass = newpass_ptr ? newpass_ptr : "((NewPass))";
+            // const char * email = email_ptr ? email_ptr : "((Email))";
+
+            char hresult[16];
             char message[MAX_IRC_MESSAGE_LEN];
             char age[8];
-            char consent[12];
-
-            std::memset(data, 0, sizeof(data));
-            std::memset(temp, 0, sizeof(temp));
-
-            std::memset(hresult, 0, sizeof(hresult));
-            std::memset(message, 0, sizeof(message));
-            std::memset(age, 0, sizeof(age));
-            std::memset(consent, 0, sizeof(consent));
+            char consent[16];
 
             std::snprintf(hresult, sizeof(hresult), "0");
             std::snprintf(message, sizeof(message), "((Message))");
             std::snprintf(age, sizeof(age), "((Age))");
             std::snprintf(consent, sizeof(consent), "((Consent))");
 
-            //   	if (!newnick)
-            //   	   snprintf(newnick,sizeof(newnick),"((NewNick))");
+            DEBUG3("APIREG:/{}/{}/{}/", request ? request : "NULL", newnick, newpass);
 
-            //   	if (!newpass)
-            //   	   snprintf(newpass,sizeof(newpass),"((NewPass))");
+            if ((request) && (std::strcmp(request, REQUEST_AGEVERIFY) == 0)) {
 
-            //   	if (!email)
-            //   	   snprintf(email,sizeof(email),"((Email))");
-
-            DEBUG3("APIREG:/{}/{}/{}/", apiregmember_get_request(apiregmember), apiregmember_get_newnick(apiregmember), apiregmember_get_newpass(apiregmember));
-
-            if ((request) && (std::strcmp(apiregmember_get_request(apiregmember), REQUEST_AGEVERIFY) == 0)) {
-                if ((request) && (std::strcmp(apiregmember_get_request(apiregmember), REQUEST_AGEVERIFY) == 0)) {
-                    // 计算需要的缓冲区大小
-                    int needed_size = std::snprintf(nullptr, 0, "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
-                                                    hresult, message, "((NewNick))", "((NewPass))", age, consent) + 1; // +1 for null terminator
-
-                    if (needed_size > 0) {
-                        char* data = new char[needed_size];
-                        std::snprintf(data, needed_size, "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
-                                      hresult, message, "((NewNick))", "((NewPass))", age, consent);
-
-                        apireg_send(apiregmember_get_conn(apiregmember), data);
-                        delete[] data;  // 记得释放内存
-                        return 0;
-                    }
-                }
                 /* FIXME: Count real age here! */
-                std::snprintf(age, sizeof(age), "28"); /* FIXME: Here must be counted age */
-                std::snprintf(temp, sizeof(temp), "Age=%s\nConsent=((Consent))\nEND\r", age);
-                std::strcat(data, temp);
-                apireg_send(apiregmember_get_conn(apiregmember), data);
+                std::snprintf(age, sizeof(age), "28");
+                int needed_size = std::snprintf(nullptr, 0,
+                                                "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
+                                                hresult, message, "((NewNick))", "((NewPass))", age, consent) + 1;
+
+                if (needed_size > 0) {
+                    char* send_buffer = new char[needed_size];
+                    std::snprintf(send_buffer, needed_size,
+                                  "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
+                                  hresult, message, "((NewNick))", "((NewPass))", age, consent);
+
+                    apireg_send(conn, send_buffer);
+                    delete[] send_buffer;
+                }
                 return 0;
             }
-            else if ((request) && (std::strcmp(apiregmember_get_request(apiregmember), REQUEST_GETNICK) == 0)) {
+            else if ((request) && (std::strcmp(request, REQUEST_GETNICK) == 0)) {
+
                 if (!prefs_get_allow_new_accounts()){
                     std::snprintf(message, sizeof(message), "Account creation is not allowed");
                     std::snprintf(hresult, sizeof(hresult), "-2147221248");
                 }
                 else {
-                    if (!newnick) {
+                    if (!newnick_ptr) {
                         std::snprintf(message, sizeof(message), "Nick must be specifed!");
                         std::snprintf(hresult, sizeof(hresult), "-2147221248");
                     }
-                    else if (!newpass) {
-                        std::snprintf(message, sizeof(message), "Pussword must be specifed!");
+                    else if (!newpass_ptr) {
+                        std::snprintf(message, sizeof(message), "Password must be specifed!");
                         std::snprintf(hresult, sizeof(hresult), "-2147221248");
                     }
                     else if (accountlist_find_account(newnick)) {
                         std::snprintf(message, sizeof(message), "That login is already in use! Please try another NICK name.");
                         std::snprintf(hresult, sizeof(hresult), "-2147221248");
                     }
-                    else {  /* done, we can create new account */
+                    else {
+                        /* done, we can create new account */
                         t_account * tempacct;
                         t_hash bnet_pass_hash;
                         t_wolhash wol_pass_hash;
-
-                        /* Here we can also check serials and/or emails... */
 
                         bnet_hash(&bnet_pass_hash, std::strlen(newpass), newpass);
                         wol_hash(&wol_pass_hash, std::strlen(newpass), newpass);
@@ -879,56 +860,53 @@ namespace pvpgn
                         tempacct = accountlist_create_account(newnick, hash_get_str(bnet_pass_hash));
 
                         if (!tempacct) {
-                            // ERROR: Account is not created! - Why? :)
+                            // ERROR: Account is not created!
                             return 0;
                         }
                         else {
                             eventlog(eventlog_level_debug, __FUNCTION__, "WOLHASH: {}", wol_pass_hash);
                             account_set_wol_apgar(tempacct, wol_pass_hash);
-                            if (apiregmember_get_email(apiregmember))
-                                account_set_email(tempacct, apiregmember_get_email(apiregmember));
+                            if (email_ptr)
+                                account_set_email(tempacct, email_ptr);
+
                             std::snprintf(message, sizeof(message), "Welcome in the amazing world of PvPGN! Your login can be used for all PvPGN Supported games!");
                             std::snprintf(hresult, sizeof(hresult), "0");
                         }
                     }
                 }
-                // 计算需要的缓冲区大小
-                int needed_size = std::snprintf(nullptr, 0, "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
-                                                hresult, message, newnick, newpass, age, consent) + 1; // +1 for null terminator
+
+                int needed_size = std::snprintf(nullptr, 0,
+                                                "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
+                                                hresult, message, newnick, newpass, age, consent) + 1;
 
                 if (needed_size > 0) {
-                    char* data = new char[needed_size];
-                    std::snprintf(data, needed_size, "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
+                    char* send_buffer = new char[needed_size];
+                    std::snprintf(send_buffer, needed_size,
+                                  "HRESULT=%s\nMessage=%s\nNewNick=%s\nNewPass=%s\nAge=%s\nConsent=%s\nEND\r",
                                   hresult, message, newnick, newpass, age, consent);
 
-                    // 使用 data...
-
-                    delete[] data;  // 记得释放内存
+                    apireg_send(conn, send_buffer);
+                    delete[] send_buffer;
                 }
-
-                apireg_send(apiregmember_get_conn(apiregmember), data);
                 return 0;
             }
             else {
                 /* Error: Unknown request - closing connection */
-                ERROR1("got UNKNOWN request /{}/ closing connection", apiregmember->request);
+                ERROR1("got UNKNOWN request /{}/ closing connection", request ? request : "NULL");
+
                 LIST_TRAVERSE(apireglist(), curr) {
                     t_apiregmember * apiregmemberlist = (t_apiregmember*)elem_get_data(curr);
-
                     if (conn == apiregmember_get_conn(apiregmemberlist))
                     {
                         apiregmember_destroy(apiregmember, &curr);
                         break;
                     }
                 }
-
                 conn_set_state(conn, conn_state_destroy);
                 return 0;
             }
-
             return 0;
         }
-
     }
 
 }

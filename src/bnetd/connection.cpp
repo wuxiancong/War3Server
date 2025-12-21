@@ -2525,11 +2525,11 @@ extern char const * conn_get_playerinfo(t_connection const * c)
     tag_uint_to_revstr(revtag, clienttag);
 
     // allow set icon to a user directly from the database (override default tag always if not null)
-    if (usericon = account_get_user_icon(account, clienttag))
+    if ((usericon = account_get_user_icon(account, clienttag)))
         std::sprintf(revtag, "%s", usericon);
     else if (clienttag == CLIENTTAG_BNCHATBOT_UINT)
     {
-        std::strcpy(playerinfo, revtag); /* FIXME: what to return here? */
+        std::snprintf(playerinfo, sizeof(playerinfo), "%s", revtag); /* FIXME: what to return here? */
     }
     else if ((clienttag == CLIENTTAG_STARCRAFT_UINT) || (clienttag == CLIENTTAG_BROODWARS_UINT))
     {
@@ -2615,15 +2615,15 @@ extern char const * conn_get_playerinfo(t_connection const * c)
         /* This sets portrait of character */
         if (!conn_get_realm(c) || !conn_get_realminfo(c))
         {
-            std::strcpy(playerinfo, revtag);
+            std::snprintf(playerinfo, sizeof(playerinfo), "%s", revtag);
         }
         else
         {
-            std::strcpy(playerinfo, conn_get_realminfo(c));
+            std::snprintf(playerinfo, sizeof(playerinfo), "%s", conn_get_realminfo(c));
         }
     }
     else
-        std::strcpy(playerinfo, revtag); /* open char */
+        std::snprintf(playerinfo, sizeof(playerinfo), "%s", revtag); /* open char */
 
     // if custom_icons is enabled then set a custom client tag by player rating
     // do not override user selected icon if it's not null
@@ -3733,7 +3733,7 @@ extern int conn_update_w3_playerinfo(t_connection * c)
         if (clantag)
             std::sprintf(tempplayerinfo, "%s %s 0 %s", revtag, revtag, clantag_str);
         else
-            std::strcpy(tempplayerinfo, revtag);
+            std::snprintf(tempplayerinfo, sizeof(tempplayerinfo), "%s", revtag);
         eventlog(eventlog_level_info, __FUNCTION__, "[{}] {}", conn_get_socket(c), revtag);
     }
     // display race icon with a level number

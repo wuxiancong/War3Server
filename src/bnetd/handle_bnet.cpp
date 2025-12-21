@@ -4067,7 +4067,7 @@ static int _client_joingame(t_connection * c, t_packet const *const packet)
         conn_part_channel(c);
 
     if (!std::strcmp(gamename, "BNet") && !handle_anongame_join(c)) {
-        gtype = game_type_anongame;
+        // gtype = game_type_anongame;
         gamename = NULL;
         return 0;		/* tmp: do not record any anongames as yet */
     }
