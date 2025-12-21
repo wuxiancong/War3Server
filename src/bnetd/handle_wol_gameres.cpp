@@ -918,43 +918,44 @@ namespace pvpgn
 			return 0;
 		}
 
-		static int _client_trny(t_wol_gameres_result * game_result, wol_gameres_type type, int size, void const * data)
-		{
-			bool tournament;
+        static int _client_trny(t_wol_gameres_result * game_result, wol_gameres_type type, int size, void const * data)
+        {
+            bool tournament = false;
 
-			switch (type) {
-			case wol_gameres_type_bool:
-				tournament = (bool)bn_byte_get(*((bn_byte *)data));
-				break;
-			case wol_gameres_type_int:
-				tournament = (bool)bn_int_nget(*((bn_int *)data));
-				break;
-			case wol_gameres_type_string:
-				if (std::strcmp("TY  ", (const char *)data) == 0) /* for RNGD */
-					tournament = true;
-				else if (std::strcmp("TN  ", (const char *)data) == 0) /* for RNGD */
-					tournament = false;
-				else {
-					WARN1("got unknown string for TRNY: {}", (char *)data);
-					tournament = false;
-				}
-				break;
-			default:
-				WARN1("got unknown gameres type {} for TRNY", static_cast<int>(type));
-				break;
-			}
+            switch (type) {
+            case wol_gameres_type_bool:
+                tournament = (bool)bn_byte_get(*((bn_byte *)data));
+                break;
+            case wol_gameres_type_int:
+                tournament = (bool)bn_int_nget(*((bn_int *)data));
+                break;
+            case wol_gameres_type_string:
+                if (std::strcmp("TY  ", (const char *)data) == 0) /* for RNGD */
+                    tournament = true;
+                else if (std::strcmp("TN  ", (const char *)data) == 0) /* for RNGD */
+                    tournament = false;
+                else {
+                    WARN1("got unknown string for TRNY: {}", (char *)data);
+                    tournament = false;
+                }
+                break;
+            default:
+                WARN1("got unknown gameres type {} for TRNY", static_cast<int>(type));
+                // tournament remains false due to initialization
+                break;
+            }
 
-			if (tournament)
-				DEBUG0("game was tournament");
-			else
-				DEBUG0("game was not tournament");
+            if (tournament)
+                DEBUG0("game was tournament");
+            else
+                DEBUG0("game was not tournament");
 
-			return 0;
-		}
+            return 0;
+        }
 
 		static int _client_oosy(t_wol_gameres_result * game_result, wol_gameres_type type, int size, void const * data)
 		{
-			bool outofsync;
+            bool outofsync = false;
 
 			switch (type) {
 			case wol_gameres_type_bool:
@@ -1376,7 +1377,7 @@ namespace pvpgn
 
 		static int _client_base(t_wol_gameres_result * game_result, wol_gameres_type type, int size, void const * data)
 		{
-			bool bases;
+            bool bases = false;
 
 			//WOLv1 BASE 00 07 00 03 ON
 
@@ -1429,7 +1430,7 @@ namespace pvpgn
 
 		static int _client_shad(t_wol_gameres_result * game_result, wol_gameres_type type, int size, void const * data)
 		{
-			bool shadows;
+            bool shadows = false;
 
 			switch (type) {
 			case wol_gameres_type_bool:
