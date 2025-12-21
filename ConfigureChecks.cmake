@@ -1,6 +1,7 @@
+# 设置 CMake 模块路径
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
-# include used modules
+# 包含使用的模块
 include(DefineInstallationPaths)
 include(CheckIncludeFileCXX)
 include(CheckFunctionExists)
@@ -10,14 +11,14 @@ include(CheckCXXCompilerFlag)
 include(CheckMkdirArgs)
 include(CheckIncludeFiles)
 
-# setup short variable path names
+# 设置简短的变量路径名称
 set(BINDIR ${BIN_INSTALL_DIR})
 set(SBINDIR ${SBIN_INSTALL_DIR})
 set(SYSCONFDIR ${SYSCONF_INSTALL_DIR})
 set(LOCALSTATEDIR ${LOCALSTATE_INSTALL_DIR})
 set(MANDIR ${MAN_INSTALL_DIR})
 
-# set default hardcoded config paths
+# 设置默认的硬编码配置文件路径
 if(WIN32)
 	set(BNETD_DEFAULT_CONF_FILE "conf/bnetd.conf")
 	set(D2CS_DEFAULT_CONF_FILE "conf/d2cs.conf")
@@ -28,7 +29,7 @@ else(WIN32)
 	set(D2DBS_DEFAULT_CONF_FILE "${SYSCONFDIR}/d2dbs.conf")
 endif(WIN32)
 
-# library checks
+# 库检查
 if(WITH_BNETD)
 	find_package(ZLIB REQUIRED)
 endif(WITH_BNETD)
@@ -37,7 +38,7 @@ if(WITH_LUA)
     find_package(Lua REQUIRED)
 endif(WITH_LUA)
 
-# storage module checks
+# 存储模块检查
 if(WITH_ODBC)
     find_package(ODBC REQUIRED)
 endif(WITH_ODBC)
@@ -51,12 +52,13 @@ if(WITH_PGSQL)
     find_package(PostgreSQL REQUIRED)
 endif(WITH_PGSQL)
 
-
+# 检查网络相关库
 check_library_exists(nsl gethostbyname "" HAVE_LIBNSL)
 check_library_exists(socket socket "" HAVE_LIBSOCKET)
 check_library_exists(resolv inet_aton "" HAVE_LIBRESOLV)
 check_library_exists(bind __inet_aton "" HAVE_LIBBIND)
 
+# 将找到的网络库添加到所需的库列表中
 if(HAVE_LIBNSL)
 	SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} nsl)
 	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} nsl)
@@ -70,18 +72,19 @@ if(HAVE_LIBRESOLV)
 	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} resolv)
 endif(HAVE_LIBRESOLV)
 if(HAVE_LIBBIND)
-	# this is used for BeOS BONE, when someone will want
-	# to test War3Server with cmake on BeOS please contact us
+	# 该库用于 BeOS BONE 系统，如果有人想在 BeOS 上
+	# 使用 CMake 测试 War3Server，请联系我们
 	SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} bind)
 	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} bind)
 endif(HAVE_LIBBIND)
-# for win32 unconditionally add network library linking to "ws2_32"
+
+# 对于 Win32 平台，无条件添加网络库链接 "ws2_32"
 if(WIN32)
 	SET(NETWORK_LIBRARIES ${NETWORK_LIBRARIES} ws2_32)
 endif(WIN32)
 
-
-message(STATUS "Checking POSIX headers")
+# 检查 POSIX 头文件
+message(STATUS "检查 POSIX 头文件")
 check_include_file_cxx(arpa/inet.h HAVE_ARPA_INET_H)
 check_include_file_cxx(dirent.h HAVE_DIRENT_H)
 check_include_file_cxx(grp.h HAVE_GRP_H)
@@ -102,26 +105,26 @@ check_include_file_cxx(sys/wait.h HAVE_SYS_WAIT_H)
 check_include_file_cxx(termios.h HAVE_TERMIOS_H)
 check_include_file_cxx(unistd.h HAVE_UNISTD_H)
 
-message(STATUS "Checking optional POSIX/required SUS headers")
+message(STATUS "检查可选的 POSIX/必需的 SUS 头文件")
 check_include_file_cxx(sys/timeb.h HAVE_SYS_TIMEB_H)
 
-message(STATUS "Checking FreeBSD-based headers")
+message(STATUS "检查基于 FreeBSD 的头文件")
 check_include_file_cxx(sys/event.h HAVE_SYS_EVENT_H)
 check_include_file_cxx(sys/param.h HAVE_SYS_PARAM_H)
 
-message(STATUS "Checking BSD headers")
+message(STATUS "检查 BSD 头文件")
 check_include_file_cxx(sys/file.h HAVE_SYS_FILE_H)
 
-message(STATUS "Checking Linux headers")
+message(STATUS "检查 Linux 头文件")
 check_include_file_cxx(sys/epoll.h HAVE_SYS_EPOLL_H)
 
-message(STATUS "Checking Win32 headers")
+message(STATUS "检查 Win32 头文件")
 check_include_file_cxx(windows.h HAVE_WINDOWS_H)
 check_include_file_cxx(winsock2.h HAVE_WINSOCK2_H)
 check_include_file_cxx(ws2tcpip.h HAVE_WS2TCPIP_H)
 check_include_file_cxx(process.h HAVE_PROCESS_H)
 
-message(STATUS "Checking other headers")
+message(STATUS "检查其他头文件")
 check_include_file_cxx(dir.h HAVE_DIR_H)
 check_include_file_cxx(direct.h HAVE_DIRECT_H)
 check_include_file_cxx(ndir.h HAVE_NDIR_H)
@@ -129,6 +132,7 @@ check_include_file_cxx(sys/dir.h HAVE_SYS_DIR_H)
 check_include_file_cxx(sys/ndir.h HAVE_SYS_NDIR_H)
 check_include_file_cxx(sys/poll.h HAVE_SYS_POLL_H)
 
+# 检查函数存在性
 check_function_exists(chdir HAVE_CHDIR)
 check_function_exists(epoll_create HAVE_EPOLL_CREATE)
 check_function_exists(fork HAVE_FORK)
@@ -167,8 +171,9 @@ check_function_exists(uname HAVE_UNAME)
 check_function_exists(wait HAVE_WAIT)
 check_function_exists(waitpid HAVE_WAITPID)
 
-
+# 网络相关函数检查（Win32 平台特殊处理）
 if(HAVE_WINSOCK2_H)
+	# 如果包含 WinSock2 头文件，则假定这些网络函数存在
 	set(HAVE_GETHOSTNAME ON)
 	set(HAVE_SELECT ON)
 	set(HAVE_SOCKET ON)
@@ -179,6 +184,7 @@ if(HAVE_WINSOCK2_H)
 	set(HAVE_GETHOSTBYNAME ON)
 	set(HAVE_GETSERVBYNAME ON)
 else(HAVE_WINSOCK2_H)
+	# 其他平台检查这些网络函数
 	check_function_exists(gethostname HAVE_GETHOSTNAME)
 	check_function_exists(select HAVE_SELECT)
 	check_function_exists(socket HAVE_SOCKET)
@@ -190,6 +196,8 @@ else(HAVE_WINSOCK2_H)
 	check_function_exists(getservbyname HAVE_GETSERVBYNAME)
 endif(HAVE_WINSOCK2_H)
 
+# 检查 mkdir 函数的参数数量
 check_mkdir_args(MKDIR_TAKES_ONE_ARG)
 
+# 生成配置头文件
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)

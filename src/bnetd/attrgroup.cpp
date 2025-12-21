@@ -24,6 +24,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <string>
+#ifdef __linux__
+#include <vector>
+#endif
 
 #include "common/eventlog.h"
 #include "common/flags.h"

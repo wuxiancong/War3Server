@@ -21,14 +21,15 @@
 
 #include <ctime>
 #include "common/elist.h"
-
+#ifdef __linux__
+#include <vector>
+#endif
 #ifndef JUST_NEED_TYPES
 #define JUST_NEED_TYPES
 #include "storage.h"
 #undef JUST_NEED_TYPES
 #else
 #include "storage.h"
-#include <vector>
 #endif
 
 #define ATTRGROUP_FLAG_NONE	0
