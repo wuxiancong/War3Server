@@ -117,43 +117,6 @@ EXIT;
 ```
 
 ### 3. 编译与安装 War3Server
-#### 一次性清理脚本
-```bash
- #!/bin/bash
-# 清理所有git进程
-echo "清理git进程..."
-pkill -9 git 2>/dev/null
-pkill -f "git clone" 2>/dev/null
-
-# 清理作业
-echo "清理挂起的作业..."
-jobs -p | xargs -r kill 2>/dev/null
-
-# 删除可能的不完整目录
-echo "检查不完整克隆..."
-if [ -d "War3Server" ]; then
-    echo "删除不完整的War3Server目录..."
-    rm -rf War3Server
-fi
-
-echo "清理完成！现在可以重新克隆："
-echo "git clone https://github.com/wuxiancong/War3Server.git"
-```
-
-#### 克隆失败
-```bash
-# 1. 先终止所有作业
-for i in {1..11}; do kill %$i 2>/dev/null; done
-
-# 2. 强制杀死git进程
-pkill -9 git
-
-# 3. 清理目录
-rm -rf War3Server
-
-# 4. 重新克隆（使用浅克隆）
-git clone --depth=1 https://github.com/wuxiancong/War3Server.git
-```
 
 ```bash
 # 克隆项目代码
@@ -177,6 +140,43 @@ make -j$(nproc)
 
 # 安装
 sudo make install
+```
+
+#### ⚠️克隆失败
+```bash
+ #!/bin/bash
+# 清理所有git进程
+echo "清理git进程..."
+pkill -9 git 2>/dev/null
+pkill -f "git clone" 2>/dev/null
+
+# 清理作业
+echo "清理挂起的作业..."
+jobs -p | xargs -r kill 2>/dev/null
+
+# 删除可能的不完整目录
+echo "检查不完整克隆..."
+if [ -d "War3Server" ]; then
+    echo "删除不完整的War3Server目录..."
+    rm -rf War3Server
+fi
+
+echo "清理完成！现在可以重新克隆："
+echo "git clone https://github.com/wuxiancong/War3Server.git"
+```
+
+```bash
+# 1. 先终止所有作业
+for i in {1..11}; do kill %$i 2>/dev/null; done
+
+# 2. 强制杀死git进程
+pkill -9 git
+
+# 3. 清理目录
+rm -rf War3Server
+
+# 4. 重新克隆（使用浅克隆）
+git clone --depth=1 https://github.com/wuxiancong/War3Server.git
 ```
 
 ### 4. 权限与目录配置
