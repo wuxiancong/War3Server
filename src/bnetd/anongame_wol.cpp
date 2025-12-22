@@ -534,7 +534,6 @@ static int anongame_wol_tokenize_line(t_connection * conn, char const * text)
 			 * :user!YURI@host PRIVMSG matchbot :Pings nickname,2;
 			 */
 
-    line = (char *)xmalloc(std::strlen(text) + 16);
     std::size_t text_len = std::strlen(text);
     line = (char *)xmalloc(text_len + 16);
     std::memcpy(line, text, text_len + 1);

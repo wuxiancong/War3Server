@@ -72,28 +72,28 @@ namespace pvpgn
 		static void account_destroy(t_account * account);
 		static t_account * accountlist_add_account(t_account * account);
 
-		static unsigned int account_hash(char const *username)
-		{
-			register unsigned int h;
-			register std::size_t len = std::strlen(username);
+        static unsigned int account_hash(char const *username)
+        {
+            unsigned int h;
+            std::size_t len = std::strlen(username);
 
-			int c;
-			for (h = 5381; len > 0; --len, ++username) {
-				h += h << 5;
+            int c;
+            for (h = 5381; len > 0; --len, ++username) {
+                h += h << 5;
 
-				c = (int)*username;
-				// FIXME: (HarpyWar) I add this condition because if we call connlist_find_connection_by_accountname 
-				//  with wrong account name, then it fails on std::isupper(c)
-				if (c < -1 || c > 255)
-					break;
-				
-				if (std::isupper(c) == 0)
-					h ^= *username;
-				else
-					h ^= std::tolower(c);
-			}
-			return h;
-		}
+                c = (int)*username;
+                // FIXME: (HarpyWar) I add this condition because if we call connlist_find_connection_by_accountname
+                //  with wrong account name, then it fails on std::isupper(c)
+                if (c < -1 || c > 255)
+                    break;
+
+                if (std::isupper(c) == 0)
+                    h ^= *username;
+                else
+                    h ^= std::tolower(c);
+            }
+            return h;
+        }
 
 
 		static t_account * account_create(char const * username, char const * passhash1)

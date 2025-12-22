@@ -24,6 +24,13 @@
 #include <cstring>
 #include <ctime>
 
+#ifdef HAVE_WS2TCPIP_H
+# include <Ws2tcpip.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+# include <arpa/inet.h>
+#endif
+
 #include "compat/mkdir.h"
 #include "compat/pdir.h"
 #include "common/addr.h"
@@ -37,13 +44,6 @@
 #include "d2ladder.h"
 #include "d2charfile.h"
 #include "d2charlist.h"
-
-#ifdef HAVE_ARPA_INET_H
-# include <arpa/inet.h>
-#endif
-#ifdef HAVE_WS2TCPIP_H
-# include <Ws2tcpip.h>
-#endif
 
 #include "common/setup_after.h"
 

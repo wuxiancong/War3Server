@@ -3876,9 +3876,9 @@ FMT_CONSTEXPR internal::udl_formatter<Char, CHARS...> operator""_format() {
   \endrst
  */
 inline internal::udl_formatter<char>
-operator"" _format(const char *s, std::size_t) { return {s}; }
+operator""_format(const char *s, std::size_t) { return {s}; }
 inline internal::udl_formatter<wchar_t>
-operator"" _format(const wchar_t *s, std::size_t) { return {s}; }
+operator""_format(const wchar_t *s, std::size_t) { return {s}; }
 # endif // FMT_UDL_TEMPLATE
 
 /**
@@ -3892,9 +3892,9 @@ operator"" _format(const wchar_t *s, std::size_t) { return {s}; }
   \endrst
  */
 inline internal::udl_arg<char>
-operator"" _a(const char *s, std::size_t) { return {s}; }
+operator""_a(const char *s, std::size_t) { return {s}; }
 inline internal::udl_arg<wchar_t>
-operator"" _a(const wchar_t *s, std::size_t) { return {s}; }
+operator""_a(const wchar_t *s, std::size_t) { return {s}; }
 } // inline namespace literals
 #endif // FMT_USE_USER_DEFINED_LITERALS
 FMT_END_NAMESPACE
