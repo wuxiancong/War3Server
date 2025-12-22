@@ -76,8 +76,8 @@ Ladders ladders;
 
 
 /*
-		 * Prepare an account for first ladder play if necessary.
-		 */
+         * Prepare an account for first ladder play if necessary.
+         */
 extern int ladder_init_account(t_account * account, t_clienttag clienttag, t_ladder_id id)
 {
     unsigned int uid, rating;
@@ -155,8 +155,8 @@ extern int ladder_init_account_wol(t_account * account, t_clienttag clienttag, t
 }
 
 /*
-		 * Update player ratings, rankings, etc due to game results.
-		 */
+         * Update player ratings, rankings, etc due to game results.
+         */
 extern int ladder_update(t_clienttag clienttag, t_ladder_id id, unsigned int count, t_account * * players, t_game_result * results, t_ladder_info * info)
 {
     unsigned int curr;
@@ -318,8 +318,8 @@ extern int ladder_check_map(char const * mapname, t_game_maptype maptype, t_clie
 }
 
 /* *********************************************************************************************************************
-		 * handling of bnxpcalc and bnxplevel stuff (old code)
-		 * *********************************************************************************************************************/
+         * handling of bnxpcalc and bnxplevel stuff (old code)
+         * *********************************************************************************************************************/
 
 extern int ladder_createxptable(const char *xplevelfile, const char *xpcalcfile)
 {
@@ -424,8 +424,8 @@ extern int ladder_createxptable(const char *xplevelfile, const char *xpcalcfile)
     xpcalc = newxpcalc;
 
     /* OK, now we need to test couse if the user forgot to put some values
-			 * lots of profiles could get screwed up
-			 */
+             * lots of profiles could get screwed up
+             */
 
     if (w3_xpcalc_maxleveldiff < 0)
     {
@@ -444,13 +444,15 @@ extern int ladder_createxptable(const char *xplevelfile, const char *xpcalcfile)
             return -1;
         }
 
-    for (i = 0; i<W3_XPCALC_MAXLEVEL; i++)
-        if ((i > 0 && xplevels[i].neededxp == 0) || xplevels[i].lossfactor == 0
-            || (i > 0 && (xplevels[i].startxp <= xplevels[i - 1].startxp || xplevels[i].neededxp < xplevels[i - 1].neededxp))) {
+    for (i = 0; i < W3_XPCALC_MAXLEVEL; i++) {
+        if ((i > 0 && xplevels[i].neededxp == 0)
+            || (i > 0 && (xplevels[i].startxp <= xplevels[i - 1].startxp || xplevels[i].neededxp < xplevels[i - 1].neededxp)))
+        {
             eventlog(eventlog_level_error, __FUNCTION__, "I found 0 for a level XP, please check your config file (level: {} neededxp: {} lossfactor: {})", i + 1, xplevels[i].neededxp, xplevels[i].lossfactor);
             ladder_destroyxptable();
             return -1;
         }
+    }
 
     return 0;
 }
@@ -489,11 +491,11 @@ extern int ladder_war3_xpdiff(unsigned int winnerlevel, unsigned int looserlevel
         return -1;
     }
     /* we return the xp difference for the winner and the looser
-			 * we compute that from the xp charts also applying the loss factor for
-			 * lower level profiles
-			 * FIXME: ?! loss factor doesnt keep the sum of xp won/lost constant
-			 * DON'T CARE, cause current win/loss values aren't symetrical any more
-			 */
+             * we compute that from the xp charts also applying the loss factor for
+             * lower level profiles
+             * FIXME: ?! loss factor doesnt keep the sum of xp won/lost constant
+             * DON'T CARE, cause current win/loss values aren't symetrical any more
+             */
     if (diff >= 0) {
         *winxpdiff = xpcalc[absdiff].higher_winxp;
         *loosxpdiff = -(xpcalc[absdiff].lower_lossxp * xplevels[looserlevel - 1].lossfactor) / 100;
@@ -540,8 +542,8 @@ extern int ladder_war3_get_min_xp(unsigned int Level)
 
 
 /* *********************************************************************************************************************
-		 * start of new ladder codes
-		 * *********************************************************************************************************************/
+         * start of new ladder codes
+         * *********************************************************************************************************************/
 
 
 LadderKey::LadderKey(t_ladder_id ladderId_, t_clienttag clienttag_, t_ladder_sort ladderSort_, t_ladder_time ladderTime_)

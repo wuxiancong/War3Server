@@ -89,7 +89,7 @@ namespace pvpgn
 				return -1;
 			}
 			else {
-				channel_name = channel_get_name(conn_get_channel(c));
+                // channel_name = channel_get_name(conn_get_channel(c));
 			}
 
 			// get current clienttag

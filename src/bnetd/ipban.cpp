@@ -525,43 +525,47 @@ namespace pvpgn
 		}
 
 
-		extern int handle_ipban_command(t_connection * c, char const * text)
-		{
-			char const *subcommand, *ipstr, *time;
-			int result = -1;
+        extern int handle_ipban_command(t_connection * c, char const * text)
+        {
+            char const *subcommand, *ipstr, *time;
+            int result = -1;
 
-			std::vector<std::string> args = split_command(text, 3);
-			if (args[1].empty())
-			{
-				describe_command(c, args[0].c_str());
-				return -1;
-			}
-			subcommand = args[1].c_str(); // subcommand
-			ipstr = args[2].c_str(); // ip address
-			time = args[3].c_str(); // username
+            std::vector<std::string> args = split_command(text, 3);
+            if (args[1].empty())
+            {
+                describe_command(c, args[0].c_str());
+                return -1;
+            }
+            subcommand = args[1].c_str(); // subcommand
+            ipstr = args[2].c_str(); // ip address
+            time = args[3].c_str(); // username
 
-			switch (identify_ipban_function(subcommand))
-			{
-			case IPBAN_FUNC_ADD:
-				result = ipbanlist_add(c, ipstr, ipbanlist_str_to_time_t(c, time));
-				result = ipbanlist_save(prefs_get_ipbanfile());
-				break;
-			case IPBAN_FUNC_DEL:
-				result = ipban_func_del(c, ipstr);
-				result = ipbanlist_save(prefs_get_ipbanfile());
-				break;
-			case IPBAN_FUNC_LIST:
-				result = ipban_func_list(c);
-				break;
-			case IPBAN_FUNC_CHECK:
-				result = ipban_func_check(c, ipstr);
-				break; 
-			default:
-				describe_command(c, args[0].c_str());
-			}
+            switch (identify_ipban_function(subcommand))
+            {
+            case IPBAN_FUNC_ADD:
+                result = ipbanlist_add(c, ipstr, ipbanlist_str_to_time_t(c, time));
+                if (result == 0) {
+                    ipbanlist_save(prefs_get_ipbanfile());
+                }
+                break;
+            case IPBAN_FUNC_DEL:
+                result = ipban_func_del(c, ipstr);
+                if (result == 0) {
+                    ipbanlist_save(prefs_get_ipbanfile());
+                }
+                break;
+            case IPBAN_FUNC_LIST:
+                result = ipban_func_list(c);
+                break;
+            case IPBAN_FUNC_CHECK:
+                result = ipban_func_check(c, ipstr);
+                break;
+            default:
+                describe_command(c, args[0].c_str());
+            }
 
-			return result;
-		}
+            return result;
+        }
 
 
 		static int identify_ipban_function(const char * funcstr)

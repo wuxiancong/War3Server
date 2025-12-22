@@ -205,6 +205,9 @@ sudo chmod 755 /usr/local/War3Server/var/War3Server
 chown -R pvpgn:pvpgn /usr/local/War3Server/var
 chmod 755 /usr/local/War3Server/var/War3Server
 
+# 修改配置文件权限
+sudo chmod 666 /usr/local/War3Server/etc/War3Server/bnban.conf
+
 ```
 
 ---

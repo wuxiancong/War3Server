@@ -1430,7 +1430,7 @@ static int _handle_getbuddy_command(t_connection * conn, int numparams, char ** 
             int written = std::snprintf(temp + offset, sizeof(temp) - offset, "%s`", friend_name);
             if (written > 0) {
                 if ((size_t)written >= sizeof(temp) - offset) {
-                    offset = sizeof(temp) - 1;
+                    // offset = sizeof(temp) - 1;
                     break;
                 } else {
                     offset += written;
@@ -1498,7 +1498,7 @@ static int _handle_delbuddy_command(t_connection * conn, int numparams, char ** 
 
     if ((numparams >= 1) && (params[0])) {
         friend_name = params[0];
-        my_acc = conn_get_account(conn);
+        // my_acc = conn_get_account(conn);
 
         // num = account_remove_friend2(my_acc, friend_name);
 
@@ -1707,7 +1707,7 @@ static int _handle_listsearch_command(t_connection * conn, int numparams, char *
 
                     if (written > 0) {
                         if ((size_t)written >= remaining) {
-                            offset = sizeof(data) - 1;
+                            // offset = sizeof(data) - 1;
                             break;
                         } else {
                             offset += written;

@@ -172,7 +172,22 @@ namespace pvpgn
 						buffer = (char*)xrealloc(buffer, length + 1);
 						buffer[position++] = ' '; /* put a space before each alias */
 						/* add the alias to the output string */
-						std::strcpy(buffer + position, p); position += std::strlen(p);
+                        size_t remaining = sizeof(buffer) - position;
+
+                        if (remaining > 0) {
+                            // Attempt to write the string safely
+                            int written = std::snprintf(buffer + position, remaining, "%s", p);
+
+                            // Update position safely
+                            if (written > 0) {
+                                if ((size_t)written >= remaining) {
+                                    // Truncation occurred, buffer is full
+                                    position = sizeof(buffer) - 1;
+                                } else {
+                                    position += written;
+                                }
+                            }
+                        }
 						if (al)
 						{
 							for (; p[i + 1] == ' '; i++); /* skip spaces */
