@@ -743,18 +743,25 @@ namespace pvpgn
 			return clan->clanid;
 		}
 
-		int clanlist_load(void)
-		{
-			// make sure to unload previous clanlist before loading again
-			if (clanlist_head)
-				clanlist_unload();
+        int clanlist_load(void)
+        {
+            // make sure to unload previous clanlist before loading again
+            if (clanlist_head)
+                clanlist_unload();
 
-			clanlist_head = list_create();
+            clanlist_head = list_create();
 
-			storage->load_clans(_cb_load_clans);
+            if (storage->load_clans(_cb_load_clans) < 0) {
+                eventlog(eventlog_level_warn, __FUNCTION__, "storage->load_clans failed, using empty clanlist");
+            }
 
-			return 0;
-		}
+            if (!clanlist_head) {
+                eventlog(eventlog_level_error, __FUNCTION__, "clanlist_head is NULL, forcing creation");
+                clanlist_head = list_create();
+            }
+
+            return 0;
+        }
 
 		extern int clanlist_save(void)
 		{

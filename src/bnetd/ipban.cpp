@@ -1006,7 +1006,7 @@ namespace pvpgn
 					return 0;
 				}
 			}
-			else if ((matched = std::strchr(ipstr, '*')))
+            else if (std::strchr(ipstr, '*'))
 			{
 				if (ipban_could_be_exact_ip_str(ipstr) == 0) /* FIXME: 123.123.1*.123 allowed */
 				{

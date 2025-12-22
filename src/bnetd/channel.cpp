@@ -1276,12 +1276,25 @@ namespace pvpgn
 
 		}
 
-		extern int channellist_create(void)
-		{
-			channellist_head = list_create();
+        extern int channellist_create(void)
+        {
+            if (channellist_head) {
+                channellist_destroy();
+            }
 
-			return channellist_load_permanent(prefs_get_channelfile());
-		}
+            channellist_head = list_create();
+
+            if (!channellist_head) {
+                eventlog(eventlog_level_fatal, __FUNCTION__, "failed to create channel list head");
+                return -1;
+            }
+
+            int ret = channellist_load_permanent(prefs_get_channelfile());
+            if (ret < 0) {
+                eventlog(eventlog_level_warn, __FUNCTION__, "failed to load permanent channels, server will start with empty channel list");
+            }
+            return ret;
+        }
 
 
 		extern int channellist_destroy(void)
