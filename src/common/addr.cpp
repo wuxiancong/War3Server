@@ -179,33 +179,27 @@ extern char const * host_lookup(char const * hoststr, unsigned int * ipaddr)
     tsa.sin_family = PSOCK_AF_INET;
     tsa.sin_port = htons(0);
 
+    if (inet_pton(AF_INET, hoststr, &tsa.sin_addr) == 1)
+    {
+        *ipaddr = ntohl(tsa.sin_addr.s_addr);
+        return hoststr;
+    }
+
 #ifdef HAVE_GETHOSTBYNAME
 #if defined(_WIN32) || defined(WIN32)
     psock_init();
 #endif
     hp = gethostbyname(hoststr);
-    if (!hp || !hp->h_addr_list)
-#endif
-    {
-        if (inet_pton(AF_INET, hoststr, &tsa.sin_addr) == 1)
-        {
-            *ipaddr = ntohl(tsa.sin_addr.s_addr);
-            return hoststr; /* We could call gethostbyaddr() on tsa to try and get the
-                           official hostname but most systems would have already found
-                           it when sending a dotted-quad to gethostbyname().  This is
-                           good enough when that fails. */
-        }
-        eventlog(eventlog_level_error, __FUNCTION__, "could not lookup host \"{}\"", hoststr);
-        return NULL;
-    }
 
-#ifdef HAVE_GETHOSTBYNAME
-    std::memcpy(&tsa.sin_addr, (void *)hp->h_addr_list[0], sizeof(struct in_addr)); /* avoid warning */
-    *ipaddr = ntohl(tsa.sin_addr.s_addr);
-    if (hp->h_name)
-        return hp->h_name;
-    return hoststr;
+    if (hp && hp->h_addr_list && hp->h_addr_list[0]) {
+        std::memcpy(&tsa.sin_addr, (void *)hp->h_addr_list[0], sizeof(struct in_addr));
+        *ipaddr = ntohl(tsa.sin_addr.s_addr);
+        return (hp->h_name) ? hp->h_name : hoststr;
+    }
 #endif
+
+    eventlog(eventlog_level_error, __FUNCTION__, "could not lookup host \"{}\"", hoststr);
+    return NULL;
 }
 
 
@@ -571,18 +565,19 @@ extern int addrlist_append(t_addrlist * addrlist, char const * str, unsigned int
 
     assert(addrlist != NULL);
 
-    if (!str)
+    if (!str || !*str)
     {
-        eventlog(eventlog_level_error, __FUNCTION__, "got NULL str");
-        return -1;
+        return 0;
     }
 
     tstr = xstrdup(str);
-    for (tok = std::strtok(tstr, ","); tok; tok = std::strtok(NULL, ",")) /* std::strtok modifies the string it is passed */
+    for (tok = std::strtok(tstr, ","); tok; tok = std::strtok(NULL, ","))
     {
+        if (*tok == '\0') continue;
+
         if (!(addr = addr_create_str(tok, defipaddr, defport)))
         {
-            eventlog(eventlog_level_error, __FUNCTION__, "could not create addr");
+            eventlog(eventlog_level_error, __FUNCTION__, "could not create addr for \"{}\"", tok);
             xfree(tstr);
             return -1;
         }
@@ -608,7 +603,7 @@ extern t_addrlist * addrlist_create(char const * str, unsigned int defipaddr, un
 
     if (addrlist_append(addrlist, str, defipaddr, defport) < 0) {
         eventlog(eventlog_level_error, __FUNCTION__, "could not append to newly created addrlist");
-        list_destroy(addrlist);
+        addrlist_destroy(addrlist);
         return NULL;
     }
 
@@ -626,12 +621,14 @@ extern int addrlist_destroy(t_addrlist * addrlist)
         return -1;
     }
 
-    LIST_TRAVERSE(addrlist, curr)
+    while ((curr = list_get_first(addrlist)))
     {
-        if (!(addr = (t_addr*)elem_get_data(curr)))
-            eventlog(eventlog_level_error, __FUNCTION__, "found NULL addr in list");
-        else
+        if ((addr = (t_addr*)elem_get_data(curr))) {
             addr_destroy(addr);
+        } else {
+            eventlog(eventlog_level_error, __FUNCTION__, "found NULL addr in list");
+        }
+
         list_remove_elem(addrlist, &curr);
     }
 

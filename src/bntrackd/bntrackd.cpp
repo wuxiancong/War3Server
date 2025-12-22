@@ -29,9 +29,7 @@
 # include <unistd.h>
 #endif
 
-#include "compat/stdfileno.h"
 #include "compat/psock.h"
-#include "compat/pgetpid.h"
 #include "common/tracker.h"
 #include "common/eventlog.h"
 #include "common/list.h"
@@ -43,56 +41,56 @@
 
 #ifdef HAVE_ARPA_INET_H
 # include <arpa/inet.h>
+#include "compat/stdfileno.h"
 #endif
 #ifdef HAVE_WS2TCPIP_H
 # include <Ws2tcpip.h>
 #endif
-
 #include "common/setup_after.h"
 
 using namespace pvpgn;
 
 namespace {
 
-/******************************************************************************
+    /******************************************************************************
      * TYPES
      *****************************************************************************/
-typedef struct
-{
-    struct in_addr address;
-    std::time_t         updated;
-    t_trackpacket  info;
-} t_server;
+    typedef struct
+    {
+        struct in_addr address;
+        std::time_t         updated;
+        t_trackpacket  info;
+    } t_server;
 
-typedef struct
-{
-    int            foreground;
-    int            debug;
-    int            XML_mode;
-    unsigned int   expire;
-    unsigned int   update;
-    unsigned short port;
-    char const *   outfile;
-    char const *   pidfile;
-    char const *   logfile;
-    char const *   process;
-} t_prefs;
+    typedef struct
+    {
+        int            foreground;
+        int            debug;
+        int            XML_mode;
+        unsigned int   expire;
+        unsigned int   update;
+        unsigned short port;
+        char const *   outfile;
+        char const *   pidfile;
+        char const *   logfile;
+        char const *   process;
+    } t_prefs;
 
 
-/******************************************************************************
+    /******************************************************************************
      * STATIC FUNCTION PROTOTYPES
      *****************************************************************************/
-int server_process(int sockfd);
-void usage(char const * progname);
-void getprefs(int argc, char * argv[]);
-void fixup_str(bn_byte * str, unsigned int size);
+    int server_process(int sockfd);
+    void usage(char const * progname);
+    void getprefs(int argc, char * argv[]);
+    void fixup_str(bn_byte * str, unsigned int size);
 
 
-/******************************************************************************
+    /******************************************************************************
      * GLOBAL VARIABLES
      *****************************************************************************/
-t_prefs prefs;
-t_list *           serverlist_head;
+    t_prefs prefs;
+    t_list *           serverlist_head;
 }
 
 
@@ -253,258 +251,265 @@ extern int main(int argc, char * argv[])
 
 namespace {
 
-int server_process(int sockfd)
-{
-    t_elem *           curr;
-    t_server *         server;
-    struct sockaddr_in cliaddr;
-    t_psock_fd_set     rfds;
-    struct timeval     tv;
-    std::time_t             last;
-    std::FILE *             outfile;
-    psock_t_socklen    len;
-    t_trackpacket      packet;
-
-    /* the main loop */
-    last = std::time(NULL) - prefs.update;
-    for (;;)
+    int server_process(int sockfd)
     {
-        /* time to dump our list to disk and call the process command */
-        /* (I'm making the assumption that this won't take very long.) */
-        if (last + (signed)prefs.update < std::time(NULL))
+        t_elem *           curr;
+        t_server *         server;
+        struct sockaddr_in cliaddr;
+        t_psock_fd_set     rfds;
+        struct timeval     tv;
+        std::time_t             last;
+        std::FILE *             outfile;
+        psock_t_socklen    len;
+        t_trackpacket      packet;
+
+        /* the main loop */
+        last = std::time(NULL) - prefs.update;
+        for (;;)
         {
-            last = std::time(NULL);
-
-            if (!(outfile = std::fopen(prefs.outfile, "w")))
+            /* time to dump our list to disk and call the process command */
+            /* (I'm making the assumption that this won't take very long.) */
+            if (last + (signed)prefs.update < std::time(NULL))
             {
-                eventlog(eventlog_level_error, __FUNCTION__, "unable to open file \"{}\" for writing (std::fopen: {})", prefs.outfile, std::strerror(errno));
-                continue;
-            }
+                last = std::time(NULL);
 
-            LIST_TRAVERSE(serverlist_head, curr)
-            {
-                server = (t_server*)elem_get_data(curr);
-
-                if (server->updated + (signed)prefs.expire < last)
+                if (!(outfile = std::fopen(prefs.outfile, "w")))
                 {
-                    list_remove_elem(serverlist_head, &curr);
-                    xfree(server);
+                    eventlog(eventlog_level_error, __FUNCTION__, "unable to open file \"{}\" for writing (std::fopen: {})", prefs.outfile, std::strerror(errno));
+                    continue;
                 }
-                else
+
+                LIST_TRAVERSE(serverlist_head, curr)
                 {
-                    char addrstr[INET_ADDRSTRLEN] = { 0 };
-                    inet_ntop(AF_INET, &(server->address), addrstr, sizeof(addrstr));
-                    if (prefs.XML_mode == 1)
+                    server = (t_server*)elem_get_data(curr);
+
+                    if (server->updated + (signed)prefs.expire < last)
                     {
-                        std::fprintf(outfile, "<server>\n\t<address>%s</address>\n", addrstr);
-                        std::fprintf(outfile, "\t<port>%" PRIu16 "</port>\n", bn_short_nget(server->info.port));
-                        std::fprintf(outfile, "\t<location>%s</location>\n", reinterpret_cast<char*>(server->info.server_location));
-                        std::fprintf(outfile, "\t<software>%s</software>\n", reinterpret_cast<char*>(server->info.software));
-                        std::fprintf(outfile, "\t<version>%s</version>\n", reinterpret_cast<char*>(server->info.version));
-                        std::fprintf(outfile, "\t<users>%" PRIu32 "</users>\n", bn_int_nget(server->info.users));
-                        std::fprintf(outfile, "\t<channels>%" PRIu32 "</channels>\n", bn_int_nget(server->info.channels));
-                        std::fprintf(outfile, "\t<games>%" PRIu32 "</games>\n", bn_int_nget(server->info.games));
-                        std::fprintf(outfile, "\t<description>%s</description>\n", reinterpret_cast<char*>(server->info.server_desc));
-                        std::fprintf(outfile, "\t<platform>%s</platform>\n", reinterpret_cast<char*>(server->info.platform));
-                        std::fprintf(outfile, "\t<url>%s</url>\n", reinterpret_cast<char*>(server->info.server_url));
-                        std::fprintf(outfile, "\t<contact_name>%s</contact_name>\n", reinterpret_cast<char*>(server->info.contact_name));
-                        std::fprintf(outfile, "\t<contact_email>%s</contact_email>\n", reinterpret_cast<char*>(server->info.contact_email));
-                        std::fprintf(outfile, "\t<uptime>%" PRIu32 "</uptime>\n", bn_int_nget(server->info.uptime));
-                        std::fprintf(outfile, "\t<total_games>%" PRIu32 "</total_games>\n", bn_int_nget(server->info.total_games));
-                        std::fprintf(outfile, "\t<logins>%" PRIu32 "</logins>\n", bn_int_nget(server->info.total_logins));
-                        std::fprintf(outfile, "</server>\n");
+                        list_remove_elem(serverlist_head, &curr);
+                        xfree(server);
                     }
                     else
                     {
-                        std::fprintf(outfile, "%s\n##\n", addrstr);
-                        std::fprintf(outfile, "%" PRIu16 "\n##\n", bn_short_nget(server->info.port));
-                        std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.server_location));
-                        std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.software));
-                        std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.version));
-                        std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.users));
-                        std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.channels));
-                        std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.games));
-                        std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.server_desc));
-                        std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.platform));
-                        std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.server_url));
-                        std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.contact_name));
-                        std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.contact_email));
-                        std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.uptime));
-                        std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.total_games));
-                        std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.total_logins));
-                        std::fprintf(outfile, "###\n");
-                    }
-                }
-            }
-            if (std::fclose(outfile) < 0)
-                eventlog(eventlog_level_error, __FUNCTION__, "could not close output file \"{}\" after writing (std::fclose: {})", prefs.outfile, std::strerror(errno));
-
-            if (prefs.process[0] != '\0')
-                std::system(prefs.process);
-        }
-
-        /* select socket to operate on */
-        PSOCK_FD_ZERO(&rfds);
-        PSOCK_FD_SET(sockfd, &rfds);
-        tv.tv_sec = BNTRACKD_GRANULARITY;
-        tv.tv_usec = 0;
-        switch (psock_select(sockfd + 1, &rfds, NULL, NULL, &tv))
-        {
-        case -1: /* error */
-            if (
-#ifdef PSOCK_EINTR
-                errno != PSOCK_EINTR &&
-#endif
-                1)
-                eventlog(eventlog_level_error, __FUNCTION__, "select failed (select: {})", std::strerror(errno));
-        case 0: /* timeout and no sockets ready */
-            continue;
-        }
-
-        /* New tracking packet */
-        if (PSOCK_FD_ISSET(sockfd, &rfds))
-        {
-
-            len = sizeof(cliaddr);
-            if (psock_recvfrom(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)&cliaddr, &len) >= 0)
-            {
-
-                if (bn_short_nget(packet.packet_version) >= TRACK_VERSION)
-                {
-                    bn_byte_set(&packet.software[sizeof(packet.software) - 1], '\0');
-                    fixup_str(packet.software, sizeof(packet.software));
-                    bn_byte_set(&packet.version[sizeof(packet.version) - 1], '\0');
-                    fixup_str(packet.version, sizeof(packet.version));
-                    bn_byte_set(&packet.platform[sizeof(packet.platform) - 1], '\0');
-                    fixup_str(packet.platform, sizeof(packet.platform));
-                    bn_byte_set(&packet.server_desc[sizeof(packet.server_desc) - 1], '\0');
-                    fixup_str(packet.server_desc, sizeof(packet.server_desc));
-                    bn_byte_set(&packet.server_location[sizeof(packet.server_location) - 1], '\0');
-                    fixup_str(packet.server_location, sizeof(packet.server_location));
-                    bn_byte_set(&packet.server_url[sizeof(packet.server_url) - 1], '\0');
-                    fixup_str(packet.server_url, sizeof(packet.server_url));
-                    bn_byte_set(&packet.contact_name[sizeof(packet.contact_name) - 1], '\0');
-                    fixup_str(packet.contact_name, sizeof(packet.contact_name));
-                    bn_byte_set(&packet.contact_email[sizeof(packet.contact_email) - 1], '\0');
-                    fixup_str(packet.contact_email, sizeof(packet.contact_email));
-
-                    /* Find this server's slot */
-                    LIST_TRAVERSE(serverlist_head, curr)
-                    {
-                        server = (t_server*)elem_get_data(curr);
-
-                        if (!std::memcmp(&server->address, &cliaddr.sin_addr, sizeof(struct in_addr)))
+                        char addrstr[INET_ADDRSTRLEN] = { 0 };
+                        inet_ntop(AF_INET, &(server->address), addrstr, sizeof(addrstr));
+                        if (prefs.XML_mode == 1)
                         {
-                            if (bn_int_nget(packet.flags)&TF_SHUTDOWN)
-                            {
-                                list_remove_elem(serverlist_head, &curr);
-                                xfree(server);
-                            }
-                            else
-                            {
-                                /* update in place */
-                                server->info = packet;
-                                server->updated = std::time(NULL);
-                            }
-                            break;
+                            std::fprintf(outfile, "<server>\n\t<address>%s</address>\n", addrstr);
+                            std::fprintf(outfile, "\t<port>%" PRIu16 "</port>\n", bn_short_nget(server->info.port));
+                            std::fprintf(outfile, "\t<location>%s</location>\n", reinterpret_cast<char*>(server->info.server_location));
+                            std::fprintf(outfile, "\t<software>%s</software>\n", reinterpret_cast<char*>(server->info.software));
+                            std::fprintf(outfile, "\t<version>%s</version>\n", reinterpret_cast<char*>(server->info.version));
+                            std::fprintf(outfile, "\t<users>%" PRIu32 "</users>\n", bn_int_nget(server->info.users));
+                            std::fprintf(outfile, "\t<channels>%" PRIu32 "</channels>\n", bn_int_nget(server->info.channels));
+                            std::fprintf(outfile, "\t<games>%" PRIu32 "</games>\n", bn_int_nget(server->info.games));
+                            std::fprintf(outfile, "\t<description>%s</description>\n", reinterpret_cast<char*>(server->info.server_desc));
+                            std::fprintf(outfile, "\t<platform>%s</platform>\n", reinterpret_cast<char*>(server->info.platform));
+                            std::fprintf(outfile, "\t<url>%s</url>\n", reinterpret_cast<char*>(server->info.server_url));
+                            std::fprintf(outfile, "\t<contact_name>%s</contact_name>\n", reinterpret_cast<char*>(server->info.contact_name));
+                            std::fprintf(outfile, "\t<contact_email>%s</contact_email>\n", reinterpret_cast<char*>(server->info.contact_email));
+                            std::fprintf(outfile, "\t<uptime>%" PRIu32 "</uptime>\n", bn_int_nget(server->info.uptime));
+                            std::fprintf(outfile, "\t<total_games>%" PRIu32 "</total_games>\n", bn_int_nget(server->info.total_games));
+                            std::fprintf(outfile, "\t<logins>%" PRIu32 "</logins>\n", bn_int_nget(server->info.total_logins));
+                            std::fprintf(outfile, "</server>\n");
+                        }
+                        else
+                        {
+                            std::fprintf(outfile, "%s\n##\n", addrstr);
+                            std::fprintf(outfile, "%" PRIu16 "\n##\n", bn_short_nget(server->info.port));
+                            std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.server_location));
+                            std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.software));
+                            std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.version));
+                            std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.users));
+                            std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.channels));
+                            std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.games));
+                            std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.server_desc));
+                            std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.platform));
+                            std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.server_url));
+                            std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.contact_name));
+                            std::fprintf(outfile, "%s\n##\n", reinterpret_cast<char*>(server->info.contact_email));
+                            std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.uptime));
+                            std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.total_games));
+                            std::fprintf(outfile, "%" PRIu32 "\n##\n", bn_int_nget(server->info.total_logins));
+                            std::fprintf(outfile, "###\n");
                         }
                     }
+                }
+                if (std::fclose(outfile) < 0)
+                    eventlog(eventlog_level_error, __FUNCTION__, "could not close output file \"{}\" after writing (std::fclose: {})", prefs.outfile, std::strerror(errno));
 
-                    /* Not found? Make a new slot */
-                    if (!(bn_int_nget(packet.flags)&TF_SHUTDOWN) && !curr)
+                if (prefs.process[0] != '\0')
+                {
+                    int result = std::system(prefs.process);
+                    if (result != 0)
                     {
-                        server = (t_server*)xmalloc(sizeof(t_server));
-                        server->address = cliaddr.sin_addr;
-                        server->info = packet;
-                        server->updated = std::time(NULL);
+                        // 记录警告但不中断跟踪服务
+                        std::fprintf(stderr, "Warning: system command returned %d: %s\n", result, prefs.process);
+                    }
+                }
+            }
 
-                        list_append_data(serverlist_head, server);
+            /* select socket to operate on */
+            PSOCK_FD_ZERO(&rfds);
+            PSOCK_FD_SET(sockfd, &rfds);
+            tv.tv_sec = BNTRACKD_GRANULARITY;
+            tv.tv_usec = 0;
+            switch (psock_select(sockfd + 1, &rfds, NULL, NULL, &tv))
+            {
+            case -1: /* error */
+                if (
+#ifdef PSOCK_EINTR
+                    errno != PSOCK_EINTR &&
+#endif
+                    1)
+                    eventlog(eventlog_level_error, __FUNCTION__, "select failed (select: {})", std::strerror(errno));
+            case 0: /* timeout and no sockets ready */
+                continue;
+            }
+
+            /* New tracking packet */
+            if (PSOCK_FD_ISSET(sockfd, &rfds))
+            {
+
+                len = sizeof(cliaddr);
+                if (psock_recvfrom(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)&cliaddr, &len) >= 0)
+                {
+
+                    if (bn_short_nget(packet.packet_version) >= TRACK_VERSION)
+                    {
+                        bn_byte_set(&packet.software[sizeof(packet.software) - 1], '\0');
+                        fixup_str(packet.software, sizeof(packet.software));
+                        bn_byte_set(&packet.version[sizeof(packet.version) - 1], '\0');
+                        fixup_str(packet.version, sizeof(packet.version));
+                        bn_byte_set(&packet.platform[sizeof(packet.platform) - 1], '\0');
+                        fixup_str(packet.platform, sizeof(packet.platform));
+                        bn_byte_set(&packet.server_desc[sizeof(packet.server_desc) - 1], '\0');
+                        fixup_str(packet.server_desc, sizeof(packet.server_desc));
+                        bn_byte_set(&packet.server_location[sizeof(packet.server_location) - 1], '\0');
+                        fixup_str(packet.server_location, sizeof(packet.server_location));
+                        bn_byte_set(&packet.server_url[sizeof(packet.server_url) - 1], '\0');
+                        fixup_str(packet.server_url, sizeof(packet.server_url));
+                        bn_byte_set(&packet.contact_name[sizeof(packet.contact_name) - 1], '\0');
+                        fixup_str(packet.contact_name, sizeof(packet.contact_name));
+                        bn_byte_set(&packet.contact_email[sizeof(packet.contact_email) - 1], '\0');
+                        fixup_str(packet.contact_email, sizeof(packet.contact_email));
+
+                        /* Find this server's slot */
+                        LIST_TRAVERSE(serverlist_head, curr)
+                        {
+                            server = (t_server*)elem_get_data(curr);
+
+                            if (!std::memcmp(&server->address, &cliaddr.sin_addr, sizeof(struct in_addr)))
+                            {
+                                if (bn_int_nget(packet.flags)&TF_SHUTDOWN)
+                                {
+                                    list_remove_elem(serverlist_head, &curr);
+                                    xfree(server);
+                                }
+                                else
+                                {
+                                    /* update in place */
+                                    server->info = packet;
+                                    server->updated = std::time(NULL);
+                                }
+                                break;
+                            }
+                        }
+
+                        /* Not found? Make a new slot */
+                        if (!(bn_int_nget(packet.flags)&TF_SHUTDOWN) && !curr)
+                        {
+                            server = (t_server*)xmalloc(sizeof(t_server));
+                            server->address = cliaddr.sin_addr;
+                            server->info = packet;
+                            server->updated = std::time(NULL);
+
+                            list_append_data(serverlist_head, server);
+                        }
+
+                        char addrstr2[INET_ADDRSTRLEN] = { 0 };
+                        inet_ntop(AF_INET, &(cliaddr.sin_addr), addrstr2, sizeof(addrstr2));
+
+                        eventlog(eventlog_level_debug, __FUNCTION__,
+                            "Packet received from {}:"
+                            " packet_version={}"
+                            " flags=0x{:08}"
+                            " port={}"
+                            " software=\"{}\""
+                            " version=\"{}\""
+                            " platform=\"{}\""
+                            " server_desc=\"{}\""
+                            " server_location=\"{}\""
+                            " server_url=\"{}\""
+                            " contact_name=\"{}\""
+                            " contact_email=\"{}\""
+                            " uptime={}"
+                            " total_games={}"
+                            " total_logins={}",
+                            addrstr2,
+                            bn_short_nget(packet.packet_version),
+                            bn_int_nget(packet.flags),
+                            bn_short_nget(packet.port),
+                            reinterpret_cast<char*>(packet.software),
+                            reinterpret_cast<char*>(packet.version),
+                            reinterpret_cast<char*>(packet.platform),
+                            reinterpret_cast<char*>(packet.server_desc),
+                            reinterpret_cast<char*>(packet.server_location),
+                            reinterpret_cast<char*>(packet.server_url),
+                            reinterpret_cast<char*>(packet.contact_name),
+                            reinterpret_cast<char*>(packet.contact_email),
+                            bn_int_nget(packet.uptime),
+                            bn_int_nget(packet.total_games),
+                            bn_int_nget(packet.total_logins));
                     }
 
-                    char addrstr2[INET_ADDRSTRLEN] = { 0 };
-                    inet_ntop(AF_INET, &(cliaddr.sin_addr), addrstr2, sizeof(addrstr2));
-
-                    eventlog(eventlog_level_debug, __FUNCTION__,
-                             "Packet received from {}:"
-                             " packet_version={}"
-                             " flags=0x{:08}"
-                             " port={}"
-                             " software=\"{}\""
-                             " version=\"{}\""
-                             " platform=\"{}\""
-                             " server_desc=\"{}\""
-                             " server_location=\"{}\""
-                             " server_url=\"{}\""
-                             " contact_name=\"{}\""
-                             " contact_email=\"{}\""
-                             " uptime={}"
-                             " total_games={}"
-                             " total_logins={}",
-                             addrstr2,
-                             bn_short_nget(packet.packet_version),
-                             bn_int_nget(packet.flags),
-                             bn_short_nget(packet.port),
-                             reinterpret_cast<char*>(packet.software),
-                             reinterpret_cast<char*>(packet.version),
-                             reinterpret_cast<char*>(packet.platform),
-                             reinterpret_cast<char*>(packet.server_desc),
-                             reinterpret_cast<char*>(packet.server_location),
-                             reinterpret_cast<char*>(packet.server_url),
-                             reinterpret_cast<char*>(packet.contact_name),
-                             reinterpret_cast<char*>(packet.contact_email),
-                             bn_int_nget(packet.uptime),
-                             bn_int_nget(packet.total_games),
-                             bn_int_nget(packet.total_logins));
                 }
-
             }
+
         }
-
     }
-}
 
 
-void usage(char const * progname)
-{
-    std::fprintf(stderr, "usage: %s [<options>]\n", progname);
-    std::fprintf(stderr,
-                 "  -c COMMAND, --command=COMMAND  execute COMMAND update\n"
-                 "  -d, --debug                    turn on debug mode\n"
-                 "  -e SECS, --expire SECS         forget a list entry after SEC seconds\n"
+    void usage(char const * progname)
+    {
+        std::fprintf(stderr, "usage: %s [<options>]\n", progname);
+        std::fprintf(stderr,
+            "  -c COMMAND, --command=COMMAND  execute COMMAND update\n"
+            "  -d, --debug                    turn on debug mode\n"
+            "  -e SECS, --expire SECS         forget a list entry after SEC seconds\n"
 #ifdef DO_DAEMONIZE
-                 "  -f, --foreground               don't daemonize\n"
+            "  -f, --foreground               don't daemonize\n"
 #else
-                 "  -f, --foreground               don't daemonize (default)\n"
+            "  -f, --foreground               don't daemonize (default)\n"
 #endif
-                 "  -l FILE, --logfile=FILE        write event messages to FILE\n"
-                 "  -o FILE, --outfile=FILE        write server list to FILE\n");
-    std::fprintf(stderr,
-                 "  -p PORT, --port=PORT           listen for announcments on UDP port PORT\n"
-                 "  -P FILE, --pidfile=FILE        write pid to FILE\n"
-                 "  -u SECS, --update SECS         write output file every SEC seconds\n"
-                 "  -x, --XML                      write output file in XML format\n"
-                 "  -h, --help, --usage            show this information and exit\n"
-                 "  -v, --version                  print version number and exit\n");
-    std::exit(EXIT_FAILURE);
-}
+            "  -l FILE, --logfile=FILE        write event messages to FILE\n"
+            "  -o FILE, --outfile=FILE        write server list to FILE\n");
+        std::fprintf(stderr,
+            "  -p PORT, --port=PORT           listen for announcments on UDP port PORT\n"
+            "  -P FILE, --pidfile=FILE        write pid to FILE\n"
+            "  -u SECS, --update SECS         write output file every SEC seconds\n"
+            "  -x, --XML                      write output file in XML format\n"
+            "  -h, --help, --usage            show this information and exit\n"
+            "  -v, --version                  print version number and exit\n");
+        std::exit(EXIT_FAILURE);
+    }
 
 
-void getprefs(int argc, char * argv[])
-{
-    int a;
+    void getprefs(int argc, char * argv[])
+    {
+        int a;
 
-    prefs.foreground = 0;
-    prefs.debug = 0;
-    prefs.expire = 0;
-    prefs.update = 0;
-    prefs.port = 0;
-    prefs.XML_mode = 0;
-    prefs.outfile = NULL;
-    prefs.pidfile = NULL;
-    prefs.process = NULL;
-    prefs.logfile = NULL;
+        prefs.foreground = 0;
+        prefs.debug = 0;
+        prefs.expire = 0;
+        prefs.update = 0;
+        prefs.port = 0;
+        prefs.XML_mode = 0;
+        prefs.outfile = NULL;
+        prefs.pidfile = NULL;
+        prefs.process = NULL;
+        prefs.logfile = NULL;
 
-    for (a = 1; a < argc; a++)
+        for (a = 1; a < argc; a++)
         if (std::strncmp(argv[a], "--command=", 10) == 0)
         {
             if (prefs.process)
@@ -704,7 +709,7 @@ void getprefs(int argc, char * argv[])
             }
         }
         else if (std::strcmp(argv[a], "-h") == 0 || std::strcmp(argv[a], "--help") == 0 || std::strcmp(argv[a], "--usage")
-                                                                                               == 0)
+            == 0)
             usage(argv[0]);
         else if (std::strcmp(argv[a], "-v") == 0 || std::strcmp(argv[a], "--version") == 0)
         {
@@ -712,9 +717,9 @@ void getprefs(int argc, char * argv[])
             std::exit(0);
         }
         else if (std::strcmp(argv[a], "--command") == 0 || std::strcmp(argv[a], "--expire") == 0 ||
-                 std::strcmp(argv[a], "--logfile") == 0 || std::strcmp(argv[a], "--outfile") == 0 ||
-                 std::strcmp(argv[a], "--port") == 0 || std::strcmp(argv[a], "--pidfile") == 0 ||
-                 std::strcmp(argv[a], "--update") == 0)
+            std::strcmp(argv[a], "--logfile") == 0 || std::strcmp(argv[a], "--outfile") == 0 ||
+            std::strcmp(argv[a], "--port") == 0 || std::strcmp(argv[a], "--pidfile") == 0 ||
+            std::strcmp(argv[a], "--update") == 0)
         {
             std::fprintf(stderr, "%s: option \"%s\" requires and argument.\n", argv[0], argv[a]);
             usage(argv[0]);
@@ -725,38 +730,38 @@ void getprefs(int argc, char * argv[])
             usage(argv[0]);
         }
 
-    if (!prefs.process)
-        prefs.process = BNTRACKD_PROCESS;
-    if (prefs.expire == 0)
-        prefs.expire = BNTRACKD_EXPIRE;
-    if (!prefs.logfile)
-        prefs.logfile = BNTRACKD_LOGFILE;
-    if (!prefs.outfile)
-        prefs.outfile = BNTRACKD_OUTFILE;
-    if (prefs.port == 0)
-        prefs.port = BNTRACKD_SERVER_PORT;
-    if (!prefs.pidfile)
-        prefs.pidfile = BNTRACKD_PIDFILE;
-    if (prefs.expire == 0)
-        prefs.update = BNTRACKD_UPDATE;
+        if (!prefs.process)
+            prefs.process = BNTRACKD_PROCESS;
+        if (prefs.expire == 0)
+            prefs.expire = BNTRACKD_EXPIRE;
+        if (!prefs.logfile)
+            prefs.logfile = BNTRACKD_LOGFILE;
+        if (!prefs.outfile)
+            prefs.outfile = BNTRACKD_OUTFILE;
+        if (prefs.port == 0)
+            prefs.port = BNTRACKD_SERVER_PORT;
+        if (!prefs.pidfile)
+            prefs.pidfile = BNTRACKD_PIDFILE;
+        if (prefs.expire == 0)
+            prefs.update = BNTRACKD_UPDATE;
 
-    if (prefs.logfile[0] == '\0')
-        prefs.logfile = NULL;
-    if (prefs.pidfile[0] == '\0')
-        prefs.pidfile = NULL;
-}
+        if (prefs.logfile[0] == '\0')
+            prefs.logfile = NULL;
+        if (prefs.pidfile[0] == '\0')
+            prefs.pidfile = NULL;
+    }
 
 
-void fixup_str(bn_byte * str, unsigned int size)
-{
-    bn_byte         prev;
-    unsigned int i;
+    void fixup_str(bn_byte * str, unsigned int size)
+    {
+        bn_byte         prev;
+        unsigned int i;
 
-    bn_byte_set(&prev, '\0');
+        bn_byte_set(&prev, '\0');
 
-    for (i = 0; i < size, bn_byte_get(str[i]) != '\0'; bn_byte_set(&prev, bn_byte_get(str[i])), i++)
+        for (i = 0; i < size, bn_byte_get(str[i]) != '\0'; bn_byte_set(&prev, bn_byte_get(str[i])), i++)
         if (bn_byte_get(prev) == '#' && bn_byte_get(str[i]) == '#')
             bn_byte_set(&str[i], '%');
-}
+    }
 
 }
