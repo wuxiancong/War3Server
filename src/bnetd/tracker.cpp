@@ -94,7 +94,7 @@ namespace pvpgn
 			char               tempb[64];
 
 			t_trackpacket packet = {};
-			if (addrlist_get_length(track_servers) > 0)
+            if (track_servers && addrlist_get_length(track_servers) > 0)
 			{
 				bn_short_nset(&packet.packet_version, static_cast<unsigned short>(TRACK_VERSION));
 				/* packet.port is set below */

@@ -638,6 +638,7 @@ extern int addrlist_destroy(t_addrlist * addrlist)
 
 extern int addrlist_get_length(t_addrlist const * addrlist)
 {
+    if (!addrlist) return 0;
     return list_get_length(addrlist);
 }
 

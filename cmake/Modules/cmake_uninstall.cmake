@@ -1,8 +1,8 @@
-if(NOT EXISTS "D:/Qt_/War3Server/build/Desktop_Qt_5_15_2_MinGW_32_bit-Release/install_manifest.txt")
-  message(FATAL_ERROR "Cannot find install manifest: D:/Qt_/War3Server/build/Desktop_Qt_5_15_2_MinGW_32_bit-Release/install_manifest.txt")
-endif(NOT EXISTS "D:/Qt_/War3Server/build/Desktop_Qt_5_15_2_MinGW_32_bit-Release/install_manifest.txt")
+if(NOT EXISTS "D:/Qt_/War3Server/build/Desktop_Qt_5_15_2_MSVC2019_32bit-Release/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: D:/Qt_/War3Server/build/Desktop_Qt_5_15_2_MSVC2019_32bit-Release/install_manifest.txt")
+endif(NOT EXISTS "D:/Qt_/War3Server/build/Desktop_Qt_5_15_2_MSVC2019_32bit-Release/install_manifest.txt")
 
-file(READ "D:/Qt_/War3Server/build/Desktop_Qt_5_15_2_MinGW_32_bit-Release/install_manifest.txt" files)
+file(READ "D:/Qt_/War3Server/build/Desktop_Qt_5_15_2_MSVC2019_32bit-Release/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 foreach(file ${files})
   message(STATUS "Uninstalling $ENV{DESTDIR}${file}")

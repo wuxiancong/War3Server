@@ -196,14 +196,7 @@ sudo chown -R pvpgn:pvpgn /usr/local/War3Server
 
 # 修改 var 目录权限
 sudo chown -R pvpgn:pvpgn /usr/local/War3Server/var/
-
-# 创建并配置 run 目录
-mkdir -p /usr/local/War3Server/var/War3Server/run
 sudo chmod 755 /usr/local/War3Server/var/War3Server
-
-# 如果 PvPGN 不是 root 运行（比如 pvpgn 用户）
-chown -R pvpgn:pvpgn /usr/local/War3Server/var
-chmod 755 /usr/local/War3Server/var/War3Server
 
 # 修改配置文件权限
 sudo chmod 666 /usr/local/War3Server/etc/War3Server/bnban.conf
@@ -227,6 +220,16 @@ ps aux | grep bnetd
 
 # 停止所有进程
 sudo killall bnetd
+
+# 杀掉所有 bnetd 进程（释放端口）
+sudo killall -9 bnetd
+
+# 杀掉所有 gdb 调试进程
+sudo killall -9 gdb
+
+# 杀掉那些卡住的 tail 日志查看进程（清理干扰）
+sudo killall -9 tail
+
 ```
 
 ### 数据库连接测试
