@@ -107,7 +107,9 @@ extern int irc_send_cmd(t_connection * conn, char const * command, char const * 
 
     DEBUG2("[{}] sent \"{}\"", conn_get_socket(conn), data);
     if (len >= 0 && (size_t)len < sizeof(data) - 2) {
-        std::strcat(data, "\r\n");
+        data[len] = '\r';
+        data[len + 1] = '\n';
+        data[len + 2] = '\0';
     } else {
         data[sizeof(data) - 3] = '\r';
         data[sizeof(data) - 2] = '\n';
@@ -168,7 +170,9 @@ extern int irc_send_ping(t_connection * conn)
 
     eventlog(eventlog_level_debug, __FUNCTION__, "[{}] sent \"{}\"", conn_get_socket(conn), data);
     if (len >= 0 && (size_t)len < sizeof(data) - 2) {
-        std::strcat(data, "\r\n");
+        data[len] = '\r';
+        data[len + 1] = '\n';
+        data[len + 2] = '\0';
     } else {
         data[sizeof(data) - 3] = '\r';
         data[sizeof(data) - 2] = '\n';
@@ -206,9 +210,10 @@ extern int irc_send_pong(t_connection * conn, char const * params)
         len = std::snprintf(data, sizeof(data), ":%s PONG %s", server_get_hostname(), server_get_hostname());
 
     eventlog(eventlog_level_debug, __FUNCTION__, "[{}] sent \"{}\"", conn_get_socket(conn), data);
-
     if (len >= 0 && (size_t)len < sizeof(data) - 2) {
-        std::strcat(data, "\r\n");
+        data[len] = '\r';
+        data[len + 1] = '\n';
+        data[len + 2] = '\0';
     } else {
         data[sizeof(data) - 3] = '\r';
         data[sizeof(data) - 2] = '\n';
@@ -636,7 +641,9 @@ extern int irc_message_postformat(t_packet * packet, t_connection const * dest)
 
         if (len >= 0 && (size_t)len < sizeof(msg) - 2) { // Ensure space for \r\n
             DEBUG2("[{}] sent \"{}\"", conn_get_socket(dest), msg);
-            std::strcat(msg, "\r\n");
+            msg[len] = '\r';
+            msg[len + 1] = '\n';
+            msg[len + 2] = '\0';
         }
 
         packet_set_size(packet, 0);
@@ -1253,7 +1260,7 @@ extern int irc_send_motd(t_connection * conn)
         return -1;
     }
 
-    tempname = conn_get_loggeduser(conn);
+    // tempname = conn_get_loggeduser(conn);
 
     if ((filename = prefs_get_motdfile())) {
         if ((fp = std::fopen(filename, "r"))) {
