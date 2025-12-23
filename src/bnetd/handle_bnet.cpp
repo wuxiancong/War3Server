@@ -3793,12 +3793,12 @@ static int _glist_cb(t_game * game, void *data)
     t_server_gamelistreply_game glgame;
     unsigned int addr;
     unsigned short port;
-    // bn_int game_spacer = { 1, 0, 0, 0 };
+    bn_int game_spacer = { 1, 0, 0, 0 };
 
     cbdata->tcount++;
 
     eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [列表调试] 正在检查游戏: Name=\"{}\", Pass=\"{}\", ClientTag=\"{}\", GType={}, 内部Status={}",
+             "[{}] [列表调试] 正在检查游戏: Name=\"{}\", Pass=\"{}\", ClientTag=\"{}\", GameType={},, Status={},",
              conn_get_socket(cbdata->c), game_get_name(game), game_get_pass(game),
              tag_uint_to_str(clienttag_str, game_get_clienttag(game)), (int)game_get_type(game),
              (int)game_get_status(game));
@@ -3832,22 +3832,46 @@ static int _glist_cb(t_game * game, void *data)
     bn_short_set(&glgame.gametype, gtype_to_bngtype(game_get_type(game)));
 
     eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [列表调试] 游戏: \"{}\", 内部类型: {} (Enum), 转换后BNET类型: 0x{:04x} (Settings)",
+             "[{}] [列表调试] 游戏: \"{}\", 内部类型: {}, 转换后BNET类型: 0x{:04x} (GameType)",
              conn_get_socket(cbdata->c),
              game_get_name(game),
              (int)game_get_type(game),
              (int)gtype_to_bngtype(game_get_type(game)));
 
     bn_short_set(&glgame.unknown1, SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
-    bn_int_set(&glgame.langid, 0);
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", Language   ID: 0x{:08x}", conn_get_socket(cbdata->c), game_get_name(game), SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
+
     bn_short_set(&glgame.unknown3, SERVER_GAMELISTREPLY_GAME_UNKNOWN3);
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", Address Family: 0x{:04x}", conn_get_socket(cbdata->c), game_get_name(game), SERVER_GAMELISTREPLY_GAME_UNKNOWN3);
+
     addr = game_get_addr(game);
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", Host   Address: 0x{:08x}", conn_get_socket(cbdata->c), game_get_name(game), addr);
+
     port = game_get_port(game);
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", Host      Port: 0x{:04x}", conn_get_socket(cbdata->c), game_get_name(game), addr);
+
     trans_net(conn_get_addr(cbdata->c), &addr, &port);
+
     bn_short_nset(&glgame.port, port);
     bn_int_nset(&glgame.game_ip, addr);
+
     bn_int_set(&glgame.unknown4, SERVER_GAMELISTREPLY_GAME_UNKNOWN4);
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", 未知数据: 0x{:08x}", conn_get_socket(cbdata->c), game_get_name(game), SERVER_GAMELISTREPLY_GAME_UNKNOWN4);
+
     bn_int_set(&glgame.unknown5, SERVER_GAMELISTREPLY_GAME_UNKNOWN5);
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", 未知数据: 0x{:08x}", conn_get_socket(cbdata->c), game_get_name(game), SERVER_GAMELISTREPLY_GAME_UNKNOWN5);
 
     // [调试日志] 状态转换逻辑
     int final_status_code = 0;
@@ -3873,62 +3897,53 @@ static int _glist_cb(t_game * game, void *data)
         bn_int_set(&glgame.status, 0);
         final_status_code = 0;
     }
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", 最终状态: 0x{:02x}", conn_get_socket(cbdata->c), game_get_name(game), final_status_code);
 
     bn_int_set(&glgame.unknown6, SERVER_GAMELISTREPLY_GAME_UNKNOWN6);
-
-    // 协议参考: https://bnetdocs.org/packet/266/sid-getadvlistex
-    eventlog(eventlog_level_debug, __FUNCTION__,
-             "[{}] [列表封包结构] 准备发送数据 (按协议顺序): "
-             // 1. (UINT32) Game settings: 实际上由 GameType(16) + Unknown1(16) 组成
-             "1_Settings[Type=0x{:04x}, Unknown1=0x{:04x}], "
-             // 2. (UINT32) Language ID
-             "2_LangID=[未记录], "
-             // 3. (UINT16) Address Family: 对应 Unknown3, 应该是 AF_INET (0x0002)
-             "3_AddrFamily(Unknown3)=0x{:04x}, "
-             // 4. (UINT16) Port
-             "4_Port={}, "
-             // 5. (UINT32) Host's IP
-             "5_IP=0x{:08x}, "
-             // 6. (UINT32) sin_zero 1: 对应 Unknown4
-             "6_Zero1(Unknown4)=0x{:08x}, "
-             // 7. (UINT32) sin_zero 2: 对应 Unknown5
-             "7_Zero2(Unknown5)=0x{:08x}, "
-             // 8. (UINT32) Game status
-             "8_Status=0x{:08x}, "
-             // 9. (UINT32) Elapsed time: 对应 Unknown6 (游戏已经运行的秒数)
-             "9_Elapsed(Unknown6)=0x{:08x}, "
-             // 10-12. (STRING) Strings
-             "10_Name=\"{}\", 11_Pass=\"{}\", 12_StateString=\"{}\"",
-
-             conn_get_socket(cbdata->c),
-             (int)gtype_to_bngtype(game_get_type(game)), // Part of 1
-             SERVER_GAMELISTREPLY_GAME_UNKNOWN1,         // Part of 1
-             // MISSING LANG ID HERE                     // 2
-             SERVER_GAMELISTREPLY_GAME_UNKNOWN3,         // 3
-             port,                                       // 4
-             addr,                                       // 5
-             SERVER_GAMELISTREPLY_GAME_UNKNOWN4,         // 6
-             SERVER_GAMELISTREPLY_GAME_UNKNOWN5,         // 7
-             final_status_code,                          // 8
-             SERVER_GAMELISTREPLY_GAME_UNKNOWN6,         // 9
-             game_get_name(game),                        // 10
-             game_get_pass(game),                        // 11
-             game_get_info(game)                         // 12
-             );
 
     if (packet_get_size(cbdata->rpacket) + sizeof(glgame)+std::strlen(game_get_name(game)) + 1 + std::strlen(game_get_pass(game)) + 1 + std::strlen(game_get_info(game)) + 1 > MAX_PACKET_SIZE) {
         eventlog(eventlog_level_debug, __FUNCTION__, "[{}] out of room for games", conn_get_socket(cbdata->c));
         return -1;                        /* no more room */
     }
 
-    // if (cbdata->counter) {
-    //     packet_append_data(cbdata->rpacket, &game_spacer, sizeof(game_spacer));
-    // }
+    if (cbdata->counter) {
+        packet_append_data(cbdata->rpacket, &game_spacer, sizeof(game_spacer));
+        eventlog(eventlog_level_info, __FUNCTION__,
+                 "[{}] [列表调试] 游戏: \"{}\", 自增计数: {}", conn_get_socket(cbdata->c), game_get_name(game), cbdata->counter);
+    }
 
     packet_append_data(cbdata->rpacket, &glgame, sizeof(glgame));
+
     packet_append_string(cbdata->rpacket, game_get_name(game));
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", 房间名称: \"{}\"", conn_get_socket(cbdata->c), game_get_name(game), game_get_name(game));
+
     packet_append_string(cbdata->rpacket, game_get_pass(game));
-    packet_append_string(cbdata->rpacket, game_get_info(game));
+
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", 房间密码: \"{}\"", conn_get_socket(cbdata->c), game_get_name(game), game_get_pass(game));
+
+    char const *info_str = game_get_info(game);
+    packet_append_string(cbdata->rpacket, info_str);
+
+    if (info_str) {
+        eventlog(eventlog_level_info, __FUNCTION__,
+                 "[{}] [列表调试] 游戏: \"{}\", 房间信息(StatString): \"{}\"", conn_get_socket(cbdata->c), game_get_name(game), info_str);
+        char hex_buf[1024] = {0};
+        int len = std::strlen(info_str);
+        int pos = 0;
+        for (int i = 0; i < len && pos < 1000; i++) {
+            pos += std::sprintf(hex_buf + pos, "%02X ", (unsigned char)info_str[i]);
+        }
+        eventlog(eventlog_level_debug, __FUNCTION__,
+                 "[{}] [列表调试] 房间信息 Hex: {}", conn_get_socket(cbdata->c), hex_buf);
+    } else {
+        eventlog(eventlog_level_warn, __FUNCTION__,
+                 "[{}] [列表调试] 游戏: \"{}\", 房间信息为 NULL!", conn_get_socket(cbdata->c), game_get_name(game));
+    }
+
     cbdata->counter++;
 
     return 0;
@@ -4020,14 +4035,11 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
                     bn_int_set(&rpacket->u.server_gamelistreply.sstatus, SERVER_GAMELISTREPLY_GAME_SSTATUS_LOADED);
                     eventlog(eventlog_level_debug, __FUNCTION__, "[{}] GAMELISTREPLY found loaded game", conn_get_socket(c));
                 }
-                // 清空结构体，防止发送栈内存垃圾
-                std::memset(&glgame, 0, sizeof(glgame));
 
                 /* everything seems fine, lets reply with the found game */
                 bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_OPEN);
                 bn_short_set(&glgame.gametype, gtype_to_bngtype(game_get_type(game)));
                 bn_short_set(&glgame.unknown1, SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
-                bn_int_set(&glgame.langid, 0);
                 bn_short_set(&glgame.unknown3, SERVER_GAMELISTREPLY_GAME_UNKNOWN3);
                 addr = game_get_addr(game);
                 port = game_get_port(game);
