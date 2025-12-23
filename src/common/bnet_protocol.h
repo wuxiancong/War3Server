@@ -2793,8 +2793,7 @@ namespace pvpgn
 		/*	if yak doesn't like this... then the client doesn't also =) (bbf)
 			bn_int   unknown7; */
 		bn_short gametype;
-		bn_short unknown1; /* langid under Diablo... */
-        bn_int   langid;
+        bn_short unknown1; /* langid under Diablo... */
 		bn_short unknown3;
         /*  bn_int   deleted; */ /* they changed the structure at one point */
 		bn_short port;     /* big endian byte order... at least they are consistent! */
