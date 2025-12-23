@@ -35,6 +35,7 @@
 # include <sys/stat.h>
 #endif
 #if defined(_WIN32) || defined(WIN32)
+#include "d2dbs/handle_signal.h"
 #include "win32/windump.h"
 #include "win32/service.h"
 #endif
@@ -258,11 +259,11 @@ extern int main(int argc, char ** argv)
 	else {
 		eventlog(eventlog_level_info, __FUNCTION__, "server initialized");
 	}
-#ifndef WIN32
-	d2dbs_handle_signal_init();
+#if !defined(_WIN32) || !defined(WIN32)
+    d2dbs_handle_signal_init();
 #endif
 	dbs_server_main();
-	cleanup();
+    cleanup();
 	if (pidfile) {
 		if (std::remove(pidfile) < 0)
 			eventlog(eventlog_level_error, __FUNCTION__, "could not remove pid file \"{}\" (std::remove: {})", pidfile, std::strerror(errno));

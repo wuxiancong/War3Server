@@ -323,7 +323,7 @@ extern int ladder_check_map(char const * mapname, t_game_maptype maptype, t_clie
 
 extern int ladder_createxptable(const char *xplevelfile, const char *xpcalcfile)
 {
-    std::FILE *fd1, *fd2;
+    std::FILE *fd1 = NULL, *fd2 = NULL;
     char buffer[256];
     char *p;
     t_xpcalc_entry * newxpcalc;
@@ -359,7 +359,7 @@ extern int ladder_createxptable(const char *xplevelfile, const char *xpcalcfile)
 
     /* finally, lets read from the files */
 
-    while (std::fgets(buffer, 256, fd1)) {
+    while (std::fgets(buffer, sizeof(buffer), fd1)) {
         len = std::strlen(buffer);
         if (len < 2) continue;
         if (buffer[len - 1] == '\n') buffer[len - 1] = '\0';
@@ -376,14 +376,24 @@ extern int ladder_createxptable(const char *xplevelfile, const char *xpcalcfile)
             continue;
         }
 
+        if ((unsigned int)(level - 1) >= W3_XPCALC_MAXLEVEL) {
+            eventlog(eventlog_level_error, "ladder_createxptable", "level {} out of bounds (max: {})", level, W3_XPCALC_MAXLEVEL);
+            continue;
+        }
+
         xplevels[level - 1].startxp = startxp;
         xplevels[level - 1].neededxp = neededxp;
         xplevels[level - 1].mingames = mingames;
         xplevels[level - 1].lossfactor = (int)(lossfactor * 100);
     }
-    std::fclose(fd1);
 
-    while (std::fgets(buffer, 256, fd2)) {
+    if (std::ferror(fd1)) {
+        eventlog(eventlog_level_error, "ladder_createxptable", "error reading XP level file");
+    }
+    std::fclose(fd1);
+    fd1 = NULL;
+
+    while (std::fgets(buffer, sizeof(buffer), fd2)) {
         len = std::strlen(buffer);
         if (len < 2) continue;
         if (buffer[len - 1] == '\n') buffer[len - 1] = '\0';
@@ -402,7 +412,7 @@ extern int ladder_createxptable(const char *xplevelfile, const char *xpcalcfile)
             continue;
         }
 
-        if (leveldiff >= W3_XPCALC_MAXLEVEL) {
+        if ((unsigned int)leveldiff >= W3_XPCALC_MAXLEVEL) {
             eventlog(eventlog_level_error, __FUNCTION__, "level diff {} exceeds max limit {}", leveldiff, W3_XPCALC_MAXLEVEL - 1);
             continue;
         }
@@ -414,14 +424,33 @@ extern int ladder_createxptable(const char *xplevelfile, const char *xpcalcfile)
 
         w3_xpcalc_maxleveldiff = leveldiff;
 
-        xpcalc[leveldiff].higher_winxp = higher_xpgained;
-        xpcalc[leveldiff].higher_lossxp = higher_xplost;
-        xpcalc[leveldiff].lower_winxp = lower_xpgained;
-        xpcalc[leveldiff].lower_lossxp = lower_xplost;
+        if ((unsigned int)leveldiff < W3_XPCALC_MAXLEVEL) {
+            xpcalc[leveldiff].higher_winxp = higher_xpgained;
+            xpcalc[leveldiff].higher_lossxp = higher_xplost;
+            xpcalc[leveldiff].lower_winxp = lower_xpgained;
+            xpcalc[leveldiff].lower_lossxp = lower_xplost;
+        }
     }
 
-    newxpcalc = (t_xpcalc_entry*)xrealloc(xpcalc, sizeof(t_xpcalc_entry)* (w3_xpcalc_maxleveldiff + 1));
-    xpcalc = newxpcalc;
+    if (std::ferror(fd2)) {
+        eventlog(eventlog_level_error, "ladder_createxptable", "error reading XP calc file");
+    }
+
+    if (fd2) {
+        std::fclose(fd2);
+        fd2 = NULL;
+    }
+
+    if (w3_xpcalc_maxleveldiff >= 0) {
+        newxpcalc = (t_xpcalc_entry*)xrealloc(xpcalc, sizeof(t_xpcalc_entry)* (w3_xpcalc_maxleveldiff + 1));
+        if (newxpcalc) {
+            xpcalc = newxpcalc;
+        } else {
+            eventlog(eventlog_level_error, __FUNCTION__, "memory reallocation failed");
+            ladder_destroyxptable();
+            return -1;
+        }
+    }
 
     /* OK, now we need to test couse if the user forgot to put some values
              * lots of profiles could get screwed up

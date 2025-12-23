@@ -26,16 +26,18 @@
 #include <windowsx.h>
 #include <richedit.h>
 #include <process.h>
-#include "d2dbs_resource.h"
-#include "common/gui_printf.h"
-#include "common/eventlog.h"
-#include "d2dbs/version.h"
-#include "d2dbs/handle_signal.h"
-#include "d2dbs/cmdline.h"
+
 #include "service.h"
 #include "winmain.h"
 #include "console_output.h"
 
+#include "d2dbs/version.h"
+#include "d2dbs/cmdline.h"
+#include "d2dbs_resource.h"
+#include "d2dbs/handle_signal.h"
+
+#include "common/eventlog.h"
+#include "common/gui_printf.h"
 #include "common/setup_after.h"
 
 #define WM_SHELLNOTIFY          (WM_USER+1)

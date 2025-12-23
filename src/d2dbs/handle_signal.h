@@ -24,8 +24,8 @@ namespace pvpgn
 	namespace d2dbs
 	{
 
-#ifndef WIN32
-		extern int d2dbs_handle_signal_init(void);
+#if !defined(_WIN32) || !defined(WIN32)
+        extern int d2dbs_handle_signal_init(void);
 #else
 		extern void d2dbs_signal_quit_wrapper(void);
 		extern void d2dbs_signal_reload_config_wrapper(void);
