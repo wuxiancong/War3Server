@@ -50,7 +50,7 @@
 #include "cmdline.h"
 #include "version.h"
 #include "dbserver.h"
-#include "d2dbs/handle_signal.h"
+#include "d2dbs/handle_signal.h" /** 不删除 */
 
 #include "common/xalloc.h"
 #include "common/eventlog.h"

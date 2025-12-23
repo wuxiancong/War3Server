@@ -308,57 +308,60 @@ namespace pvpgn
 			return result;
 		}
 
-	BigInt
-		BigInt::operator* (const BigInt& right) const
-	{
-			int i, j, index, max_segment_count;
-			bigint_extended prod, sum;
-			bigint_extended lhs, rhs;
-			bigint_base carry = 0;
-			BigInt result;
+    BigInt
+        BigInt::operator* (const BigInt& right) const
+    {
+        int i = 0, j = 0, index, max_segment_count;
+        bigint_extended prod, sum;
+        bigint_extended lhs, rhs;
+        bigint_base carry = 0;
+        BigInt result;
 
-			if ((segment_count == 1 && segment[0] == 0) || (right.segment_count == 1 && right.segment[0] == 0))
-				return result;
+        if ((segment_count == 1 && segment[0] == 0) || (right.segment_count == 1 && right.segment[0] == 0))
+            return result;
 
-			result.segment_count = segment_count + right.segment_count;
-			result.segment = (bigint_base*)xrealloc(result.segment, result.segment_count * sizeof(bigint_base));
-			std::memset(result.segment, 0, result.segment_count * sizeof(bigint_base));
-			for (i = 0; i < segment_count; i++)
-			{
-				for (j = 0; j < right.segment_count; j++)
-				{
-					lhs = (i < segment_count) ? segment[i] : 0;
-					rhs = (j < right.segment_count) ? right.segment[j] : 0;
-					prod = lhs * rhs;
-					index = i + j;
-					sum = result.segment[index] + prod + carry;
-					result.segment[index] = sum & bigint_base_mask;
-					carry = sum >> bigint_base_bitcount;
-				}
+        result.segment_count = segment_count + right.segment_count;
+        result.segment = (bigint_base*)xrealloc(result.segment, result.segment_count * sizeof(bigint_base));
+        std::memset(result.segment, 0, result.segment_count * sizeof(bigint_base));
 
-				if (carry) {
-					index = i + j;
-					sum = result.segment[index] + carry;
-					result.segment[index] = sum & bigint_base_mask;
-					carry = sum >> bigint_base_bitcount;
-				}
-			}
+        for (i = 0; i < segment_count; i++)
+        {
+            for (j = 0; j < right.segment_count; j++)
+            {
+                lhs = (i < segment_count) ? segment[i] : 0;
+                rhs = (j < right.segment_count) ? right.segment[j] : 0;
+                prod = lhs * rhs;
+                index = i + j;
+                sum = result.segment[index] + prod + carry;
+                result.segment[index] = sum & bigint_base_mask;
+                carry = sum >> bigint_base_bitcount;
+            }
 
-			result.segment[i + j - 1] += carry;
+            if (carry) {
+                index = i + j;
+                sum = result.segment[index] + carry;
+                result.segment[index] = sum & bigint_base_mask;
+                carry = sum >> bigint_base_bitcount;
+            }
+        }
 
-			for (max_segment_count = result.segment_count - 1; max_segment_count > 0; max_segment_count--) {
-				if (result.segment[max_segment_count] != 0)
-					break;
-			}
+        if (carry) {
+            result.segment[i + j - 1] += carry;
+        }
 
-			if (result.segment_count != max_segment_count + 1)
-			{
-				result.segment_count = max_segment_count + 1;
-				result.segment = (bigint_base*)xrealloc(result.segment, result.segment_count * sizeof(bigint_base));
-			}
+        for (max_segment_count = result.segment_count - 1; max_segment_count > 0; max_segment_count--) {
+            if (result.segment[max_segment_count] != 0)
+                break;
+        }
 
-			return result;
-		}
+        if (result.segment_count != max_segment_count + 1)
+        {
+            result.segment_count = max_segment_count + 1;
+            result.segment = (bigint_base*)xrealloc(result.segment, result.segment_count * sizeof(bigint_base));
+        }
+
+        return result;
+    }
 
 	BigInt
 		BigInt::operator/ (const BigInt& right) const
@@ -388,7 +391,6 @@ namespace pvpgn
 				remainder.segment[j] = segment[(segment_count - right.segment_count) + j];
 			}
 
-			n = 0;
 			for (i = segment_count; i >= right.segment_count; i--){
 				//now do some "educated guessing"
 				//qest=n/q
@@ -467,7 +469,6 @@ namespace pvpgn
 				remainder.segment[j] = segment[(segment_count - right.segment_count) + j];
 			}
 
-			n = 0;
 			for (i = segment_count; i >= right.segment_count; i--){
 				//now do some "educated guessing"
 				//qest=n/q

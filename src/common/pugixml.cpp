@@ -3632,29 +3632,29 @@ PUGI__NS_BEGIN
 		return status_ok;
 	}
 
-	PUGI__FN size_t zero_terminate_buffer(void* buffer, size_t size, xml_encoding encoding) 
-	{
-		// We only need to zero-terminate if encoding conversion does not do it for us
-	#ifdef PUGIXML_WCHAR_MODE
-		xml_encoding wchar_encoding = get_wchar_encoding();
+    PUGI__FN size_t zero_terminate_buffer(void* buffer, size_t size, xml_encoding encoding)
+        {
+            // We only need to zero-terminate if encoding conversion does not do it for us
+        #ifdef PUGIXML_WCHAR_MODE
+            xml_encoding wchar_encoding = get_wchar_encoding();
 
-		if (encoding == wchar_encoding || need_endian_swap_utf(encoding, wchar_encoding))
-		{
-			size_t length = size / sizeof(char_t);
+            if (encoding == wchar_encoding || need_endian_swap_utf(encoding, wchar_encoding))
+            {
+                size_t length = size / sizeof(char_t);
 
-			static_cast<char_t*>(buffer)[length] = 0;
-			return (length + 1) * sizeof(char_t);
-		}
-	#else
-		if (encoding == encoding_utf8)
-		{
-			static_cast<char*>(buffer)[size] = 0;
-			return size + 1;
-		}
-	#endif
+                static_cast<char_t*>(buffer)[length] = 0;
+                return (length + 1) * sizeof(char_t);
+            }
+        #else
+            if (encoding == encoding_utf8)
+            {
+                static_cast<char*>(buffer)[size] = 0;
+                return size + 1;
+            }
+        #endif
 
-		return size;
-	}
+            return size;
+        }
 
 	PUGI__FN xml_parse_result load_file_impl(xml_document& doc, FILE* file, unsigned int options, xml_encoding encoding)
 	{
