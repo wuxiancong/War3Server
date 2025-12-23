@@ -17,41 +17,41 @@
 */
 #include "common/setup_before.h"
 
-#include <cctype>
-#include <cstdio>
-#include <cerrno>
-#include <cstring>
-#include <ctime>
-#include <cstdlib>
-#include <vector>
-#include <utility>
-#include <map>
-#include <string.h>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
 
+#include <map>
+#include <ctime>
+#include <vector>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <string.h>
 #include <fmt/format.h>
 
 #include "compat/pdir.h"
 
-
-#include "common/list.h"
-#include "common/eventlog.h"
-#include "common/xalloc.h"
-#include "common/tag.h"
-#include "common/pugixml.h"
-
-#include "account.h"
 #include "connection.h"
+
+#include "i18n.h"
+#include "prefs.h"
+#include "account.h"
+#include "command.h"
+#include "channel.h"
 #include "message.h"
 #include "helpfile.h"
-#include "channel.h"
-#include "prefs.h"
 #include "account_wrap.h"
-#include "command.h"
-#include "i18n.h"
+
+#include "common/tag.h"
+#include "common/list.h"
+#include "common/xalloc.h"
+#include "common/eventlog.h"
+#include "common/pugixml.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

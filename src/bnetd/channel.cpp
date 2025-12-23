@@ -31,7 +31,9 @@
 #include "common/token.h"
 #include "common/tag.h"
 #include "common/xalloc.h"
-
+#if defined(_WIN32) || defined(WIN32)
+#include "compat/strcasecmp.h"
+#endif
 #include "connection.h"
 #include "message.h"
 #include "account.h"

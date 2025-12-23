@@ -17,37 +17,39 @@
 */
 #include "common/setup_before.h"
 
-#include <algorithm>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
+#include <ctime>
+#include <vector>
 #include <cctype>
 #include <cstdio>
 #include <cerrno>
 #include <cstring>
-#include <ctime>
 #include <cstdlib>
 #include <sstream>
-#include <vector>
+#include <algorithm>
 #include <string.h>
 
-
-#include "common/token.h"
-
-#include "common/list.h"
-#include "common/eventlog.h"
-#include "common/xalloc.h"
-#include "common/xstring.h"
-#include "common/util.h"
-#include "common/tag.h"
-
-#include "account.h"
 #include "connection.h"
-#include "icons.h"
-#include "account_wrap.h"
 
+#include "i18n.h"
+#include "icons.h"
+#include "command.h"
+#include "account.h"
+#include "channel.h"
 #include "message.h"
 #include "helpfile.h"
-#include "channel.h"
-#include "command.h"
-#include "i18n.h"
+#include "account_wrap.h"
+
+#include "common/tag.h"
+#include "common/util.h"
+#include "common/list.h"
+#include "common/token.h"
+#include "common/xalloc.h"
+#include "common/xstring.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

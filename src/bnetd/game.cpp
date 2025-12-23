@@ -18,28 +18,32 @@
  */
 #define GAME_INTERNAL_ACCESS
 #include "common/setup_before.h"
-#include "game.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #include <cerrno>
 #include <cstring>
 #include <cassert>
 
-#include "compat/rename.h"
-#include "compat/strcasecmp.h"
-#include "common/eventlog.h"
-#include "common/addr.h"
-#include "common/bnettime.h"
-
 #include "connection.h"
-#include "channel.h"
-#include "server.h"
-#include "account.h"
-#include "account_wrap.h"
+
+#include "game.h"
 #include "prefs.h"
 #include "watch.h"
 #include "realm.h"
 #include "ladder.h"
+#include "server.h"
+#include "account.h"
+#include "channel.h"
 #include "game_conv.h"
+#include "account_wrap.h"
+
+#include "common/addr.h"
+#include "compat/rename.h"
+#include "common/eventlog.h"
+#include "common/bnettime.h"
 #include "common/setup_after.h"
 
 #ifdef WITH_LUA

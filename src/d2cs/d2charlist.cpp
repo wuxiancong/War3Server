@@ -17,13 +17,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "d2charlist.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#include "compat/strncasecmp.h"
+#endif
 
 #include <cstring>
 
-#include "common/eventlog.h"
-#include "common/xalloc.h"
 #include "prefs.h"
+#include "d2charlist.h"
+
+#include "common/xalloc.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

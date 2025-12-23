@@ -17,13 +17,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "common/network.h"
 
-#include <cerrno>
 #include <cstring>
 
 #include "compat/psock.h"
 #include "common/packet.h"
+#include "common/network.h"
 #include "common/eventlog.h"
 #include "common/field_sizes.h"
 #include "common/setup_after.h"

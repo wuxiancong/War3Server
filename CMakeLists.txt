@@ -59,6 +59,11 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		message(FATAL_ERROR "需要 Visual Studio 2015 或更高版本")
 	endif()
 
+	# -----------------------------------------------------------
+	# 强制 MSVC 使用 UTF-8 编码读取源文件，解决 C4819 警告
+	# -----------------------------------------------------------
+	add_compile_options(/utf-8)
+
 	# 预处理器定义
 	add_definitions(
 		-D_CRT_SECURE_NO_DEPRECATE
@@ -67,22 +72,22 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		-D_UNICODE
 	)
 
-# 调试版本编译器标志：
-#	/Zi 创建调试信息 PDB 文件
-#	/Od 禁用优化
-# 	/Oy- 不抑制帧指针（调试推荐）
-#	/MTd 使用静态链接、线程安全的调试版 CRT 库（Magic Builder 构建时设置此标志）
-#
-# 发布版本编译器标志：
-#	/MT 使用静态链接、线程安全的 CRT 库（Magic Builder 构建时设置此标志）
-# 	/GS- 禁用缓冲区安全检查
-#
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Od /Oy-")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+        # 调试版本编译器标志：
+	#	/Zi 创建调试信息 PDB 文件
+	#	/Od 禁用优化
+	# 	/Oy- 不抑制帧指针（调试推荐）
+	#	/MTd 使用静态链接、线程安全的调试版 CRT 库（Magic Builder 构建时设置此标志）
+	#
+	# 发布版本编译器标志：
+	#	/MT 使用静态链接、线程安全的 CRT 库（Magic Builder 构建时设置此标志）
+	# 	/GS- 禁用缓冲区安全检查
+	#
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Od /Oy-")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 
-# 链接器标志说明及为何在发布版本中启用带调试信息的 PDB：
-#  https://www.wintellect.com/correctly-creating-native-c-release-build-pdbs
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+	# 链接器标志说明及为何在发布版本中启用带调试信息的 PDB：
+	#  https://www.wintellect.com/correctly-creating-native-c-release-build-pdbs
+	set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
 endif()
 
 # 添加子目录

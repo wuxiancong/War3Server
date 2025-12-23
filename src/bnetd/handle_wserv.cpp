@@ -19,24 +19,27 @@
  */
 
 #include "common/setup_before.h"
-#include "handle_wserv.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #include <cstring>
-#include <cctype>
 #include <cstdlib>
 
-#include "common/irc_protocol.h"
-#include "common/eventlog.h"
-#include "common/tag.h"
-#include "common/list.h"
-#include "common/addr.h"
-#include "common/trans.h"
-
-#include "prefs.h"
 #include "irc.h"
-#include "message.h"
+#include "prefs.h"
 #include "server.h"
+#include "message.h"
 #include "autoupdate.h"
+#include "handle_wserv.h"
+
+#include "common/tag.h"
+#include "common/addr.h"
+#include "common/list.h"
+#include "common/trans.h"
+#include "common/eventlog.h"
+#include "common/irc_protocol.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

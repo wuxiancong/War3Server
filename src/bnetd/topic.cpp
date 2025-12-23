@@ -16,21 +16,23 @@
 */
 
 #include "common/setup_before.h"
-#include "topic.h"
 
-#include <fstream>
-#include <memory>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
 #include <regex>
 #include <string>
+#include <memory>
 #include <utility>
+#include <fstream>
 
+#include "topic.h"
+#include "prefs.h"
+#include "message.h"
 
 #include "common/eventlog.h"
 #include "common/field_sizes.h"
-
-#include "message.h"
-#include "prefs.h"
-
 #include "common/setup_after.h"
 
 namespace pvpgn

@@ -25,180 +25,180 @@
 namespace pvpgn
 {
 
-	namespace bni
-	{
+namespace bni
+{
 
-		typedef struct t_file {
-			std::FILE *f;
-			struct t_file *next;
-		} t_file;
+typedef struct t_file {
+    std::FILE *f;
+    struct t_file *next;
+} t_file;
 
-		namespace
-		{
+namespace
+{
 
-			t_file *r_file = NULL;
-			t_file *w_file = NULL;
+t_file *r_file = NULL;
+t_file *w_file = NULL;
 
-		}
+}
 
-		/* ----------------------------------------------------------------- */
+/* ----------------------------------------------------------------- */
 
-		extern void file_rpush(std::FILE *f) {
-			t_file *tf = (t_file*)xmalloc(sizeof(t_file));
-			tf->next = r_file;
-			tf->f = f;
-			r_file = tf;
-			return;
-		}
+extern void file_rpush(std::FILE *f) {
+    t_file *tf = (t_file*)xmalloc(sizeof(t_file));
+    tf->next = r_file;
+    tf->f = f;
+    r_file = tf;
+    return;
+}
 
-		extern void file_rpop(void) {
-			t_file *tf;
-			tf = r_file;
-			r_file = tf->next;
-			xfree(tf);
-			return;
-		}
+extern void file_rpop(void) {
+    t_file *tf;
+    tf = r_file;
+    r_file = tf->next;
+    xfree(tf);
+    return;
+}
 
-		/* ----------------------------------------------------------------- */
+/* ----------------------------------------------------------------- */
 
-		extern void file_wpush(std::FILE *f) {
-			t_file *tf = (t_file*)xmalloc(sizeof(t_file));
-			tf->next = w_file;
-			tf->f = f;
-			w_file = tf;
-			return;
-		}
+extern void file_wpush(std::FILE *f) {
+    t_file *tf = (t_file*)xmalloc(sizeof(t_file));
+    tf->next = w_file;
+    tf->f = f;
+    w_file = tf;
+    return;
+}
 
-		extern void file_wpop(void) {
-			t_file *tf;
-			tf = w_file;
-			w_file = tf->next;
-			xfree(tf);
-			return;
-		}
+extern void file_wpop(void) {
+    t_file *tf;
+    tf = w_file;
+    w_file = tf->next;
+    xfree(tf);
+    return;
+}
 
-		/* ----------------------------------------------------------------- */
+/* ----------------------------------------------------------------- */
 
-		extern std::uint8_t file_readb(void) {
-			unsigned char buff[1];
-			if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
-				if (std::ferror(r_file->f)) std::perror("file_readb: std::fread");
-				return 0;
-			}
-			return (((std::uint8_t)buff[0]));
-		}
-
-
-		extern std::uint16_t file_readw_le(void) {
-			unsigned char buff[2];
-			if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
-				if (std::ferror(r_file->f)) std::perror("file_readw_le: std::fread");
-				return 0;
-			}
-			return (((std::uint16_t)buff[0])) |
-				(((std::uint16_t)buff[1]) << 8);
-		}
+extern std::uint8_t file_readb(void) {
+    unsigned char buff[1];
+    if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
+        if (std::ferror(r_file->f)) std::perror("file_readb: std::fread");
+        return 0;
+    }
+    return (((std::uint8_t)buff[0]));
+}
 
 
-		extern std::uint16_t file_readw_be(void) {
-			unsigned char buff[2];
-			if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
-				if (std::ferror(r_file->f)) std::perror("file_readw_be: std::fread");
-				return 0;
-			}
-			return (((std::uint16_t)buff[0]) << 8) |
-				(((std::uint16_t)buff[1]));
-		}
+extern std::uint16_t file_readw_le(void) {
+    unsigned char buff[2];
+    if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
+        if (std::ferror(r_file->f)) std::perror("file_readw_le: std::fread");
+        return 0;
+    }
+    return (((std::uint16_t)buff[0])) |
+           (((std::uint16_t)buff[1]) << 8);
+}
 
 
-		extern std::uint32_t file_readd_le(void) {
-			unsigned char buff[4];
-			if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
-				if (std::ferror(r_file->f)) std::perror("file_readd_le: std::fread");
-				return 0;
-			}
-			return (((std::uint32_t)buff[0])) |
-				(((std::uint32_t)buff[1]) << 8) |
-				(((std::uint32_t)buff[2]) << 16) |
-				(((std::uint32_t)buff[3]) << 24);
-		}
+extern std::uint16_t file_readw_be(void) {
+    unsigned char buff[2];
+    if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
+        if (std::ferror(r_file->f)) std::perror("file_readw_be: std::fread");
+        return 0;
+    }
+    return (((std::uint16_t)buff[0]) << 8) |
+           (((std::uint16_t)buff[1]));
+}
 
 
-		extern std::uint32_t file_readd_be(void) {
-			unsigned char buff[4];
-			if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
-				if (std::ferror(r_file->f)) std::perror("file_readd_be: std::fread");
-				return 0;
-			}
-			return (((std::uint32_t)buff[0]) << 24) |
-				(((std::uint32_t)buff[1]) << 16) |
-				(((std::uint32_t)buff[2]) << 8) |
-				(((std::uint32_t)buff[3]));
-		}
+extern std::uint32_t file_readd_le(void) {
+    unsigned char buff[4];
+    if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
+        if (std::ferror(r_file->f)) std::perror("file_readd_le: std::fread");
+        return 0;
+    }
+    return (((std::uint32_t)buff[0])) |
+           (((std::uint32_t)buff[1]) << 8) |
+           (((std::uint32_t)buff[2]) << 16) |
+           (((std::uint32_t)buff[3]) << 24);
+}
 
 
-		extern int file_writeb(std::uint8_t u) {
-			unsigned char buff[1];
-			buff[0] = (u);
-			if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
-				if (std::ferror(w_file->f)) std::perror("file_writeb: std::fwrite");
-				return -1;
-			}
-			return 0;
-		}
+extern std::uint32_t file_readd_be(void) {
+    unsigned char buff[4];
+    if (std::fread(buff, 1, sizeof(buff), r_file->f) < sizeof(buff)) {
+        if (std::ferror(r_file->f)) std::perror("file_readd_be: std::fread");
+        return 0;
+    }
+    return (((std::uint32_t)buff[0]) << 24) |
+           (((std::uint32_t)buff[1]) << 16) |
+           (((std::uint32_t)buff[2]) << 8) |
+           (((std::uint32_t)buff[3]));
+}
 
 
-        extern int file_writew_le(std::uint16_t u) {
-            unsigned char buff[2];
-            buff[0] = (u);
-            buff[1] = (u >> 8);
-            if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
-                if (std::ferror(w_file->f)) std::perror("file_writew_le: std::fwrite");
-                return -1;
-            }
-            return 0;
-        }
+extern int file_writeb(std::uint8_t u) {
+    unsigned char buff[1];
+    buff[0] = (u);
+    if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
+        if (std::ferror(w_file->f)) std::perror("file_writeb: std::fwrite");
+        return -1;
+    }
+    return 0;
+}
 
 
-        extern int file_writew_be(std::uint16_t u) {
-            unsigned char buff[2];
-            buff[0] = (u >> 8);
-            buff[1] = (u);
-            if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
-                if (std::ferror(w_file->f)) std::perror("file_writew_be: std::fwrite");
-                return -1;
-            }
-            return 0;
-        }
+extern int file_writew_le(std::uint16_t u) {
+    unsigned char buff[2];
+    buff[0] = (unsigned char)(u);
+    buff[1] = (unsigned char)(u >> 8);
+    if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
+        if (std::ferror(w_file->f)) std::perror("file_writew_le: std::fwrite");
+        return -1;
+    }
+    return 0;
+}
 
 
-		extern int file_writed_le(std::uint32_t u) {
-			unsigned char buff[4];
-			buff[0] = (u);
-			buff[1] = (u >> 8);
-			buff[2] = (u >> 16);
-			buff[3] = (u >> 24);
-			if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
-				if (std::ferror(w_file->f)) std::perror("file_writed_le: std::fwrite");
-				return -1;
-			}
-			return 0;
-		}
+extern int file_writew_be(std::uint16_t u) {
+    unsigned char buff[2];
+    buff[0] = (unsigned char)(u >> 8);
+    buff[1] = (unsigned char)(u);
+    if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
+        if (std::ferror(w_file->f)) std::perror("file_writew_be: std::fwrite");
+        return -1;
+    }
+    return 0;
+}
 
 
-		extern int file_writed_be(std::uint32_t u) {
-			unsigned char buff[4];
-			buff[0] = (u >> 24);
-			buff[1] = (u >> 16);
-			buff[2] = (u >> 8);
-			buff[3] = (u);
-			if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
-				if (std::ferror(w_file->f)) std::perror("file_writed_be: std::fwrite");
-				return -1;
-			}
-			return 0;
-		}
+extern int file_writed_le(std::uint32_t u) {
+    unsigned char buff[4];
+    buff[0] = (u);
+    buff[1] = (u >> 8);
+    buff[2] = (u >> 16);
+    buff[3] = (u >> 24);
+    if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
+        if (std::ferror(w_file->f)) std::perror("file_writed_le: std::fwrite");
+        return -1;
+    }
+    return 0;
+}
 
-	}
+
+extern int file_writed_be(std::uint32_t u) {
+    unsigned char buff[4];
+    buff[0] = (u >> 24);
+    buff[1] = (u >> 16);
+    buff[2] = (u >> 8);
+    buff[3] = (u);
+    if (std::fwrite(buff, 1, sizeof(buff), w_file->f) < sizeof(buff)) {
+        if (std::ferror(w_file->f)) std::perror("file_writed_be: std::fwrite");
+        return -1;
+    }
+    return 0;
+}
+
+}
 
 }

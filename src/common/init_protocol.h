@@ -19,7 +19,6 @@
 #if defined(_MSC_VER)
 // Windows / Visual Studio
 #define PACKED_ATTR()
-#pragma pack(push, 1) // 强制 1 字节对齐
 #elif defined(__GNUC__) || defined(__clang__)
 // Linux / GCC / Clang
 #define PACKED_ATTR() __attribute__((packed))

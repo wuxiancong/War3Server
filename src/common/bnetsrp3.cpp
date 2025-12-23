@@ -95,21 +95,8 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
         // ==================== 注册模式 ====================
         password_length = std::strlen(password_);
         password = (char*)xmalloc(password_length + 1);
-        // =========== 修改开始 ===========
-        // [删除] 原来的强制大写循环
-        /*
-        source = password_;
-        symbol = password;
-        for (i = 0; i < password_length; i++)
-        {
-            *(symbol++) = safe_toupper(*(source++));
-        }
-        */
-
-        // [新增] 直接拷贝原始密码（保留大小写）
         std::memcpy(password, password_, password_length);
-        password[password_length] = '\0'; // 确保字符串以 null 结尾
-        // =========== 修改结束 ===========
+        password[password_length] = '\0';
 
         a = BigInt::random(32) % N;
         s = BigInt::random(32);
@@ -117,7 +104,6 @@ BnetSRP3::init(const char* username_, const char* password_, BigInt* salt_)
         eventlog(eventlog_level_debug, __FUNCTION__, "[SRP 初始化] 生成盐值 s: {}", s.toHexString());
     }
     else {
-        // ==================== 登录模式 ====================
         password = NULL;
         password_length = 0;
         b = BigInt::random(32) % N;

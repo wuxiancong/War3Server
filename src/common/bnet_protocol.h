@@ -32,7 +32,6 @@
 // Windows (Visual Studio)
 // MSVC uses pragma pack for alignment
 #define PACKED_ATTR()
-#pragma pack(push, 1)
 #elif defined(__GNUC__) || defined(__clang__)
 // Linux / MinGW (GCC / Clang)
 // GCC uses __attribute__

@@ -15,32 +15,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#define CHARACTER_INTERNAL_ACCESS
 #include "common/setup_before.h"
-#include "account_wrap.h"
+
+#define CHARACTER_INTERNAL_ACCESS
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
 
 #include <cstring>
 #include <string>
 
-
-#include "common/bnet_protocol.h"
-#include "common/bnettime.h"
-#include "common/eventlog.h"
-#include "common/list.h"
-#include "common/tag.h"
-#include "common/util.h"
-
-#include "account.h"
-#include "anongame_infos.h"
-#include "character.h"
-#include "clan.h"
 #include "connection.h"
-#include "friends.h"
+
 #include "i18n.h"
-#include "ladder.h"
+#include "team.h"
+#include "clan.h"
 #include "prefs.h"
 #include "server.h"
-#include "team.h"
+#include "ladder.h"
+#include "account.h"
+#include "friends.h"
+#include "character.h"
+#include "account_wrap.h"
+#include "anongame_infos.h"
+
+#include "common/tag.h"
+#include "common/util.h"
+#include "common/list.h"
+#include "common/bnettime.h"
+#include "common/eventlog.h"
+#include "common/bnet_protocol.h"
 #include "common/setup_after.h"
 
 namespace pvpgn
@@ -399,7 +405,7 @@ namespace pvpgn
 			// 2) it may cause a crash when writing a userlog commands into a file with that name
 			for (int i = 0; i < (sizeof(ILLEGALFILENAMES) / sizeof(*ILLEGALFILENAMES)); i++)
 			{
-				if (strcasecmp(account_get_name(account), ILLEGALFILENAMES[i]) == 0)
+                if (strcasecmp(account_get_name(account), ILLEGALFILENAMES[i]) == 0)
 				{
 					account_set_auth_lockreason(account, "user name is illegal");
 					eventlog(eventlog_level_debug, __FUNCTION__, "user name is invalid (reserved file name on Windows)");

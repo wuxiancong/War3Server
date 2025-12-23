@@ -17,25 +17,26 @@
  */
 
 #include "common/setup_before.h"
-#include "handle_irc_common.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #include <cstring>
-#include <cctype>
 #include <cstdlib>
 #include <string>
 
-#include "common/eventlog.h"
-#include "common/util.h"
-#include "common/irc_protocol.h"
-
+#include "irc.h"
+#include "prefs.h"
+#include "command.h"
 #include "handle_irc.h"
 #include "handle_wol.h"
 #include "handle_wserv.h"
+#include "handle_irc_common.h"
 
-#include "prefs.h"
-#include "command.h"
-#include "irc.h"
-
+#include "common/util.h"
+#include "common/eventlog.h"
+#include "common/irc_protocol.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

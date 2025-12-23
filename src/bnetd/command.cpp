@@ -26,7 +26,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "command.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
+#ifdef WITH_LUA
+#include "luainterface.h"
+#endif
 
 #include <cctype>
 #include <cerrno>
@@ -34,55 +41,52 @@
 #include <cstdlib>
 #include <string>
 
+
+#include "i18n.h"
+#include "news.h"
+#include "mail.h"
+#include "game.h"
+#include "team.h"
+#include "clan.h"
+#include "icons.h"
+#include "realm.h"
+#include "ipban.h"
+#include "topic.h"
+#include "prefs.h"
+#include "timer.h"
+#include "ladder.h"
+#include "server.h"
+#include "friends.h"
+#include "message.h"
+#include "channel.h"
+#include "command.h"
+#include "account.h"
+#include "userlog.h"
+#include "helpfile.h"
+#include "attrlayer.h"
+#include "connection.h"
+#include "account_wrap.h"
+#include "alias_command.h"
+#include "command_groups.h"
+
 #include "common/tag.h"
+#include "common/addr.h"
 #include "common/util.h"
+#include "common/xstr.h"
+#include "common/lstr.h"
+#include "common/list.h"
+#include "common/trans.h"
+#include "common/queue.h"
+#include "common/packet.h"
+#include "common/xalloc.h"
+#include "common/bn_type.h"
+#include "common/xstring.h"
 #include "common/version.h"
 #include "common/eventlog.h"
 #include "common/bnettime.h"
-#include "common/addr.h"
-#include "common/packet.h"
 #include "common/bnethash.h"
-#include "common/list.h"
 #include "common/proginfo.h"
-#include "common/queue.h"
-#include "common/bn_type.h"
-#include "common/xalloc.h"
-#include "common/xstr.h"
-#include "common/trans.h"
-#include "common/lstr.h"
 #include "common/hashtable.h"
-#include "common/xstring.h"
-
-#include "connection.h"
-#include "message.h"
-#include "channel.h"
-#include "game.h"
-#include "team.h"
-#include "account.h"
-#include "account_wrap.h"
-#include "server.h"
-#include "prefs.h"
-#include "ladder.h"
-#include "timer.h"
-#include "helpfile.h"
-#include "mail.h"
-#include "alias_command.h"
-#include "realm.h"
-#include "ipban.h"
-#include "command_groups.h"
-#include "news.h"
-#include "topic.h"
-#include "friends.h"
-#include "clan.h"
-#include "icons.h"
-#include "userlog.h"
-#include "i18n.h"
-
-#include "attrlayer.h"
-
-#ifdef WITH_LUA
-#include "luainterface.h"
-#endif
 #include "common/setup_after.h"
 
 namespace pvpgn

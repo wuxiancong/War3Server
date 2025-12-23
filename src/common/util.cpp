@@ -26,8 +26,11 @@
 #include <cstring>
 
 #include "common/xalloc.h"
+#if defined(_WIN32) || defined(WIN32)
+#include "compat/strcasecmp.h"
+#include "compat/strncasecmp.h"
+#endif
 #include "common/setup_after.h"
-
 
 namespace pvpgn
 {

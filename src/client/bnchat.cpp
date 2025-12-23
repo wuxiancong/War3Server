@@ -25,6 +25,7 @@
 
 #if defined(_WIN32) || defined(WIN32)
 # include <conio.h>
+#include "compat/strcasecmp.h"
 #endif
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>

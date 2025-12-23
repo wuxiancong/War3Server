@@ -15,26 +15,31 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include "common/setup_before.h"
 
 #define ANONGAME_WOL_INTERNAL_ACCESS
-#include "common/setup_before.h"
-#include "anongame_wol.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
 
 #include <cstring>
-#include <cctype>
 #include <cstdlib>
 
-#include "common/irc_protocol.h"
-#include "common/packet.h"
-#include "common/eventlog.h"
-#include "common/tag.h"
-#include "common/list.h"
-#include "common/anongame_protocol.h"
-
-#include "handle_wol.h"
 #include "connection.h"
+
 #include "channel.h"
 #include "anongame.h"
+#include "handle_wol.h"
+#include "anongame_wol.h"
+
+#include "common/tag.h"
+#include "common/list.h"
+#include "common/packet.h"
+#include "common/eventlog.h"
+#include "common/irc_protocol.h"
+#include "common/anongame_protocol.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

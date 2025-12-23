@@ -23,13 +23,13 @@
 #define INCLUDED_ACCOUNT_WRAP_PROTOS
 
 #define JUST_NEED_TYPES
-#include "account.h"
 #include "connection.h"
-#include "character.h"
-#include "common/bnettime.h"
-#include "ladder.h"
 #include "game.h"
+#include "ladder.h"
+#include "account.h"
+#include "character.h"
 #include "common/tag.h"
+#include "common/bnettime.h"
 #undef JUST_NEED_TYPES
 
 #include <string>

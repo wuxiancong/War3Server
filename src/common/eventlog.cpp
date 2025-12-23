@@ -28,6 +28,9 @@
 #include <fmt/format.h>
 
 #include "common/hexdump.h"
+#if defined(_WIN32) || defined(WIN32)
+#include "compat/strcasecmp.h"
+#endif
 #ifdef WIN32_GUI
 # include "common/gui_printf.h"
 #endif
@@ -113,7 +116,7 @@ namespace pvpgn
 			return -1;
 		}
 
-		if (strcasecmp(levelname, "trace") == 0)
+        if (strcasecmp(levelname, "trace") == 0)
 		{
 			currlevel |= eventlog_level_trace;
 			return 0;

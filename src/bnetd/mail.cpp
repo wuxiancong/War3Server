@@ -17,28 +17,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "mail.h"
 
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
+#include <cstdio>
+#include <cerrno>
+#include <vector>
 #include <sstream>
 #include <fstream>
 #include <iomanip>
-#include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <cerrno>
 #include <algorithm>
-#include <vector>
 
-#include "compat/mkdir.h"
-#include "common/eventlog.h"
-#include "common/xalloc.h"
+#include "i18n.h"
+#include "mail.h"
+#include "prefs.h"
 #include "account.h"
 #include "message.h"
-#include "prefs.h"
-#include "connection.h"
-#include "helpfile.h"
 #include "command.h"
-#include "i18n.h"
+#include "helpfile.h"
+#include "connection.h"
+#include "compat/mkdir.h"
+#include "common/xalloc.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 

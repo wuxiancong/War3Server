@@ -23,9 +23,9 @@
 #define INCLUDED_HANDLE_WOL_GAMERES_PROTOS
 
 #define JUST_NEED_TYPES
-#include "connection.h"
 #include "game.h"
 #include "account.h"
+#include "connection.h"
 #include "common/packet.h"
 #undef JUST_NEED_TYPES
 

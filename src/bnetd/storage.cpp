@@ -17,17 +17,23 @@
    */
 
 #include "common/setup_before.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
+#ifdef WITH_SQL
+#include "storage_sql.h"
+#endif
+
 #include <cstring>
 #include <cstdlib>
 
 #include "storage.h"
 #include "storage_file.h"
-#ifdef WITH_SQL
-#include "storage_sql.h"
-#endif
 
-#include "common/eventlog.h"
 #include "common/xalloc.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

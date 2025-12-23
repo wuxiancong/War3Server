@@ -22,9 +22,9 @@
 #define PVPGN_BNETD_VERSIONCHECK_H
 
 #include <cstdint>
-#include <ctime>
 #include <string>
 #include <tuple>
+#include <ctime>
 
 #include "common/tag.h"
 

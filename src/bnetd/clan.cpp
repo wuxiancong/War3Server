@@ -15,12 +15,13 @@
  */
 #define CLAN_INTERNAL_ACCESS
 #include "common/setup_before.h"
-#include "clan.h"
-
-
 
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
+#endif
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
 #endif
 
 #include "common/packet.h"
@@ -32,16 +33,16 @@
 #include "common/xalloc.h"
 
 #include "connection.h"
-#include "anongame.h"
-#include "prefs.h"
-#include "friends.h"
+#include "clan.h"
 #include "game.h"
+#include "prefs.h"
+#include "server.h"
 #include "message.h"
 #include "account.h"
 #include "channel.h"
-#include "anongame.h"
+#include "friends.h"
 #include "storage.h"
-#include "server.h"
+#include "anongame.h"
 
 #include "common/setup_after.h"
 

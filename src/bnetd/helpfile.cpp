@@ -16,23 +16,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "helpfile.h"
 
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
+#include <map>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <map>
 
-#include "common/eventlog.h"
+#include "connection.h"
+
+#include "i18n.h"
+#include "message.h"
+#include "helpfile.h"
+#include "account_wrap.h"
+#include "command_groups.h"
+
 #include "common/util.h"
 #include "common/xalloc.h"
 #include "common/xstring.h"
-
-#include "message.h"
-#include "command_groups.h"
-#include "account_wrap.h"
-#include "connection.h"
-#include "i18n.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

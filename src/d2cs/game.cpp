@@ -16,14 +16,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "setup.h"
-#include "game.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #include <ctime>
 
-#include "common/eventlog.h"
-#include "common/xalloc.h"
+#include "game.h"
+#include "setup.h"
 #include "prefs.h"
+
+#include "common/xalloc.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

@@ -24,7 +24,12 @@
 #include <cstring>
 #include <ctime>
 #include <cstdlib>
-
+#if defined(_WIN32) || defined(WIN32)
+#include <process.h>
+#define getpid _getpid
+#else
+#include <unistd.h>
+#endif
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif

@@ -20,7 +20,6 @@
 
 #include "gettimeofday.h"
 #include <cerrno>
-#include <ctime>
 
 #ifdef HAVE_SYS_TIMEB_H
 # include <sys/timeb.h>
@@ -50,8 +49,8 @@ namespace pvpgn
 		/* FIXME: what would be a more appropriate function for that platform? */
 		ftime(&tb); /* FIXME: some versions are void return others int */
 
-		tv->tv_sec = tb.time;
-		tv->tv_usec = ((long)tb.millitm) * 1000;
+        tv->tv_sec = (long)tb.time;
+        tv->tv_usec = ((long)tb.millitm) * 1000;
 		if (tz)
 		{
 			tz->tz_minuteswest = 0;

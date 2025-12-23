@@ -18,33 +18,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "storage_file.h"
 
-#include <sstream>
-#include <cstring>
-#include <cstdio>
-#include <cerrno>
-#include <ctime>
-#include <cstdlib>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
 
+#include "storage_file.h"
+
+#include <ctime>
+#include <cstdio>
+#include <cerrno>
+#include <cstring>
+#include <cstdlib>
+#include <sstream>
+
+#include "common/tag.h"
+#include "common/util.h"
+#include "common/list.h"
 #include "compat/pdir.h"
 #include "compat/rename.h"
 #include "common/eventlog.h"
-#include "common/list.h"
-#include "common/tag.h"
-#include "common/util.h"
 
 #define CLAN_INTERNAL_ACCESS
 #define TEAM_INTERNAL_ACCESS
 #include "team.h"
+#include "clan.h"
+#include "prefs.h"
 #include "account.h"
 #include "file_plain.h"
-#include "prefs.h"
-#include "clan.h"
 #undef CLAN_INTERNAL_ACCESS
 #undef TEAM_INTERNAL_ACCESS
 #include "common/setup_after.h"

@@ -16,26 +16,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#define APIREGISTER_INTERNAL_ACCESS
 #include "common/setup_before.h"
-#include "handle_apireg.h"
+
+#define APIREGISTER_INTERNAL_ACCESS
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #include <cstring>
-#include <cctype>
 #include <cstdlib>
 
 #include "common/eventlog.h"
 #include "common/bnethash.h"
 #include "common/wolhash.h"
-#include "common/list.h"
 #include "common/packet.h"
+#include "common/list.h"
 
-
+#include "attr.h"
 #include "prefs.h"
-#include "account.h"
-#include "account_wrap.h"
-#include "message.h"
 #include "server.h"
+#include "account.h"
+#include "message.h"
+#include "account_wrap.h"
+#include "handle_apireg.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

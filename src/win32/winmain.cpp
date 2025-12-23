@@ -96,9 +96,10 @@ static void	guiOnUpdates();
 static void	guiOnAnnounce(HWND);
 static void	guiOnUserStatusChange(HWND);
 
-INT_PTR __attribute__((stdcall)) AboutDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-INT_PTR __attribute__((stdcall)) AnnDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-INT_PTR __attribute__((stdcall)) KickDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK AnnDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK KickDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+
 
 #define MODE_HDIVIDE    1
 #define MODE_VDIVIDE    1
@@ -674,7 +675,7 @@ static void guiKillTrayIcon()
     Shell_NotifyIconW(NIM_DELETE, &dta);
 }
 
-INT_PTR AboutDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     switch (Message)
     {
@@ -695,7 +696,7 @@ INT_PTR AboutDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     return TRUE;
 }
 
-INT_PTR AnnDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AnnDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
 
     switch (Message)
@@ -740,7 +741,7 @@ INT_PTR AnnDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     return TRUE;
 }
 
-INT_PTR KickDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK KickDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     switch (Message)
     {

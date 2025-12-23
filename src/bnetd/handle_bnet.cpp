@@ -21,61 +21,67 @@
  */
 
 #include "common/setup_before.h"
-#include "handle_bnet.h"
 
-#include <cctype>
-#include <cerrno>
-#include <cstdint>
-#include <cstring>
-#include <limits>
-#include <sstream>
-#include <tuple>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#include "compat/strncasecmp.h"
+#endif
 
-#include "common/packet.h"
-#include "common/eventlog.h"
-#include "common/tag.h"
-#include "common/bn_type.h"
-#include "common/addr.h"
-#include "common/bnettime.h"
-#include "common/trans.h"
-#include "common/list.h"
-#include "common/bnethash.h"
-#include "common/bnethashconv.h"
-#include "common/proginfo.h"
-#include "common/util.h"
-#include "common/bnetsrp3.h"
-#include "common/xstring.h"
-
-#include "handlers.h"
-#include "connection.h"
-#include "prefs.h"
-#include "versioncheck.h"
-#include "handle_anongame.h"
-#include "account.h"
-#include "account_wrap.h"
-#include "clan.h"
-#include "channel.h"
-#include "game.h"
-#include "game_conv.h"
-#include "ladder.h"
-#include "watch.h"
-#include "realm.h"
-#include "adbanner.h"
-#include "character.h"
-#include "command.h"
-#include "tick.h"
-#include "message.h"
-#include "file.h"
-#include "news.h"
-#include "team.h"
-#include "server.h"
-#include "friends.h"
-#include "autoupdate.h"
-#include "anongame.h"
-#include "i18n.h"
 #ifdef WIN32_GUI
 #include <win32/winmain.h>
 #endif
+
+#include <tuple>
+#include <cctype>
+#include <limits>
+#include <cerrno>
+#include <cstdint>
+#include <cstring>
+#include <sstream>
+
+#include "i18n.h"
+#include "tick.h"
+#include "game.h"
+#include "clan.h"
+#include "team.h"
+#include "news.h"
+#include "file.h"
+#include "prefs.h"
+#include "watch.h"
+#include "realm.h"
+#include "ladder.h"
+#include "server.h"
+#include "message.h"
+#include "account.h"
+#include "friends.h"
+#include "channel.h"
+#include "command.h"
+#include "adbanner.h"
+#include "anongame.h"
+#include "handlers.h"
+#include "game_conv.h"
+#include "character.h"
+#include "connection.h"
+#include "autoupdate.h"
+#include "handle_bnet.h"
+#include "account_wrap.h"
+#include "versioncheck.h"
+#include "handle_anongame.h"
+
+#include "common/tag.h"
+#include "common/addr.h"
+#include "common/util.h"
+#include "common/list.h"
+#include "common/trans.h"
+#include "common/packet.h"
+#include "common/xstring.h"
+#include "common/bn_type.h"
+#include "common/eventlog.h"
+#include "common/bnettime.h"
+#include "common/bnethash.h"
+#include "common/proginfo.h"
+#include "common/bnetsrp3.h"
+#include "common/bnethashconv.h"
 #include "common/setup_after.h"
 #ifdef WITH_LUA
 #include "luainterface.h"

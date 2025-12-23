@@ -19,18 +19,14 @@
 #define GAME_INTERNAL_ACCESS
 #include "common/setup_before.h"
 #include "game_conv.h"
-
+#include "game.h"
 #include <cstring>
-
-#include "common/eventlog.h"
-#include "common/tag.h"
 #include "common/bnet_protocol.h"
+#include "common/eventlog.h"
 #include "common/bn_type.h"
 #include "common/util.h"
-
+#include "common/tag.h"
 #include "compat/strsep.h"
-
-#include "game.h"
 #include "common/setup_after.h"
 
 
@@ -990,7 +986,7 @@ namespace pvpgn
 					game_set_difficulty(game, bngdifficulty);
 					game_set_description(game, &gameinfo[1]);
 
-					if ((game->type == game_type_diablo2closed))
+                    if (game->type == game_type_diablo2closed)
 					{
 						eventlog(eventlog_level_debug, __FUNCTION__, "D2 bug workarround needed (open games tagged as closed)");
 						game->type = game_type_diablo2open;

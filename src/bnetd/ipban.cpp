@@ -29,7 +29,10 @@
 #include <cstring>
 #include <vector>
 
+#if defined(_WIN32) || defined(WIN32)
+#include "compat/strcasecmp.h"
 #include "compat/strsep.h"
+#endif
 
 #include "common/list.h"
 #include "common/util.h"
@@ -37,14 +40,14 @@
 #include "common/xalloc.h"
 #include "common/field_sizes.h"
 
+#include "connection.h"
 #include "message.h"
 #include "server.h"
 #include "prefs.h"
-#include "connection.h"
 
-#include "helpfile.h"
-#include "command.h"
 #include "i18n.h"
+#include "command.h"
+#include "helpfile.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

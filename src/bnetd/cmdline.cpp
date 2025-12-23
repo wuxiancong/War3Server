@@ -21,9 +21,9 @@
 #include "cmdline.h"
 
 #include <cstdio>
-
 #include "common/xalloc.h"
 #if defined(_WIN32) || defined(WIN32)
+#include "compat/strcasecmp.h"
 # include "win32/service.h"
 #endif
 #ifdef WIN32_GUI

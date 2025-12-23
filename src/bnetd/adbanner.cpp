@@ -31,6 +31,10 @@
 #include "i18n.h"
 #include "json/json.hpp"
 
+#if defined(_WIN32) || defined(WIN32)
+#include "compat/strcasecmp.h"
+#endif
+
 #include "common/bn_type.h"
 #include "common/tag.h"
 #include "common/eventlog.h"

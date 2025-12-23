@@ -17,60 +17,69 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#define CONNECTION_INTERNAL_ACCESS
 #include "common/setup_before.h"
+
+#define CONNECTION_INTERNAL_ACCESS
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#include "compat/strncasecmp.h"
+#endif
+
+#ifdef WIN32_GUI
+#include <win32/winmain.h>
+#endif
+
+#include "compat/psock.h"
+
 #include "connection.h"
 
 #include <cerrno>
 #include <cstring>
 #include <cassert>
 
-#ifdef WIN32_GUI
-#include <win32/winmain.h>
-#endif
-#include "compat/psock.h"
-#include "common/eventlog.h"
-#include "common/addr.h"
-#include "common/queue.h"
-#include "common/packet.h"
-#include "common/tag.h"
-#include "common/bn_type.h"
-#include "common/util.h"
-#include "common/list.h"
-#include "common/bnet_protocol.h"
-#include "common/field_sizes.h"
-#include "common/rcm.h"
-#include "common/fdwatch.h"
-#include "common/elist.h"
-#include "common/xalloc.h"
-
-#include "account.h"
-#include "account_wrap.h"
-#include "realm.h"
-#include "channel.h"
-#include "game.h"
+#include "irc.h"
+#include "i18n.h"
+#include "clan.h"
 #include "tick.h"
-#include "message.h"
+#include "game.h"
 #include "prefs.h"
 #include "watch.h"
-#include "timer.h"
-#include "irc.h"
 #include "ipban.h"
-#include "udptest_send.h"
-#include "character.h"
-#include "versioncheck.h"
-#include "anongame.h"
-#include "clan.h"
 #include "topic.h"
-#include "server.h"
-#include "handle_d2cs.h"
-#include "command_groups.h"
-#include "attrlayer.h"
-#include "anongame_wol.h"
 #include "icons.h"
-#include "i18n.h"
-#include "common/setup_after.h"
 #include "prefs.h"
+#include "realm.h"
+#include "timer.h"
+#include "server.h"
+#include "account.h"
+#include "channel.h"
+#include "message.h"
+#include "anongame.h"
+#include "character.h"
+#include "attrlayer.h"
+#include "handle_d2cs.h"
+#include "account_wrap.h"
+#include "udptest_send.h"
+#include "versioncheck.h"
+#include "anongame_wol.h"
+#include "command_groups.h"
+
+#include "common/tag.h"
+#include "common/rcm.h"
+#include "common/addr.h"
+#include "common/util.h"
+#include "common/list.h"
+#include "common/queue.h"
+#include "common/elist.h"
+#include "common/xalloc.h"
+#include "common/packet.h"
+#include "common/fdwatch.h"
+#include "common/bn_type.h"
+#include "common/eventlog.h"
+#include "common/field_sizes.h"
+#include "common/bnet_protocol.h"
+#include "common/setup_after.h"
 
 #ifdef WITH_LUA
 #include "luainterface.h"

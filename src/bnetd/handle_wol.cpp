@@ -19,7 +19,10 @@
  */
 
 #include "common/setup_before.h"
-#include "handle_wol.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #include <cctype>
 #include <cinttypes>
@@ -27,30 +30,31 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "common/irc_protocol.h"
-#include "common/eventlog.h"
-#include "common/bnethash.h"
+#include "irc.h"
+#include "clan.h"
+#include "game.h"
+#include "topic.h"
+#include "prefs.h"
+#include "server.h"
+#include "channel.h"
+#include "message.h"
+#include "account.h"
+#include "friends.h"
+#include "command.h"
+#include "handle_wol.h"
+#include "anongame_wol.h"
+#include "account_wrap.h"
+#include "command_groups.h"
+
 #include "common/tag.h"
 #include "common/list.h"
 #include "common/addr.h"
 #include "common/trans.h"
-
 #include "common/packet.h"
+#include "common/eventlog.h"
+#include "common/bnethash.h"
+#include "common/irc_protocol.h"
 
-#include "prefs.h"
-#include "command.h"
-#include "irc.h"
-#include "account.h"
-#include "account_wrap.h"
-#include "command_groups.h"
-#include "channel.h"
-#include "message.h"
-#include "topic.h"
-#include "server.h"
-#include "friends.h"
-#include "clan.h"
-#include "game.h"
-#include "anongame_wol.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

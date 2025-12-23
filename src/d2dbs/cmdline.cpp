@@ -17,18 +17,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "cmdline.h"
 
-#include <cstdio>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #if defined(_WIN32) || defined(WIN32)
 # include "win32/service.h"
 #endif
 
-#include "common/xalloc.h"
-#include "common/conf.h"
-#include "common/eventlog.h"
+#include <cstdio>
+
+#include "cmdline.h"
 #include "version.h"
+
+#include "common/conf.h"
+#include "common/xalloc.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 namespace pvpgn
@@ -73,7 +78,7 @@ namespace pvpgn
 		static int conf_set_debug(const char * valstr);
 		static int conf_setdef_debug(void);
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 		static int conf_set_service(char const * valstr);
 		static int conf_setdef_service(void);
 
@@ -105,7 +110,7 @@ namespace pvpgn
 #endif
 			{ "D", conf_set_debug, NULL, conf_setdef_debug },
 			{ "debug", conf_set_debug, NULL, conf_setdef_debug },
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 			{ "service", conf_set_service, NULL, conf_setdef_service },
 			{ "s", conf_set_servaction, NULL, conf_setdef_servaction },
 #endif
@@ -153,7 +158,7 @@ namespace pvpgn
 				"    -D, --debug              run in debug mode (run in foreground and log to stdout)\n"
 				"    -h, --help, --usage      show this information and exit\n"
 				"    -v, --version            print version number and exit\n"
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 				"    Running as service functions:\n"
 				"    --service                run as service\n"
 				"    -s install               install service\n"
@@ -272,7 +277,7 @@ namespace pvpgn
 		}
 
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 		static int conf_set_service(const char *valstr)
 		{
 			unsigned tmp = 0;

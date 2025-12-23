@@ -31,6 +31,7 @@
  */
 #if defined(_WIN32) || defined(WIN32)
 #include "win32/dirent.h"
+#include "compat/strcasecmp.h"
 #else
 #include <dirent.h>
 #endif

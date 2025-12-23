@@ -21,11 +21,11 @@
 
 #include <list>
 
-#include "common/scoped_ptr.h"
 
 #include "account.h"
 #include "connection.h"
 #include "common/tag.h"
+#include "common/scoped_ptr.h"
 
 namespace pvpgn
 {

@@ -17,26 +17,35 @@
  */
 
 #include "common/setup_before.h"
+
 #define ATTRGROUP_INTERNAL_ACCESS
-#include "attrgroup.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#include "compat/strncasecmp.h"
+#endif
+
+#ifdef __linux__
+#include <vector>
+#endif
 
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
 #include <string>
-#ifdef __linux__
-#include <vector>
-#endif
 
-#include "common/eventlog.h"
-#include "common/flags.h"
-#include "common/xalloc.h"
+#include "connection.h"
+
 #include "attr.h"
-#include "attrlayer.h"
-#include "storage.h"
 #include "prefs.h"
 #include "server.h"
-#include "connection.h"
+#include "storage.h"
+#include "attrlayer.h"
+#include "attrgroup.h"
+
+#include "common/flags.h"
+#include "common/xalloc.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 

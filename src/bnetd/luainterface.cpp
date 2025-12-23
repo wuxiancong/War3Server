@@ -21,11 +21,11 @@
 
 #include "team.h"
 
+#include <cmath>
 #include <cctype>
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
-#include <cmath>
 
 #include "compat/strcasecmp.h"
 #include "compat/pdir.h"

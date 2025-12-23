@@ -19,28 +19,32 @@
  */
 
 #include "common/setup_before.h"
-#include "handle_irc.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
 
 #include <cstring>
-#include <cctype>
 #include <cstdlib>
 
-#include "common/irc_protocol.h"
-#include "common/eventlog.h"
-#include "common/bnethash.h"
+#include "common/addr.h"
 #include "common/tag.h"
 #include "common/list.h"
-#include "common/addr.h"
+#include "common/eventlog.h"
+#include "common/bnethash.h"
+#include "common/irc_protocol.h"
 
-#include "prefs.h"
 #include "irc.h"
-#include "account.h"
-#include "account_wrap.h"
-#include "command_groups.h"
-#include "channel.h"
-#include "message.h"
+#include "prefs.h"
 #include "topic.h"
 #include "server.h"
+#include "account.h"
+#include "channel.h"
+#include "message.h"
+#include "handle_irc.h"
+#include "account_wrap.h"
+#include "command_groups.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

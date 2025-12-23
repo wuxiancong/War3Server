@@ -19,12 +19,12 @@
 #ifndef INCLUDED_LADDER_TYPES
 #define INCLUDED_LADDER_TYPES
 
-#include "account.h"
 #include "common/tag.h"
+#include "account.h"
+#include <string>
 #include <vector>
 #include <list>
 #include <map>
-#include <string>
 
 #define W3_XPCALC_MAXLEVEL	65
 

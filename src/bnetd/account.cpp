@@ -17,38 +17,44 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#define ACCOUNT_INTERNAL_ACCESS
 #include "common/setup_before.h"
-#include "account.h"
+
+#define ACCOUNT_INTERNAL_ACCESS
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #include <cstddef>
 #include <cassert>
 #include <cctype>
 #include <chrono>
 
-#include "common/list.h"
-#include "common/elist.h"
-#include "common/eventlog.h"
-#include "common/util.h"
-#include "common/field_sizes.h"
-#include "common/bnethash.h"
+#include "connection.h"
 
 #include "prefs.h"
-#include "account_wrap.h"
-#include "common/hashtable.h"
-#include "connection.h"
-#include "friends.h"
 #include "team.h"
-#include "common/tag.h"
-#include "ladder.h"
 #include "clan.h"
 #include "server.h"
+#include "ladder.h"
+#include "friends.h"
+#include "account.h"
+#include "storage.h"
 #include "attrgroup.h"
 #include "attrlayer.h"
-#include "storage.h"
+#include "account_wrap.h"
+
+#include "common/tag.h"
+#include "common/util.h"
+#include "common/list.h"
+#include "common/elist.h"
 #include "common/flags.h"
 #include "common/xalloc.h"
 #include "common/xstring.h"
+#include "common/eventlog.h"
+#include "common/bnethash.h"
+#include "common/hashtable.h"
+#include "common/field_sizes.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

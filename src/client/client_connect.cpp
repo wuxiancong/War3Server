@@ -171,7 +171,7 @@ namespace client
 
 extern int client_connect(char const * progname, char const * servname, unsigned short servport, char const * cdowner, char const * cdkey, char const * clienttag, int ignoreversion, struct sockaddr_in * saddr, unsigned int * sessionkey, unsigned int * sessionnum, char const * archtag, char const * gamelang)
 {
-    struct hostent * host;
+    struct hostent * host = nullptr;
     char const *     username;
     int              sd;
     t_packet *       packet;
@@ -211,13 +211,30 @@ extern int client_connect(char const * progname, char const * servname, unsigned
         return -1;
     }
 
-    if (!(host = gethostbyname(servname)))
+    struct addrinfo hints       = {};
+    struct addrinfo * result    = nullptr;
+
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    int err = getaddrinfo(servname, nullptr, &hints, &result);
+    if (err != 0 || !result)
     {
-        std::fprintf(stderr, "%s: unknown host \"%s\"\n", progname, servname);
+        std::fprintf(stderr, "%s: unknown host \"%s\" (%s)\n", progname, servname, gai_strerrorA(err));
         return -1;
     }
-    if (host->h_addrtype != PSOCK_AF_INET)
+
+    if (result->ai_family != AF_INET)
+    {
         std::fprintf(stderr, "%s: host \"%s\" is not in IPv4 address family\n", progname, servname);
+        freeaddrinfo(result);
+        return -1;
+    }
+
+    std::memcpy(saddr, result->ai_addr, sizeof(struct sockaddr_in));
+
+    freeaddrinfo(result);
 
     if (gethostname(compname, COMPNAMELEN) < 0)
     {
@@ -400,7 +417,9 @@ extern int client_connect(char const * progname, char const * servname, unsigned
             }
             packet_set_size(packet, sizeof(t_client_authreq_109));
             packet_set_type(packet, CLIENT_AUTHREQ_109);
-            bn_int_set(&packet->u.client_authreq_109.ticks, std::time(NULL));
+            std::time_t now = std::time(nullptr);
+            if (now < 0) now = 0;
+            bn_int_set(&packet->u.client_authreq_109.ticks, static_cast<uint32_t>(now & 0xFFFFFFFFu));
 
             {
                 t_cdkey_info cdkey_info = {};

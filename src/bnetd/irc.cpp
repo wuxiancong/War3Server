@@ -19,43 +19,46 @@
  */
 
 #include "common/setup_before.h"
-#include "irc.h"
 
-#include <cinttypes>
-#include <cstdint>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
+#include <ctime>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <ctime>
+#include <cstdint>
+#include <cinttypes>
 
-
-#include "common/irc_protocol.h"
-#include "common/packet.h"
-#include "common/eventlog.h"
-#include "common/field_sizes.h"
-#include "common/bnethash.h"
-#include "common/xalloc.h"
-#include "common/addr.h"
-#include "common/tag.h"
-#include "common/list.h"
-#include "common/util.h"
-
+#include "irc.h"
+#include "game.h"
+#include "tick.h"
+#include "clan.h"
+#include "prefs.h"
+#include "topic.h"
+#include "server.h"
 #include "message.h"
 #include "channel.h"
-#include "game.h"
-#include "connection.h"
-#include "server.h"
+#include "command.h"
 #include "account.h"
-#include "account_wrap.h"
-#include "prefs.h"
-#include "tick.h"
 #include "handle_irc.h"
 #include "handle_wol.h"
+#include "connection.h"
+#include "account_wrap.h"
 #include "command_groups.h"
-#include "topic.h"
-#include "clan.h"
-#include "command.h"
 #include "anongame_wol.h"
+
+#include "common/tag.h"
+#include "common/addr.h"
+#include "common/list.h"
+#include "common/util.h"
+#include "common/packet.h"
+#include "common/xalloc.h"
+#include "common/bnethash.h"
+#include "common/eventlog.h"
+#include "common/field_sizes.h"
+#include "common/irc_protocol.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

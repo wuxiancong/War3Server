@@ -17,18 +17,25 @@
  */
 #define CHARACTER_INTERNAL_ACCESS
 #include "common/setup_before.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
 #include <cstdint>
 #include <cstdint>
 #include <cstring>
+
 #include "account.h"
 #include "character.h"
 #include "account_wrap.h"
-#include "common/bnet_protocol.h"
-#include "common/eventlog.h"
-#include "common/bn_type.h"
-#include "common/xalloc.h"
-#include "common/list.h"
+
 #include "common/util.h"
+#include "common/list.h"
+#include "common/xalloc.h"
+#include "common/bn_type.h"
+#include "common/eventlog.h"
+#include "common/bnet_protocol.h"
 #include "common/setup_after.h"
 
 

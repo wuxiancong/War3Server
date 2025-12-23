@@ -21,8 +21,8 @@
 #include <string>
 #include <vector>
 
-#include "common/eventlog.h"
 #include "common/field_sizes.h"
+#include "common/eventlog.h"
 #include "common/tag.h"
 
 #include <fmt/format.h>

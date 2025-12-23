@@ -16,21 +16,27 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
+
 #define REALM_INTERNAL_ACCESS
-#include "realm.h"
+
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
+#include "connection.h"
 
 #include <cstdio>
 #include <cerrno>
 #include <cstring>
 #include <cassert>
 
-#include "common/list.h"
-#include "common/eventlog.h"
-#include "common/xalloc.h"
+#include "realm.h"
+
 #include "common/addr.h"
 #include "common/util.h"
-
-#include "connection.h"
+#include "common/list.h"
+#include "common/xalloc.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 

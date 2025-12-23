@@ -17,9 +17,12 @@
  */
 #include "common/setup_before.h"
 
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
+#if defined(_MSC_VER)
+#  include <process.h>
+#  define getpid _getpid
+#else
+#  include <unistd.h>
+#endif
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -32,27 +35,30 @@
 #endif
 #if defined(_WIN32) || defined(WIN32)
 #include "win32/service.h"
+#include "win32/windump.h"
 #endif
 #ifdef WIN32_GUI
 #include "win32/winmain.h"
 #endif
 
-#include "common/eventlog.h"
-#include "common/xalloc.h"
-#include "common/trans.h"
-#include "common/fdwatch.h"
-#include "prefs.h"
-#include "connection.h"
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
+
 #include "d2gs.h"
-#include "serverqueue.h"
-#include "d2ladder.h"
-#include "cmdline.h"
 #include "game.h"
+#include "prefs.h"
 #include "server.h"
 #include "version.h"
-#if defined(_WIN32) || defined(WIN32)
-#include "win32/windump.h"
-#endif
+#include "cmdline.h"
+#include "d2ladder.h"
+#include "connection.h"
+#include "serverqueue.h"
+
+#include "common/trans.h"
+#include "common/xalloc.h"
+#include "common/fdwatch.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 using namespace pvpgn::d2cs;

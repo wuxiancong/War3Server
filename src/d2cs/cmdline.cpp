@@ -17,18 +17,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "cmdline.h"
 
-#include <cstdio>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
 
 #if defined(_WIN32) || defined(WIN32)
 # include "win32/service.h"
 #endif
 
+#include <cstdio>
+
+#include "version.h"
+#include "cmdline.h"
+
 #include "common/conf.h"
 #include "common/xalloc.h"
 #include "common/eventlog.h"
-#include "version.h"
 #include "common/setup_after.h"
 
 namespace pvpgn

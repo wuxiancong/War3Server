@@ -46,11 +46,8 @@ namespace pvpgn
 static char const * netaddr_num_to_addr_str(unsigned int netipaddr, unsigned int netmask);
 
 
-#define HACK_SIZE 4
-
-
 #if defined(_WIN32) && _WIN32_WINNT < 0x0600
-extern char * const inet_ntop(int af, const void* src, char* dst, int cnt)
+static char * const inet_ntop(int af, const void* src, char* dst, int cnt)
 {
     if (af == AF_INET)
     {
@@ -67,7 +64,7 @@ extern char * const inet_ntop(int af, const void* src, char* dst, int cnt)
     }
     return NULL;
 }
-extern int const inet_pton(int af, const char *src, void *dst)
+static int const inet_pton(int af, const char *src, void *dst)
 {
     struct sockaddr_storage ss;
     int size = sizeof(ss);
@@ -91,6 +88,9 @@ extern int const inet_pton(int af, const char *src, void *dst)
     return 0;
 }
 #endif
+
+
+#define HACK_SIZE 4
 
 /* both arguments are in host byte order */
 extern char const * addr_num_to_addr_str(unsigned int ipaddr, unsigned short port)

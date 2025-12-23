@@ -20,7 +20,9 @@
 
 #include <cstring>
 #include <cstdio>
-
+#if defined(_WIN32) || defined(WIN32)
+#include "compat/strcasecmp.h"
+#endif
 #include "common/eventlog.h"
 #include "common/bn_type.h"
 #include "common/addr.h"

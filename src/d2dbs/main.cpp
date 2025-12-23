@@ -18,9 +18,12 @@
  */
 #include "common/setup_before.h"
 
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
+#if defined(_MSC_VER)
+#  include <process.h>
+#  define getpid _getpid
+#else
+#  include <unistd.h>
+#endif
 
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
@@ -39,13 +42,17 @@
 # include "win32/winmain.h"
 #endif
 
-#include "common/eventlog.h"
-#include "common/xalloc.h"
-#include "cmdline.h"
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
+
 #include "prefs.h"
+#include "cmdline.h"
 #include "version.h"
-#include "handle_signal.h"
 #include "dbserver.h"
+
+#include "common/xalloc.h"
+#include "common/eventlog.h"
 #include "common/setup_after.h"
 
 using namespace pvpgn::d2dbs;

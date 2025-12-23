@@ -16,32 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "common/setup_before.h"
-#include "d2cs/d2charfile.h"
-#include "setup.h"
-#include "connection.h"
 
-#include <limits>
-#include <cctype>
-#include <cstring>
+#if defined(_MSC_VER)
+#include "compat/strcasecmp.h"
+#endif
+
 #include <ctime>
+#include <limits>
 #include <cassert>
+#include <cstring>
 
 #include "compat/psock.h"
-#include "common/eventlog.h"
-#include "common/introtate.h"
+
+#include "connection.h"
+
+#include "s2s.h"
+#include "net.h"
+#include "d2gs.h"
+#include "game.h"
+#include "prefs.h"
+#include "setup.h"
+#include "handle_d2cs.h"
+#include "handle_d2gs.h"
+#include "handle_init.h"
+#include "handle_bnetd.h"
+#include "d2cs/d2charfile.h"
+
 #include "common/addr.h"
 #include "common/xalloc.h"
 #include "common/network.h"
 #include "common/xstring.h"
-#include "prefs.h"
-#include "game.h"
-#include "net.h"
-#include "handle_init.h"
-#include "handle_bnetd.h"
-#include "handle_d2cs.h"
-#include "handle_d2gs.h"
-#include "d2gs.h"
-#include "s2s.h"
+#include "common/eventlog.h"
+#include "common/introtate.h"
 #include "common/setup_after.h"
 
 namespace pvpgn
@@ -193,14 +199,14 @@ namespace pvpgn
 				}
 				else {
 					if (!c->charname) continue;
-					if (!strcmp_charname(c->charname, charname)) {
+                    if (!strcasecmp(c->charname, charname)) {
 						hashtable_entry_release(curr);
 						return c;
 					}
 				}
 			}
 			return NULL;
-		}
+        }
 
 		static t_packet * conn_create_packet(t_connection * c)
 		{

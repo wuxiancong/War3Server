@@ -17,6 +17,11 @@
 #ifndef INCLUDED_CLAN_TYPES
 #define INCLUDED_CLAN_TYPES
 
+#if defined(_MSC_VER)
+#pragma pack(push)
+#pragma pack()
+#endif
+
 #include "common/tag.h"
 #include <ctime>
 
@@ -28,10 +33,10 @@
 #else
 # define JUST_NEED_TYPES
 # include "common/bn_type.h"
-# include "connection.h"
-# include "message.h"
 # include "common/packet.h"
 # include "common/tag.h"
+# include "connection.h"
+# include "message.h"
 # undef JUST_NEED_TYPES
 #endif
 
@@ -68,13 +73,13 @@ typedef struct clan
     t_list *members;
     int created;
     /* --by Soar
-			   on create, set it to -count of invited members,
-			   each accept packet will inc it by 1,
-			   when it is increased to 0, means that all invited members have accepted,
-			   then clan will be created and set this value to 1
-			   */
+               on create, set it to -count of invited members,
+               each accept packet will inc it by 1,
+               when it is increased to 0, means that all invited members have accepted,
+               then clan will be created and set this value to 1
+               */
     char modified;
-    char channel_type;		/* 0--public 1--private */
+    char channel_type;        /* 0--public 1--private */
 }
 #endif
 t_clan;
@@ -87,7 +92,7 @@ typedef struct _clanmember
     std::time_t join_time;
     t_clan * clan;
     int fullmember; /* PELISH: 0 -- clanmember is only invited,
-									   1 -- clanmember is fullmember  */
+                                       1 -- clanmember is fullmember  */
 #ifdef WITH_SQL
     char modified;
 #endif
@@ -104,11 +109,20 @@ t_clanmember;
 #define CLAN_PEON      0x01
 #define CLAN_NEW       0x00
 
+#if defined(_MSC_VER)
+#pragma pack(pop)
 #endif
+
+#endif // INCLUDED_CLAN_TYPES
 
 #ifndef JUST_NEED_TYPES
 #ifndef INCLUDED_CLAN_PROTOS
 #define INCLUDED_CLAN_PROTOS
+
+#if defined(_MSC_VER)
+#pragma pack(push)
+#pragma pack()
+#endif
 
 #define JUST_NEED_TYPES
 #include "common/list.h"
@@ -200,5 +214,9 @@ extern const char* clantag_to_str(t_clantag tag);
 
 }
 
+#if defined(_MSC_VER)
+#pragma pack(pop)
 #endif
-#endif
+
+#endif // INCLUDED_CLAN_PROTOS
+#endif // JUST_NEED_TYPES

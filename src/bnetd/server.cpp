@@ -22,7 +22,6 @@
 #include "server.h"
 
 #include <cctype>
-#include <cerrno>
 #include <cstring>
 #include <cstdio>
 
@@ -283,7 +282,7 @@ namespace pvpgn
 			}
 
 			char addrstr[INET_ADDRSTRLEN] = { 0 };
-			if (ipbanlist_check(inet_ntop(AF_INET, &(caddr.sin_addr), addrstr, sizeof(addrstr))) != 0)
+            if (ipbanlist_check(inet_ntop(AF_INET, &(caddr.sin_addr), addrstr, sizeof(addrstr))) != 0)
 			{
 				eventlog(eventlog_level_info, __FUNCTION__, "[{}] connection from banned address {} denied (closing connection)", csocket, addrstr);
 				psock_close(csocket);
