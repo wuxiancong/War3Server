@@ -259,7 +259,7 @@ extern int main(int argc, char ** argv)
 	else {
 		eventlog(eventlog_level_info, __FUNCTION__, "server initialized");
 	}
-#if defined(_WIN32) || defined(WIN32)
+#if !defined(_WIN32) || !defined(WIN32)
     d2dbs_handle_signal_init();
 #endif
 	dbs_server_main();
