@@ -50,6 +50,13 @@
 # include <Ws2tcpip.h>
 #endif
 
+#ifndef _WIN32
+# include <netdb.h>
+# ifndef gai_strerrorA
+#  define gai_strerrorA gai_strerror
+# endif
+#endif
+
 #include "common/setup_after.h"
 
 
