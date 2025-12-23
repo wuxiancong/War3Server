@@ -440,169 +440,182 @@ namespace pvpgn
 			return key;
 		}
 
-		static int file_load_clans(t_load_clans_func cb)
-		{
-			char const *dentry;
-			char *pathname;
-			int clantag;
-			t_clan *clan;
-			std::FILE *fp;
-			char *clanname, *motd, *p;
-			char line[1024];
-			int cid, creation_time;
-			int member_uid, member_join_time;
-			char member_status;
-			t_clanmember *member;
+        static int file_load_clans(t_load_clans_func cb)
+        {
+            char const *dentry;
+            char *pathname;
+            int clantag;
+            t_clan *clan;
+            std::FILE *fp;
+            char *clanname, *motd, *p;
+            char line[1024];
+            int cid, creation_time;
+            int member_uid, member_join_time;
+            char member_status;
+            t_clanmember *member;
 
-			if (cb == NULL)
-			{
-				eventlog(eventlog_level_error, __FUNCTION__, "get NULL callback");
-				return -1;
-			}
+            if (cb == NULL)
+            {
+                eventlog(eventlog_level_error, __FUNCTION__, "get NULL callback");
+                return -1;
+            }
 
-			try {
-				Directory clandir(clansdir);
+            try {
+                Directory clandir(clansdir);
 
-				eventlog(eventlog_level_trace, __FUNCTION__, "start reading clans");
+                eventlog(eventlog_level_trace, __FUNCTION__, "start reading clans");
 
-				pathname = (char*)xmalloc(std::strlen(clansdir) + 1 + 4 + 1);
-				while ((dentry = clandir.read()))
-				{
-					if (std::strlen(dentry) > 4)
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "found too long clan filename in clandir \"{}\"", dentry);
-						continue;
-					}
+                pathname = (char*)xmalloc(std::strlen(clansdir) + 1 + 4 + 1);
+                while ((dentry = clandir.read()))
+                {
+                    if (std::strlen(dentry) > 4)
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "found too long clan filename in clandir \"{}\"", dentry);
+                        continue;
+                    }
 
-					std::sprintf(pathname, "%s/%s", clansdir, dentry);
+                    std::snprintf(pathname, std::strlen(clansdir) + 1 + 4 + 1, "%s/%s", clansdir, dentry);
 
-					clantag = str_to_clantag(dentry);
+                    clantag = str_to_clantag(dentry);
 
-					if ((fp = std::fopen(pathname, "r")) == NULL)
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "can't open clanfile \"{}\"", pathname);
-						continue;
-					}
+                    if ((fp = std::fopen(pathname, "r")) == NULL)
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "can't open clanfile \"{}\"", pathname);
+                        continue;
+                    }
 
-					clan = (t_clan*)xmalloc(sizeof(t_clan));
-					clan->tag = clantag;
+                    clan = (t_clan*)xmalloc(sizeof(t_clan));
+                    clan->tag = clantag;
 
-					if (!std::fgets(line, 1024, fp))
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: no first line");
-						xfree((void*)clan);
-						continue;
-					}
+                    if (!std::fgets(line, sizeof(line), fp))
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: no first line");
+                        xfree((void*)clan);
+                        std::fclose(fp);
+                        continue;
+                    }
 
-					clanname = line;
-					if (*clanname != '"')
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
-						xfree((void*)clan);
-						continue;
-					}
-					clanname++;
-					p = std::strchr(clanname, '"');
-					if (!p)
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
-						xfree((void*)clan);
-						continue;
-					}
-					*p = '\0';
-					if (std::strlen(clanname) >= CLAN_NAME_MAX)
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
-						xfree((void*)clan);
-						continue;
-					}
+                    clanname = line;
+                    if (*clanname != '"')
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
+                        xfree((void*)clan);
+                        std::fclose(fp);
+                        continue;
+                    }
+                    clanname++;
+                    p = std::strchr(clanname, '"');
+                    if (!p)
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
+                        xfree((void*)clan);
+                        std::fclose(fp);
+                        continue;
+                    }
+                    *p = '\0';
+                    if (std::strlen(clanname) >= CLAN_NAME_MAX)
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
+                        xfree((void*)clan);
+                        std::fclose(fp);
+                        continue;
+                    }
 
-					p++;
-					if (*p != ',')
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
-						xfree((void*)clan);
-						continue;
-					}
-					p++;
-					if (*p != '"')
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
-						xfree((void*)clan);
-						continue;
-					}
-					motd = p + 1;
-					p = std::strchr(motd, '"');
-					if (!p)
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
-						xfree((void*)clan);
-						continue;
-					}
-					*p = '\0';
+                    p++;
+                    if (*p != ',')
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
+                        xfree((void*)clan);
+                        std::fclose(fp);
+                        continue;
+                    }
+                    p++;
+                    if (*p != '"')
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
+                        xfree((void*)clan);
+                        std::fclose(fp);
+                        continue;
+                    }
+                    motd = p + 1;
+                    p = std::strchr(motd, '"');
+                    if (!p)
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "invalid clan file: invalid first line");
+                        xfree((void*)clan);
+                        std::fclose(fp);
+                        continue;
+                    }
+                    *p = '\0';
 
-					if (std::sscanf(p + 1, ",%d,%d\n", &cid, &creation_time) != 2)
-					{
-						eventlog(eventlog_level_error, __FUNCTION__, "invalid first line in clanfile");
-						xfree((void*)clan);
-						continue;
-					}
-					clan->clanname = xstrdup(clanname);
-					clan->clan_motd = xstrdup(motd);
-					clan->clanid = cid;
-					clan->creation_time = (std::time_t) creation_time;
-					clan->created = 1;
-					clan->modified = 0;
-					clan->channel_type = prefs_get_clan_channel_default_private();
+                    if (std::sscanf(p + 1, ",%d,%d\n", &cid, &creation_time) != 2)
+                    {
+                        eventlog(eventlog_level_error, __FUNCTION__, "invalid first line in clanfile");
+                        xfree((void*)clan);
+                        std::fclose(fp);  // 修复：添加关闭文件
+                        continue;
+                    }
+                    clan->clanname = xstrdup(clanname);
+                    clan->clan_motd = xstrdup(motd);
+                    clan->clanid = cid;
+                    clan->creation_time = (std::time_t) creation_time;
+                    clan->created = 1;
+                    clan->modified = 0;
+                    clan->channel_type = prefs_get_clan_channel_default_private();
 
-					eventlog(eventlog_level_trace, __FUNCTION__, "name: {} motd: {} clanid: {} time: {}", clanname, motd, cid, creation_time);
+                    eventlog(eventlog_level_trace, __FUNCTION__, "name: {} motd: {} clanid: {} time: {}", clanname, motd, cid, creation_time);
 
-					clan->members = list_create();
+                    clan->members = list_create();
 
-					while (std::fscanf(fp, "%i,%c,%i\n", &member_uid, &member_status, &member_join_time) == 3)
-					{
-						member = (t_clanmember*)xmalloc(sizeof(t_clanmember));
-						if (!(member->memberacc = accountlist_find_account_by_uid(member_uid)))
-						{
-							eventlog(eventlog_level_error, __FUNCTION__, "cannot find uid {}", member_uid);
-							xfree((void *)member);
-							continue;
-						}
-						member->status = member_status - '0';
-						member->join_time = member_join_time;
-						member->clan = clan;
-						member->fullmember = 1; /* In files we have only fullmembers */
+                    while (std::fscanf(fp, "%i,%c,%i\n", &member_uid, &member_status, &member_join_time) == 3)
+                    {
+                        member = (t_clanmember*)xmalloc(sizeof(t_clanmember));
+                        if (!(member->memberacc = accountlist_find_account_by_uid(member_uid)))
+                        {
+                            eventlog(eventlog_level_error, __FUNCTION__, "cannot find uid {}", member_uid);
+                            xfree((void *)member);
+                            continue;
+                        }
+                        member->status = member_status - '0';
+                        member->join_time = member_join_time;
+                        member->clan = clan;
+                        member->fullmember = 1; /* In files we have only fullmembers */
 
-						if ((member->status == CLAN_NEW) && (std::time(NULL) - member->join_time > prefs_get_clan_newer_time() * 3600))
-						{
-							member->status = CLAN_PEON;
-							clan->modified = 1;
-						}
+                        if ((member->status == CLAN_NEW) && (std::time(NULL) - member->join_time > prefs_get_clan_newer_time() * 3600))
+                        {
+                            member->status = CLAN_PEON;
+                            clan->modified = 1;
+                        }
 
-						list_append_data(clan->members, member);
+                        list_append_data(clan->members, member);
 
-						account_set_clanmember((t_account*)member->memberacc, member);
-						eventlog(eventlog_level_trace, __FUNCTION__, "added member: uid: {} status: {} join_time: {}", member_uid, member_status + '0', member_join_time);
-					}
+                        account_set_clanmember((t_account*)member->memberacc, member);
+                        eventlog(eventlog_level_trace, __FUNCTION__, "added member: uid: {} status: {} join_time: {}", member_uid, member_status + '0', member_join_time);
+                    }
 
-					std::fclose(fp);
+                    if (std::ferror(fp)) {
+                        eventlog(eventlog_level_error, __FUNCTION__, "error reading clan file \"{}\"", pathname);
+                    }
 
-					cb(clan);
+                    std::fclose(fp);
+                    fp = NULL;
 
-				}
+                    cb(clan);
 
-				xfree((void *)pathname);
+                }
 
-			}
-			catch (const Directory::OpenError& ex) {
-				ERROR2("unable to open clan directory \"{}\" for reading (error: {})", clansdir, ex.what());
-				return -1;
-			}
+                xfree((void *)pathname);
 
-			eventlog(eventlog_level_trace, __FUNCTION__, "finished reading clans");
+            }
+            catch (const Directory::OpenError& ex) {
+                ERROR2("unable to open clan directory \"{}\" for reading (error: {})", clansdir, ex.what());
+                return -1;
+            }
 
-			return 0;
-		}
+            eventlog(eventlog_level_trace, __FUNCTION__, "finished reading clans");
+
+            return 0;
+        }
 
 		static int file_write_clan(void *data)
 		{
@@ -758,7 +771,7 @@ namespace pvpgn
 					{
 						if (i < size)
 						{
-							if ((team->teammembers[i] == 0))
+                            if (team->teammembers[i] == 0)
 							{
 								eventlog(eventlog_level_error, __FUNCTION__, "invalid team file: too few members");
 								goto load_team_failure;
