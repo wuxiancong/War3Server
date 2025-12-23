@@ -3909,7 +3909,7 @@ static int _glist_cb(t_game * game, void *data)
              SERVER_GAMELISTREPLY_GAME_UNKNOWN4,         // 6
              SERVER_GAMELISTREPLY_GAME_UNKNOWN5,         // 7
              final_status_code,                          // 8
-             SERVER_GAMELISTREPLY_GAME_UNKNOWN6,         // 9 (你的 Unk6 其实是运行时间)
+             SERVER_GAMELISTREPLY_GAME_UNKNOWN6,         // 9
              game_get_name(game),                        // 10
              game_get_pass(game),                        // 11
              game_get_info(game)                         // 12
