@@ -35,7 +35,6 @@
 # include <sys/stat.h>
 #endif
 #if defined(_WIN32) || defined(WIN32)
-#include "d2dbs/handle_signal.h"
 #include "win32/windump.h"
 #include "win32/service.h"
 #endif
@@ -51,6 +50,7 @@
 #include "cmdline.h"
 #include "version.h"
 #include "dbserver.h"
+#include "d2dbs/handle_signal.h"
 
 #include "common/xalloc.h"
 #include "common/eventlog.h"
@@ -259,7 +259,7 @@ extern int main(int argc, char ** argv)
 	else {
 		eventlog(eventlog_level_info, __FUNCTION__, "server initialized");
 	}
-#if !defined(_WIN32) || !defined(WIN32)
+#if defined(_WIN32) || defined(WIN32)
     d2dbs_handle_signal_init();
 #endif
 	dbs_server_main();
