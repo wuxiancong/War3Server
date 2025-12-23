@@ -3873,11 +3873,47 @@ static int _glist_cb(t_game * game, void *data)
         final_status_code = 0;
     }
 
-    eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [列表调试] 决定发送游戏 \"{}\", 最终发送状态码: 0x{:08x} (0x10=Open, 0x04=Started)",
-             conn_get_socket(cbdata->c), game_get_name(game), final_status_code);
-
     bn_int_set(&glgame.unknown6, SERVER_GAMELISTREPLY_GAME_UNKNOWN6);
+
+    // 协议参考: https://bnetdocs.org/packet/266/sid-getadvlistex
+    eventlog(eventlog_level_debug, __FUNCTION__,
+             "[{}] [列表封包结构] 准备发送数据 (按协议顺序): "
+             // 1. (UINT32) Game settings: 实际上由 GameType(16) + Unknown1(16) 组成
+             "1_Settings[Type=0x{:04x}, Unk1=0x{:04x}], "
+             // 2. (UINT32) Language ID
+             "2_LangID=[未记录], "
+             // 3. (UINT16) Address Family: 对应 Unknown3, 应该是 AF_INET (0x0002)
+             "3_AddrFam(Unk3)=0x{:04x}, "
+             // 4. (UINT16) Port
+             "4_Port={}, "
+             // 5. (UINT32) Host's IP
+             "5_IP=0x{:08x}, "
+             // 6. (UINT32) sin_zero 1: 对应 Unknown4
+             "6_Zero1(Unk4)=0x{:08x}, "
+             // 7. (UINT32) sin_zero 2: 对应 Unknown5
+             "7_Zero2(Unk5)=0x{:08x}, "
+             // 8. (UINT32) Game status
+             "8_Status=0x{:08x}, "
+             // 9. (UINT32) Elapsed time: 对应 Unknown6 (游戏已经运行的秒数)
+             "9_Elapsed(Unk6)=0x{:08x}, "
+             // 10-12. (STRING) Strings
+             "10_Name=\"{}\", 11_Pass=\"{}\", 12_Stat=\"{}\"",
+
+             conn_get_socket(cbdata->c),
+             (int)gtype_to_bngtype(game_get_type(game)), // Part of 1
+             SERVER_GAMELISTREPLY_GAME_UNKNOWN1,         // Part of 1
+             // MISSING LANG ID HERE                     // 2
+             SERVER_GAMELISTREPLY_GAME_UNKNOWN3,         // 3
+             port,                                       // 4
+             addr,                                       // 5
+             SERVER_GAMELISTREPLY_GAME_UNKNOWN4,         // 6
+             SERVER_GAMELISTREPLY_GAME_UNKNOWN5,         // 7
+             final_status_code,                          // 8
+             SERVER_GAMELISTREPLY_GAME_UNKNOWN6,         // 9 (你的 Unk6 其实是运行时间)
+             game_get_name(game),                        // 10
+             game_get_pass(game),                        // 11
+             game_get_info(game)                         // 12
+             );
 
     if (packet_get_size(cbdata->rpacket) + sizeof(glgame)+std::strlen(game_get_name(game)) + 1 + std::strlen(game_get_pass(game)) + 1 + std::strlen(game_get_info(game)) + 1 > MAX_PACKET_SIZE) {
         eventlog(eventlog_level_debug, __FUNCTION__, "[{}] out of room for games", conn_get_socket(cbdata->c));
