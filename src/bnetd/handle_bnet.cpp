@@ -3839,6 +3839,7 @@ static int _glist_cb(t_game * game, void *data)
              (int)gtype_to_bngtype(game_get_type(game)));
 
     bn_short_set(&glgame.unknown1, SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
+    bn_int_set(&glgame.langid, 0);
     bn_short_set(&glgame.unknown3, SERVER_GAMELISTREPLY_GAME_UNKNOWN3);
     addr = game_get_addr(game);
     port = game_get_port(game);
