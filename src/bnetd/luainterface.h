@@ -17,6 +17,7 @@
 */
 /*****/
 #ifdef WITH_LUA
+#include "bnetd/mail.h"
 #ifndef JUST_NEED_TYPES
 #ifndef INCLUDED_LUAINTERFACE_PROTOS
 #define INCLUDED_LUAINTERFACE_PROTOS
@@ -24,7 +25,6 @@
 #define JUST_NEED_TYPES
 #include "connection.h"
 #include "luawrapper.h"
-#include <stdio.h>
 #undef JUST_NEED_TYPES
 
 namespace pvpgn
