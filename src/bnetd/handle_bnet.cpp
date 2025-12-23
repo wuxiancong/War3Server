@@ -3793,7 +3793,7 @@ static int _glist_cb(t_game * game, void *data)
     t_server_gamelistreply_game glgame;
     unsigned int addr;
     unsigned short port;
-    bn_int game_spacer = { 1, 0, 0, 0 };
+    // bn_int game_spacer = { 1, 0, 0, 0 };
 
     cbdata->tcount++;
 
@@ -3920,9 +3920,9 @@ static int _glist_cb(t_game * game, void *data)
         return -1;                        /* no more room */
     }
 
-    if (cbdata->counter) {
-        packet_append_data(cbdata->rpacket, &game_spacer, sizeof(game_spacer));
-    }
+    // if (cbdata->counter) {
+    //     packet_append_data(cbdata->rpacket, &game_spacer, sizeof(game_spacer));
+    // }
 
     packet_append_data(cbdata->rpacket, &glgame, sizeof(glgame));
     packet_append_string(cbdata->rpacket, game_get_name(game));

@@ -2794,8 +2794,9 @@ namespace pvpgn
 			bn_int   unknown7; */
 		bn_short gametype;
 		bn_short unknown1; /* langid under Diablo... */
+        bn_int   langid;
 		bn_short unknown3;
-		/*  bn_int   deleted; */ /* they changed the structure at one point */
+        /*  bn_int   deleted; */ /* they changed the structure at one point */
 		bn_short port;     /* big endian byte order... at least they are consistent! */
 		bn_int   game_ip;  /* big endian byte order */
 		bn_int   unknown4;

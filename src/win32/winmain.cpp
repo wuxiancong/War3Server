@@ -135,15 +135,22 @@ int fprintf(FILE *stream, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
+
+    int result;
     if (stream == stderr || stream == stdout)
     {
         char buf[1024] = {};
         std::vsnprintf(buf, sizeof buf, format, args);
         gui_lvprintf(eventlog_level_error, "{}", buf);
-        return 1;
+        result = 1;
     }
     else
-        return vfprintf(stream, format, args);
+    {
+        result = vfprintf(stream, format, args);
+    }
+
+    va_end(args);
+    return result;
 }
 
 static void guiThread(void *param)
@@ -456,8 +463,8 @@ static void guiOnSize(HWND hwnd, UINT state, int cx, int cy)
     int cy_status = 0;
     int cy_edge = GetSystemMetrics(SM_CYEDGE);
     int cx_edge = GetSystemMetrics(SM_CXEDGE);
-    int cy_frame = (cy_edge << 1) + GetSystemMetrics(SM_CYBORDER) + 1;
-    int cy_console = ((cy - cy_status - cy_frame - cy_edge * 2) * gui.y_ratio) >> 10;
+    // int cy_frame = (cy_edge << 1) + GetSystemMetrics(SM_CYBORDER) + 1;
+    // int cy_console = ((cy - cy_status - cy_frame - cy_edge * 2) * gui.y_ratio) >> 10;
     gui.rectConsoleEdge.left = 0;
     gui.rectConsoleEdge.right = cx - 140;
     gui.rectConsoleEdge.top = 0;
@@ -750,8 +757,8 @@ INT_PTR CALLBACK KickDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
         {
             SetDlgItemTextA(hwnd, IDC_EDITKICK, selected_item);
         }
-
         return TRUE;
+
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
@@ -802,29 +809,33 @@ INT_PTR CALLBACK KickDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
                     std::snprintf(temp, sizeof temp, "%s", addr_num_to_addr_str(conn_get_addr(conngui), 0));
 
                     char ipadr[110];
-                    unsigned int	i_GUI;
+                    unsigned int i_GUI;
 
-                    for (i_GUI = 0; temp[i_GUI] != ':'; i_GUI++)
+                    for (i_GUI = 0; temp[i_GUI] != ':' && i_GUI < sizeof(ipadr) - 1 && temp[i_GUI] != '\0'; i_GUI++)
                         ipadr[i_GUI] = temp[i_GUI];
 
                     ipadr[i_GUI] = 0;
 
-                    std::strcpy(temp, " a ");
-                    std::strcat(temp, ipadr);
-                    handle_ipban_command(nullptr, temp);
+                    // Safer alternative using snprintf
+                    char ban_cmd[128];
+                    std::snprintf(ban_cmd, sizeof ban_cmd, " a %s", ipadr);
+                    handle_ipban_command(nullptr, ban_cmd);
 
-                    temp[0] = 0;
-                    std::strcpy(temp, " has been added to IpBanList");
-                    std::strcat(ipadr, temp);
+                    // Build message safely
+                    char message[256];
+                    std::snprintf(message, sizeof message, "%s has been added to IpBanList", ipadr);
+
                     if (messageq == TRUE)
                     {
-                        std::strcat(ipadr, " and UserStatus changed");
-                        MessageBoxA(hwnd, ipadr, "ipBan & StatusChange", MB_OK);
+                        std::strncat(message, " and UserStatus changed", sizeof message - std::strlen(message) - 1);
+                        MessageBoxA(hwnd, message, "ipBan & StatusChange", MB_OK);
                         messageq = FALSE;
                         kickq = FALSE;
                     }
                     else
-                        MessageBoxA(hwnd, ipadr, "ipBan", MB_OK);
+                    {
+                        MessageBoxA(hwnd, message, "ipBan", MB_OK);
+                    }
                 }
 
                 if (SendMessageW(hButton1, BM_GETCHECK, 0, 0) == BST_CHECKED)
@@ -833,22 +844,27 @@ INT_PTR CALLBACK KickDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
                     kickq = TRUE;
                 }
 
+                // Use a buffer for messages instead of modifying selected_item
+                char message_buffer[512];
+                message_buffer[0] = '\0';
+
                 if ((messageq == TRUE) && (kickq == TRUE))
                 {
-                    std::strcat(selected_item, "has been kicked and Status has changed");
-                    MessageBoxA(hwnd, selected_item, "UserKick & StatusChange", MB_OK);
+                    std::snprintf(message_buffer, sizeof message_buffer,
+                                  "%s has been kicked and Status has changed", selected_item);
+                    MessageBoxA(hwnd, message_buffer, "UserKick & StatusChange", MB_OK);
                 }
-
-                if ((kickq == TRUE) && (messageq == FALSE))
+                else if ((kickq == TRUE) && (messageq == FALSE))
                 {
-                    std::strcat(selected_item, " has been kicked from the server");
-                    MessageBoxA(hwnd, selected_item, "UserKick", MB_OK);
+                    std::snprintf(message_buffer, sizeof message_buffer,
+                                  "%s has been kicked from the server", selected_item);
+                    MessageBoxA(hwnd, message_buffer, "UserKick", MB_OK);
                 }
-
-                if ((kickq == FALSE) && (messageq == TRUE))
+                else if ((kickq == FALSE) && (messageq == TRUE))
                 {
-                    std::strcat(selected_item, "'s Status has been changed");
-                    MessageBoxA(hwnd, selected_item, "StatusChange", MB_OK);
+                    std::snprintf(message_buffer, sizeof message_buffer,
+                                  "%s's Status has been changed", selected_item);
+                    MessageBoxA(hwnd, message_buffer, "StatusChange", MB_OK);
                 }
 
                 selected_item[0] = 0;
@@ -857,19 +873,18 @@ INT_PTR CALLBACK KickDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
         }
         }
         break;
+
     case WM_CLOSE:
         EndDialog(hwnd, IDC_EDITKICK);
         break;
+
     default:
         return FALSE;
     }
     return TRUE;
 }
-
 }
-
 }
-
 
 using namespace pvpgn;
 using namespace pvpgn::bnetd;
