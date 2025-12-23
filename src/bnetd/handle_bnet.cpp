@@ -4020,11 +4020,14 @@ static int _client_gamelistreq(t_connection * c, t_packet const *const packet)
                     bn_int_set(&rpacket->u.server_gamelistreply.sstatus, SERVER_GAMELISTREPLY_GAME_SSTATUS_LOADED);
                     eventlog(eventlog_level_debug, __FUNCTION__, "[{}] GAMELISTREPLY found loaded game", conn_get_socket(c));
                 }
+                // 清空结构体，防止发送栈内存垃圾
+                std::memset(&glgame, 0, sizeof(glgame));
 
                 /* everything seems fine, lets reply with the found game */
                 bn_int_set(&glgame.status, SERVER_GAMELISTREPLY_GAME_STATUS_OPEN);
                 bn_short_set(&glgame.gametype, gtype_to_bngtype(game_get_type(game)));
                 bn_short_set(&glgame.unknown1, SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
+                bn_int_set(&glgame.langid, 0);
                 bn_short_set(&glgame.unknown3, SERVER_GAMELISTREPLY_GAME_UNKNOWN3);
                 addr = game_get_addr(game);
                 port = game_get_port(game);
