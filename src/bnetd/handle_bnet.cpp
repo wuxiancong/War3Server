@@ -3832,7 +3832,7 @@ static int _glist_cb(t_game * game, void *data)
     bn_short_set(&glgame.gametype, gtype_to_bngtype(game_get_type(game)));
 
     eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [列表调试] 游戏: \"{}\", 内部类型: {}, 转换后BNET类型: 0x{:04x} (GameType)",
+             "[{}] [列表调试] 游戏: \"{}\", Inner GameType: {}, Outer GameType: 0x{:04x}",
              conn_get_socket(cbdata->c),
              game_get_name(game),
              (int)game_get_type(game),
@@ -3841,7 +3841,7 @@ static int _glist_cb(t_game * game, void *data)
     bn_short_set(&glgame.unknown1, SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
 
     eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [列表调试] 游戏: \"{}\", Language   ID: 0x{:08x}", conn_get_socket(cbdata->c), game_get_name(game), SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
+             "[{}] [列表调试] 游戏: \"{}\", Language    ID: 0x{:08x}", conn_get_socket(cbdata->c), game_get_name(game), SERVER_GAMELISTREPLY_GAME_UNKNOWN1);
 
     bn_short_set(&glgame.unknown3, SERVER_GAMELISTREPLY_GAME_UNKNOWN3);
 
@@ -3898,7 +3898,7 @@ static int _glist_cb(t_game * game, void *data)
         final_status_code = 0;
     }
     eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [列表调试] 游戏: \"{}\", 最终状态: 0x{:02x}", conn_get_socket(cbdata->c), game_get_name(game), final_status_code);
+             "[{}] [列表调试] 游戏: \"{}\", 最终状态: 0x{:04x}", conn_get_socket(cbdata->c), game_get_name(game), final_status_code);
 
     bn_int_set(&glgame.unknown6, SERVER_GAMELISTREPLY_GAME_UNKNOWN6);
 
@@ -3909,9 +3909,9 @@ static int _glist_cb(t_game * game, void *data)
 
     if (cbdata->counter) {
         packet_append_data(cbdata->rpacket, &game_spacer, sizeof(game_spacer));
-        eventlog(eventlog_level_info, __FUNCTION__,
-                 "[{}] [列表调试] 游戏: \"{}\", 自增计数: {}", conn_get_socket(cbdata->c), game_get_name(game), cbdata->counter);
     }
+    eventlog(eventlog_level_info, __FUNCTION__,
+             "[{}] [列表调试] 游戏: \"{}\", 房间编号: {}", conn_get_socket(cbdata->c), game_get_name(game), cbdata->counter);
 
     packet_append_data(cbdata->rpacket, &glgame, sizeof(glgame));
 
@@ -4421,7 +4421,6 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
             eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 尝试创建新游戏 \"{}\"", conn_get_socket(c), gamename);
 
             t_game_type gtype;
-            bool allow_create_custom = false;
             t_game *game;
 
             gtype = bngtype_to_gtype(conn_get_clienttag(c), bngtype);
