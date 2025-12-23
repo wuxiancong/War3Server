@@ -97,31 +97,43 @@ namespace pvpgn
 			return -1;
 		}
 
-		extern int tournament_signup_user(t_account * account)
-		{
-			t_tournament_user * user;
+        extern int tournament_signup_user(t_account * account)
+        {
+            t_tournament_user * user;
 
-			if (!(account))
-				return -1;
+            if (!(account))
+                return -1;
 
-			if ((user = tournament_get_user(account))) {
-				eventlog(eventlog_level_info, __FUNCTION__, "user \"{}\" already signed up in tournament", account_get_name(account));
-				return 0;
-			}
+            user = tournament_get_user(account);
+            if (user) {
+                eventlog(eventlog_level_info, __FUNCTION__, "user \"{}\" already signed up in tournament", account_get_name(account));
+                return 0;
+            }
 
-			user = (t_tournament_user*)xmalloc(sizeof(t_tournament_user));
-			user->name = xstrdup(account_get_name(account));
-			user->wins = 0;
-			user->losses = 0;
-			user->ties = 0;
-			user->in_game = 0;
-			user->in_finals = 0;
+            user = (t_tournament_user*)xmalloc(sizeof(t_tournament_user));
+            if (!user) {
+                eventlog(eventlog_level_error, __FUNCTION__, "memory allocation failed");
+                return -1;
+            }
 
-			list_prepend_data(tournament_head, user);
+            user->name = xstrdup(account_get_name(account));
+            if (!user->name) {
+                xfree(user);
+                eventlog(eventlog_level_error, __FUNCTION__, "memory allocation failed for name");
+                return -1;
+            }
 
-			eventlog(eventlog_level_info, __FUNCTION__, "added user \"{}\" to tournament", account_get_name(account));
-			return 0;
-		}
+            user->wins = 0;
+            user->losses = 0;
+            user->ties = 0;
+            user->in_game = 0;
+            user->in_finals = 0;
+
+            list_prepend_data(tournament_head, user);
+
+            eventlog(eventlog_level_info, __FUNCTION__, "added user \"{}\" to tournament", account_get_name(account));
+            return 0;
+        }
 
 		static t_tournament_user * tournament_get_user(t_account * account)
 		{

@@ -250,7 +250,7 @@ namespace pvpgn
 						actual += 1 + pixelsize*pktlen;
 						perceived += pixelsize*pktlen;
 					}
-					pktlen = 0;
+                    // pktlen = 0;
 				}
 				std::fprintf(stderr, "RLE_compress: wrote %u bytes (%u uncompressed)\n", actual, perceived);
 				xfree((void*)pktdata);

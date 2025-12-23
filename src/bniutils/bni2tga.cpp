@@ -45,107 +45,146 @@ namespace
 
 }
 
-extern int main(int argc, char * argv[])
-{
-	char const *  bnifile = NULL;
-	char const *  tgafile = NULL;
-	std::FILE *        fbni;
-	std::FILE *        ftga;
-	int           a;
-	int           forcefile = 0;
-	char          dash[] = "-"; /* unique address used as flag */
+    extern int main(int argc, char * argv[])
+    {
+        char const *  bnifile = NULL;
+        char const *  tgafile = NULL;
+        std::FILE *        fbni = NULL;
+        std::FILE *        ftga = NULL;
+        int           a;
+        int           forcefile = 0;
+        char          dash[] = "-"; /* unique address used as flag */
+        int exit_code = EXIT_SUCCESS;
 
-	if (argc < 1 || !argv || !argv[0])
-	{
-		std::fprintf(stderr, "bad arguments\n");
-		return EXIT_FAILURE;
-	}
+        if (argc < 1 || !argv || !argv[0])
+        {
+            std::fprintf(stderr, "bad arguments\n");
+            return EXIT_FAILURE;
+        }
 
-	for (a = 1; a < argc; a++)
-	if (forcefile && !bnifile)
-		bnifile = argv[a];
-	else if (std::strcmp(argv[a], "-") == 0 && !bnifile)
-		bnifile = dash;
-	else if (argv[a][0] != '-' && !bnifile)
-		bnifile = argv[a];
-	else if (forcefile && !tgafile)
-		tgafile = argv[a];
-	else if (std::strcmp(argv[a], "-") == 0 && !tgafile)
-		tgafile = dash;
-	else if (argv[a][0] != '-' && !tgafile)
-		tgafile = argv[a];
-	else if (forcefile || argv[a][0] != '-' || std::strcmp(argv[a], "-") == 0)
-	{
-		std::fprintf(stderr, "%s: extra file argument \"%s\"\n", argv[0], argv[a]);
-		usage(argv[0]);
-	}
-	else if (std::strcmp(argv[a], "--") == 0)
-		forcefile = 1;
-	else if (std::strcmp(argv[a], "-v") == 0 || std::strcmp(argv[a], "--version") == 0)
-	{
-		std::printf("version " PVPGN_VERSION "\n");
-		return EXIT_SUCCESS;
-	}
-	else if (std::strcmp(argv[a], "-h") == 0 || std::strcmp(argv[a], "--help") == 0 || std::strcmp(argv[a], "--usage")
-		== 0)
-		usage(argv[0]);
-	else
-	{
-		std::fprintf(stderr, "%s: unknown option \"%s\"\n", argv[0], argv[a]);
-		usage(argv[0]);
-	}
+        for (a = 1; a < argc; a++)
+            if (forcefile && !bnifile)
+                bnifile = argv[a];
+            else if (std::strcmp(argv[a], "-") == 0 && !bnifile)
+                bnifile = dash;
+            else if (argv[a][0] != '-' && !bnifile)
+                bnifile = argv[a];
+            else if (forcefile && !tgafile)
+                tgafile = argv[a];
+            else if (std::strcmp(argv[a], "-") == 0 && !tgafile)
+                tgafile = dash;
+            else if (argv[a][0] != '-' && !tgafile)
+                tgafile = argv[a];
+            else if (forcefile || argv[a][0] != '-' || std::strcmp(argv[a], "-") == 0)
+            {
+                std::fprintf(stderr, "%s: extra file argument \"%s\"\n", argv[0], argv[a]);
+                usage(argv[0]);
+                return EXIT_FAILURE;
+            }
+            else if (std::strcmp(argv[a], "--") == 0)
+                forcefile = 1;
+            else if (std::strcmp(argv[a], "-v") == 0 || std::strcmp(argv[a], "--version") == 0)
+            {
+                std::printf("version " PVPGN_VERSION "\n");
+                return EXIT_SUCCESS;
+            }
+            else if (std::strcmp(argv[a], "-h") == 0 || std::strcmp(argv[a], "--help") == 0 || std::strcmp(argv[a], "--usage") == 0)
+            {
+                usage(argv[0]);
+                return EXIT_SUCCESS;
+            }
+            else
+            {
+                std::fprintf(stderr, "%s: unknown option \"%s\"\n", argv[0], argv[a]);
+                usage(argv[0]);
+                return EXIT_FAILURE;
+            }
 
-	if (!bnifile)
-		bnifile = dash;
-	if (!tgafile)
-		tgafile = dash;
+        if (!bnifile)
+            bnifile = dash;
+        if (!tgafile)
+            tgafile = dash;
 
-	if (bnifile == dash)
-		fbni = stdin;
-	else
-	if (!(fbni = std::fopen(bnifile, "r")))
-	{
-		std::fprintf(stderr, "%s: could not open BNI file \"%s\" for reading (std::fopen: %s)\n", argv[0], bnifile, std::strerror(errno));
-		std::exit(EXIT_FAILURE);
-	}
-	if (tgafile == dash)
-		ftga = stdout;
-	else
-	if (!(ftga = std::fopen(tgafile, "w")))
-	{
-		std::fprintf(stderr, "%s: could not open TGA file \"%s\" for reading (std::fopen: %s)\n", argv[0], tgafile, std::strerror(errno));
-		std::exit(EXIT_FAILURE);
-	}
+        if (bnifile == dash)
+            fbni = stdin;
+        else if (!(fbni = std::fopen(bnifile, "rb")))
+        {
+            std::fprintf(stderr, "%s: could not open BNI file \"%s\" for reading (std::fopen: %s)\n", argv[0], bnifile, std::strerror(errno));
+            exit_code = EXIT_FAILURE;
+            goto cleanup;
+        }
 
-	{
-		unsigned char buf[BUFSIZE];
-		std::size_t        rc;
-		t_bnifile     bnih;
+        if (tgafile == dash)
+            ftga = stdout;
+        else if (!(ftga = std::fopen(tgafile, "wb")))
+        {
+            std::fprintf(stderr, "%s: could not open TGA file \"%s\" for writing (std::fopen: %s)\n", argv[0], tgafile, std::strerror(errno));
+            exit_code = EXIT_FAILURE;
+            goto cleanup;
+        }
 
-		file_rpush(fbni);
-		bnih.unknown1 = file_readd_le();
-		bnih.unknown2 = file_readd_le();
-		bnih.numicons = file_readd_le();
-		bnih.dataoffset = file_readd_le();
-		std::fprintf(stderr, "Info: numicons=%d dataoffset=0x%08x(%d)\n", bnih.numicons, bnih.dataoffset, bnih.dataoffset);
-		if (std::fseek(fbni, bnih.dataoffset, SEEK_SET)<0)
-		{
-			std::fprintf(stderr, "%s: could not seek to offset %u in BNI file \"%s\" (std::fseek: %s)\n", argv[0], bnih.dataoffset, bnifile, std::strerror(errno));
-			return EXIT_FAILURE;
-		}
-		while ((rc = std::fread(buf, 1, sizeof(buf), fbni))>0) {
-			if (std::fwrite(buf, rc, 1, ftga) < 1) {
-				std::fprintf(stderr, "%s: could not write data to TGA file \"%s\" (std::fwrite: %s)\n", argv[0], tgafile, std::strerror(errno));
-				return EXIT_FAILURE;
-			}
-		}
-		file_rpop();
-	}
+        {
+            unsigned char buf[BUFSIZE];
+            std::size_t        rc;
+            t_bnifile     bnih;
 
-	if (tgafile != dash && std::fclose(ftga) < 0)
-		std::fprintf(stderr, "%s: could not close TGA file \"%s\" after writing (std::fclose: %s)\n", argv[0], tgafile, std::strerror(errno));
-	if (bnifile != dash && std::fclose(fbni) < 0)
-		std::fprintf(stderr, "%s: could not close BNI file \"%s\" after reading (std::fclose: %s)\n", argv[0], bnifile, std::strerror(errno));
+            file_rpush(fbni);
+            bnih.unknown1 = file_readd_le();
+            bnih.unknown2 = file_readd_le();
+            bnih.numicons = file_readd_le();
+            bnih.dataoffset = file_readd_le();
+            std::fprintf(stderr, "Info: numicons=%d dataoffset=0x%08x(%d)\n", bnih.numicons, bnih.dataoffset, bnih.dataoffset);
 
-	return EXIT_SUCCESS;
-}
+            if (std::fseek(fbni, bnih.dataoffset, SEEK_SET) < 0)
+            {
+                std::fprintf(stderr, "%s: could not seek to offset %u in BNI file \"%s\" (std::fseek: %s)\n", argv[0], bnih.dataoffset, bnifile, std::strerror(errno));
+                exit_code = EXIT_FAILURE;
+                file_rpop();
+                goto cleanup;
+            }
+
+            while ((rc = std::fread(buf, 1, sizeof(buf), fbni)) > 0)
+            {
+                if (std::fwrite(buf, 1, rc, ftga) != rc)
+                {
+                    std::fprintf(stderr, "%s: could not write data to TGA file \"%s\" (std::fwrite: %s)\n", argv[0], tgafile, std::strerror(errno));
+                    exit_code = EXIT_FAILURE;
+                    file_rpop();
+                    goto cleanup;
+                }
+            }
+
+            if (std::ferror(fbni))
+            {
+                std::fprintf(stderr, "%s: error reading from BNI file \"%s\"\n", argv[0], bnifile);
+                exit_code = EXIT_FAILURE;
+                file_rpop();
+                goto cleanup;
+            }
+
+            file_rpop();
+        }
+
+    cleanup:
+        if (tgafile != dash && ftga)
+        {
+            if (std::fclose(ftga) < 0)
+            {
+                std::fprintf(stderr, "%s: could not close TGA file \"%s\" after writing (std::fclose: %s)\n", argv[0], tgafile, std::strerror(errno));
+                exit_code = EXIT_FAILURE;
+            }
+            ftga = NULL;
+        }
+
+        if (bnifile != dash && fbni)
+        {
+            if (std::fclose(fbni) < 0)
+            {
+                std::fprintf(stderr, "%s: could not close BNI file \"%s\" after reading (std::fclose: %s)\n", argv[0], bnifile, std::strerror(errno));
+                exit_code = EXIT_FAILURE;
+            }
+            fbni = NULL;
+        }
+
+        return exit_code;
+    }
