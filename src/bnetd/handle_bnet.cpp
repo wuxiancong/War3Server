@@ -3879,25 +3879,25 @@ static int _glist_cb(t_game * game, void *data)
     eventlog(eventlog_level_debug, __FUNCTION__,
              "[{}] [列表封包结构] 准备发送数据 (按协议顺序): "
              // 1. (UINT32) Game settings: 实际上由 GameType(16) + Unknown1(16) 组成
-             "1_Settings[Type=0x{:04x}, Unk1=0x{:04x}], "
+             "1_Settings[Type=0x{:04x}, Unknown1=0x{:04x}], "
              // 2. (UINT32) Language ID
              "2_LangID=[未记录], "
              // 3. (UINT16) Address Family: 对应 Unknown3, 应该是 AF_INET (0x0002)
-             "3_AddrFam(Unk3)=0x{:04x}, "
+             "3_AddrFamily(Unknown3)=0x{:04x}, "
              // 4. (UINT16) Port
              "4_Port={}, "
              // 5. (UINT32) Host's IP
              "5_IP=0x{:08x}, "
              // 6. (UINT32) sin_zero 1: 对应 Unknown4
-             "6_Zero1(Unk4)=0x{:08x}, "
+             "6_Zero1(Unknown4)=0x{:08x}, "
              // 7. (UINT32) sin_zero 2: 对应 Unknown5
-             "7_Zero2(Unk5)=0x{:08x}, "
+             "7_Zero2(Unknown5)=0x{:08x}, "
              // 8. (UINT32) Game status
              "8_Status=0x{:08x}, "
              // 9. (UINT32) Elapsed time: 对应 Unknown6 (游戏已经运行的秒数)
-             "9_Elapsed(Unk6)=0x{:08x}, "
+             "9_Elapsed(Unknown6)=0x{:08x}, "
              // 10-12. (STRING) Strings
-             "10_Name=\"{}\", 11_Pass=\"{}\", 12_Stat=\"{}\"",
+             "10_Name=\"{}\", 11_Pass=\"{}\", 12_StateString=\"{}\"",
 
              conn_get_socket(cbdata->c),
              (int)gtype_to_bngtype(game_get_type(game)), // Part of 1
