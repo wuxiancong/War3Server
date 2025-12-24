@@ -69,11 +69,11 @@ static unsigned int _tournament_time_convert(unsigned int time);
 static int _client_anongame_profile_clan(t_connection * c, t_packet const * const packet)
 {
     t_packet * rpacket;
-    int clantag;
-    int clienttag;
+    // int clantag;
+    // int clienttag;
     int count;
     int temp;
-    t_clan * clan;
+    // t_clan * clan;
     unsigned char rescount;
 
     if (packet_get_size(packet) < sizeof(t_client_findanongame_profile_clan))
@@ -371,7 +371,7 @@ static int _client_anongame_profile(t_connection * c, t_packet const * const pac
                 bn_int_set((bn_int*)&temp, team_get_rank(team)); //rank on AT ladder
                 packet_append_data(rpacket, &temp, 4);
 
-                bn_time = time_to_bnettime(temp, team_get_lastgame(team));
+                bn_time = time_to_bnettime(temp, static_cast<unsigned int>(team_get_lastgame(team)));
                 bnettime_to_bn_long(bn_time, &ltime);
                 packet_append_data(rpacket, &ltime, 8);
 
@@ -857,7 +857,7 @@ static int _client_anongame_tournament(t_connection * c, t_packet const * const 
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown4, 0x0000); /* random */
         bn_int_set(&rpacket->u.server_anongame_tournament_reply.timestamp, _tournament_time_convert(start_prelim));
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.unknown5, 0x01);
-        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, start_prelim - now);
+        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, static_cast<uint16_t>(start_prelim - now));
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown2, 0);
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.wins, 0);
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.losses, 0);
@@ -873,7 +873,7 @@ static int _client_anongame_tournament(t_connection * c, t_packet const * const 
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown4, 0x0828); /* random */
         bn_int_set(&rpacket->u.server_anongame_tournament_reply.timestamp, _tournament_time_convert(end_signup));
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.unknown5, 0x01);
-        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, end_signup - now);
+        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, static_cast<uint16_t>(end_signup - now));
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown2, 0);
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.wins, tournament_get_stat(account, 1));
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.losses, tournament_get_stat(account, 2));
@@ -889,7 +889,7 @@ static int _client_anongame_tournament(t_connection * c, t_packet const * const 
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown4, 0x0828); /* random */
         bn_int_set(&rpacket->u.server_anongame_tournament_reply.timestamp, _tournament_time_convert(end_prelim));
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.unknown5, 0x01);
-        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, end_prelim - now);
+        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, static_cast<uint16_t>(end_prelim - now));
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown2, 0);
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.wins, tournament_get_stat(account, 1));
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.losses, tournament_get_stat(account, 2));
@@ -905,7 +905,7 @@ static int _client_anongame_tournament(t_connection * c, t_packet const * const 
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown4, 0x0000); /* random */
         bn_int_set(&rpacket->u.server_anongame_tournament_reply.timestamp, _tournament_time_convert(start_r1));
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.unknown5, 0x01);
-        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, start_r1 - now);
+        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, static_cast<uint16_t>(start_r1 - now));
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown2, 0); /* 00 00 */
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.wins, tournament_get_stat(account, 1));
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.losses, tournament_get_stat(account, 2));
@@ -931,23 +931,14 @@ static int _client_anongame_tournament(t_connection * c, t_packet const * const 
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.descnum, 0);
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.nulltag, 0);
     }
-    /* cycle through [type-6] & [type-7] packets
-			 *
-			 * use [type-6] to show client "eliminated" or "continue"
-			 *     timestamp , countdown & round number (of next round) must be set if clinet continues
-			 *
-			 * use [type-7] to make cleint wait for 44FF packet option 1 to start game (A guess, not tested)
-			 *
-			 * not sure if there is overall winner packet sent at end of last final round
-			 */
-    // UNDONE: next two conditions never executed
+    /* cycle through [type-6] & [type-7] packets ... */
     else if ((0)) { /* User in finals - Shows user stats and start of next round*/
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.type, 6);
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.unknown, 0);
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown4, 0x0000);
         bn_int_set(&rpacket->u.server_anongame_tournament_reply.timestamp, _tournament_time_convert(start_r1));
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.unknown5, 0x01);
-        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, start_r1 - now);
+        bn_short_set(&rpacket->u.server_anongame_tournament_reply.countdown, static_cast<uint16_t>(start_r1 - now));
         bn_short_set(&rpacket->u.server_anongame_tournament_reply.unknown2, 0x0000); /* 00 00 */
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.wins, 4); /* round number */
         bn_byte_set(&rpacket->u.server_anongame_tournament_reply.losses, 0); /* 0 = continue , 1= eliminated */

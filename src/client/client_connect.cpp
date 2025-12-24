@@ -268,10 +268,17 @@ extern int client_connect(char const * progname, char const * servname, unsigned
         return -1;
     }
 
+    if (!host)
+    {
+        std::fprintf(stderr, "%s: could not resolve server address for \"%s\"\n", progname, servname);
+        return -1;
+    }
+
     std::memset(saddr, 0, sizeof(*saddr));
     saddr->sin_family = PSOCK_AF_INET;
     saddr->sin_port = htons(servport);
     std::memcpy(&saddr->sin_addr.s_addr, host->h_addr_list[0], host->h_length);
+
     if (psock_connect(sd, (struct sockaddr *)saddr, sizeof(*saddr)) < 0)
     {
         std::fprintf(stderr, "%s: could not connect to server \"%s\" port %hu (psock_connect: %s)\n", progname, servname, servport, std::strerror(psock_errno()));

@@ -244,7 +244,7 @@ namespace pvpgn
 				{
 					/* Bottom segment is the short one.  */
 					int len = middle - bottom;
-					register int i;
+                     int i;
 
 					/* Swap it with the top part of the top segment.  */
 					for (i = 0; i < len; i++)
@@ -260,7 +260,7 @@ namespace pvpgn
 				{
 					/* Top segment is the short one.  */
 					int len = top - middle;
-					register int i;
+                     int i;
 
 					/* Swap it with the bottom part of the bottom segment.  */
 					for (i = 0; i < len; i++)
@@ -711,17 +711,17 @@ namespace pvpgn
 
 					/* Test all long options for either exact match
 					   or abbreviated matches.  */
-					for (p = longopts, option_index = 0; p->name; p++, option_index++)
+                    for (p = longopts, option_index = 0; p && p->name; p++, option_index++) {
 					if (!std::strncmp(p->name, nextchar, nameend - nextchar))
 					{
 						if ((unsigned int)(nameend - nextchar) == std::strlen(p->name))
 						{
-							/* Exact match found.  */
+                            /* Exact match found.  */
 							pfound = p;
 							indfound = option_index;
 							exact = 1;
 							break;
-						}
+                        }
 						else if (pfound == NULL)
 						{
 							/* First nonexact match found.  */
@@ -732,15 +732,16 @@ namespace pvpgn
 							/* Second or later nonexact match found.  */
 							ambig = 1;
 					}
-					if (ambig && !exact)
-					{
-						if (opterr)
-							fprintf(stderr, "%s: option `-W %s' is ambiguous\n",
-							argv[0], argv[optind]);
-						nextchar += std::strlen(nextchar);
-						optind++;
-						return '?';
-					}
+                    }
+                    if (ambig && !exact)
+                    {
+                        if (opterr)
+                            fprintf(stderr, "%s: option `-W %s' is ambiguous\n",
+                                    argv[0], argv[optind]);
+                        nextchar += std::strlen(nextchar);
+                        optind++;
+                        return '?';
+                    }
 					if (pfound != NULL)
 					{
 						option_index = indfound;

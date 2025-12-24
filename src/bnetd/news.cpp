@@ -84,14 +84,14 @@ static int _news_parsetime(char *buff, struct std::tm *date, unsigned line)
 static void _news_insert_index(t_news_index *ni, const char *buff, unsigned len, int date_set)
 {
     t_elist *curr;
-    t_news_index *cni;
+    t_news_index *cni = NULL; // Initialized to NULL
 
     elist_for_each(curr, &news_head) {
         cni = elist_entry(curr, t_news_index, list);
         if (cni->date <= ni->date) break;
     }
 
-    if (curr != &news_head && cni->date == ni->date) {
+    if (cni && curr != &news_head && cni->date == ni->date) {
         if (date_set == 1)
             eventlog(eventlog_level_warn, __FUNCTION__, "found another news item for same date, trying to join both");
 
@@ -237,16 +237,16 @@ extern int news_unload(void)
     return 0;
 }
 
-extern unsigned int news_get_lastnews(void)
+extern time_t news_get_lastnews(void)
 {
     if (elist_empty(&news_head)) return 0;
-    return ((elist_entry(news_head.next, t_news_index, list))->date);
+    return (elist_entry(news_head.next, t_news_index, list))->date;
 }
 
 extern unsigned int news_get_firstnews(void)
 {
     if (elist_empty(&news_head)) return 0;
-    return ((elist_entry(news_head.prev, t_news_index, list))->date);
+    return static_cast<unsigned int>((elist_entry(news_head.prev, t_news_index, list))->date);
 }
 
 extern void news_traverse(t_news_cb cb, void *data)
