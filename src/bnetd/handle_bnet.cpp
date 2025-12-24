@@ -294,25 +294,38 @@ static std::string debug_buf_to_hex(const unsigned char* buf, size_t len) {
     }
     return ss.str();
 }
-// --- 辅助函数：将 Hex 字符串转换为二进制 buffer ---
-int hex_str_to_bin(const char* hex_str, unsigned char* out_buf, int max_len) {
-    if (!hex_str) return 0;
-    int len = std::strlen(hex_str);
-    // 简单的预检查：如果是 Hex String，长度通常是偶数
-    if (len % 2 != 0) return 0;
+// --- 辅助函数：将 Hex 字符串前缀转换为二进制，遇到非 Hex 字符则保留剩余原始数据 ---
+int smart_transform_statstring(const char* input, unsigned char* out_buf, int max_len) {
+    if (!input) return 0;
 
-    int count = 0;
-    for (int i = 0; i < len && count < max_len; i += 2) {
+    int len = std::strlen(input); // 注意：如果中间包含 \0，strlen 可能不准，但在 glist 场景通常是 info_str
+    int in_pos = 0;
+    int out_pos = 0;
+
+    // 1. 尝试转换 Hex 前缀
+    while (in_pos + 1 < len && out_pos < max_len) {
         unsigned int byte_val;
-        // 尝试解析两个字符为一个 Hex 字节
-        if (std::sscanf(hex_str + i, "%02x", &byte_val) == 1) {
-            out_buf[count++] = (unsigned char)byte_val;
+        // 检查当前两个字符是否都是 Hex 字符 (0-9, a-f, A-F)
+        if (std::isxdigit((unsigned char)input[in_pos]) && std::isxdigit((unsigned char)input[in_pos+1])) {
+            // 是 Hex，转换它
+            if (std::sscanf(input + in_pos, "%02x", &byte_val) == 1) {
+                out_buf[out_pos++] = (unsigned char)byte_val;
+                in_pos += 2; // 步进2字符
+            } else {
+                break; // 转换异常，停止
+            }
         } else {
-            // 如果遇到非 Hex 字符，说明这不是 Hex String，停止转换
-            return 0;
+            // 遇到非 Hex 字符（比如 0x01，或者 'M'aps 的 'M' 如果没凑成对），停止转换
+            break;
         }
     }
-    return count;
+
+    // 2. 将剩余的原始数据直接追加到后面
+    while (in_pos < len && out_pos < max_len) {
+        out_buf[out_pos++] = (unsigned char)input[in_pos++];
+    }
+
+    return out_pos;
 }
 
 /* main handler function */
@@ -3948,28 +3961,26 @@ static int _glist_cb(t_game * game, void *data)
     char const *info_str = game_get_info(game);
 
     if (info_str) {
-        unsigned char bin_buf[2048];
-        int bin_len = hex_str_to_bin(info_str, bin_buf, sizeof(bin_buf));
+        unsigned char bin_buf[4096];
+
+        int bin_len = smart_transform_statstring(info_str, bin_buf, sizeof(bin_buf));
 
         if (bin_len > 0) {
             packet_append_data(cbdata->rpacket, bin_buf, bin_len);
 
             eventlog(eventlog_level_debug, __FUNCTION__,
-                     "[{}] [列表调试] 游戏: \"{}\", 检测到 HexString，已转换为 Binary 发送 (原始长:{}, 转换后:{})",
+                     "[{}] [修复] 游戏: \"{}\", 智能转换完成 (原始长:{}, 转换后:{})",
                      conn_get_socket(cbdata->c), game_get_name(game), std::strlen(info_str), bin_len);
+
+            if (bin_len > 0) {
+                eventlog(eventlog_level_debug, __FUNCTION__, "[{}] 首字节: 0x{:02X}", conn_get_socket(cbdata->c), bin_buf[0]);
+            }
         } else {
             packet_append_string(cbdata->rpacket, info_str);
-
-            eventlog(eventlog_level_debug, __FUNCTION__,
-                     "[{}] [列表调试] 游戏: \"{}\", 非 HexString，发送原始字符串",
-                     conn_get_socket(cbdata->c), game_get_name(game));
         }
     } else {
         char empty = 0;
         packet_append_data(cbdata->rpacket, &empty, 1);
-
-        eventlog(eventlog_level_warn, __FUNCTION__,
-                 "[{}] [列表调试] 游戏: \"{}\", 房间信息为 NULL!", conn_get_socket(cbdata->c), game_get_name(game));
     }
 
     cbdata->counter++;
