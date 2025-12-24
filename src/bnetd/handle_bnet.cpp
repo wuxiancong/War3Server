@@ -294,6 +294,26 @@ static std::string debug_buf_to_hex(const unsigned char* buf, size_t len) {
     }
     return ss.str();
 }
+// --- 辅助函数：将 Hex 字符串转换为二进制 buffer ---
+int hex_str_to_bin(const char* hex_str, unsigned char* out_buf, int max_len) {
+    if (!hex_str) return 0;
+    int len = std::strlen(hex_str);
+    // 简单的预检查：如果是 Hex String，长度通常是偶数
+    if (len % 2 != 0) return 0;
+
+    int count = 0;
+    for (int i = 0; i < len && count < max_len; i += 2) {
+        unsigned int byte_val;
+        // 尝试解析两个字符为一个 Hex 字节
+        if (std::sscanf(hex_str + i, "%02x", &byte_val) == 1) {
+            out_buf[count++] = (unsigned char)byte_val;
+        } else {
+            // 如果遇到非 Hex 字符，说明这不是 Hex String，停止转换
+            return 0;
+        }
+    }
+    return count;
+}
 
 /* main handler function */
 static int handle(const t_htable_row * htable, int type, t_connection * c, t_packet const *const packet);
@@ -3926,20 +3946,28 @@ static int _glist_cb(t_game * game, void *data)
              "[{}] [列表调试] 游戏: \"{}\", 房间密码: \"{}\"", conn_get_socket(cbdata->c), game_get_name(game), game_get_pass(game));
 
     char const *info_str = game_get_info(game);
-    packet_append_string(cbdata->rpacket, info_str);
 
     if (info_str) {
-        eventlog(eventlog_level_info, __FUNCTION__,
-                 "[{}] [列表调试] 游戏: \"{}\", 房间信息(StatString): \"{}\"", conn_get_socket(cbdata->c), game_get_name(game), info_str);
-        char hex_buf[1024] = {0};
-        int len = std::strlen(info_str);
-        int pos = 0;
-        for (int i = 0; i < len && pos < 1000; i++) {
-            pos += std::sprintf(hex_buf + pos, "%02X ", (unsigned char)info_str[i]);
+        unsigned char bin_buf[2048];
+        int bin_len = hex_str_to_bin(info_str, bin_buf, sizeof(bin_buf));
+
+        if (bin_len > 0) {
+            packet_append_data(cbdata->rpacket, bin_buf, bin_len);
+
+            eventlog(eventlog_level_debug, __FUNCTION__,
+                     "[{}] [列表调试] 游戏: \"{}\", 检测到 HexString，已转换为 Binary 发送 (原始长:{}, 转换后:{})",
+                     conn_get_socket(cbdata->c), game_get_name(game), std::strlen(info_str), bin_len);
+        } else {
+            packet_append_string(cbdata->rpacket, info_str);
+
+            eventlog(eventlog_level_debug, __FUNCTION__,
+                     "[{}] [列表调试] 游戏: \"{}\", 非 HexString，发送原始字符串",
+                     conn_get_socket(cbdata->c), game_get_name(game));
         }
-        eventlog(eventlog_level_debug, __FUNCTION__,
-                 "[{}] [列表调试] 房间信息 Hex: {}", conn_get_socket(cbdata->c), hex_buf);
     } else {
+        char empty = 0;
+        packet_append_data(cbdata->rpacket, &empty, 1);
+
         eventlog(eventlog_level_warn, __FUNCTION__,
                  "[{}] [列表调试] 游戏: \"{}\", 房间信息为 NULL!", conn_get_socket(cbdata->c), game_get_name(game));
     }
