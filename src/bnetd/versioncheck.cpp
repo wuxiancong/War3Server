@@ -21,29 +21,30 @@
 #include "common/setup_before.h"
 #include "versioncheck.h"
 
-#include <cctype>
-#include <cerrno>
-#include <chrono>
-#include <climits>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <fstream>
-#include <string>
+// #include <ctime>
+// #include <cctype>
+// #include <cerrno>
+// #include <cstdio>
+// #include <climits>
+// #include <cstdlib>
+// #include <cstring>
+
 #include <tuple>
+#include <chrono>
+#include <string>
+#include <cstdint>
+#include <fstream>
 #include <unordered_map>
 
+#include "prefs.h"
 #include <fmt/format.h>
 #include "json/json.hpp"
 
-#include "common/eventlog.h"
-#include "common/hash_tuple.hpp"
-#include "common/proginfo.h"
 #include "common/tag.h"
+#include "common/eventlog.h"
+#include "common/proginfo.h"
+#include "common/hash_tuple.hpp"
 
-#include "prefs.h"
 #include "common/setup_after.h"
 
 
@@ -93,7 +94,7 @@ namespace pvpgn
 
 			vc_entries.reserve(185);
 
-			for (auto jclient : jconf.items())
+            for (const auto &jclient : jconf.items())
 			{
 				t_tag client = tag_str_to_uint(jclient.key().c_str());
 				if (!tag_check_client(client))
@@ -102,7 +103,7 @@ namespace pvpgn
 					continue;
 				}
 
-				for (auto jarchitecture : jclient.value().items())
+                for (const auto &jarchitecture : jclient.value().items())
 				{
 					t_tag architecture = tag_str_to_uint(jarchitecture.key().c_str());
 					if (!tag_check_arch(architecture))
