@@ -3889,7 +3889,7 @@ static int _glist_cb(t_game * game, void *data)
     port = game_get_port(game);
 
     eventlog(eventlog_level_info, __FUNCTION__,
-             "[{}] [列表调试] 游戏: \"{}\", Host      Port: 0x{:04x}", conn_get_socket(cbdata->c), game_get_name(game), addr);
+             "[{}] [列表调试] 游戏: \"{}\", Host      Port: 0x{:04x}", conn_get_socket(cbdata->c), game_get_port(game), port);
 
     trans_net(conn_get_addr(cbdata->c), &addr, &port);
 
