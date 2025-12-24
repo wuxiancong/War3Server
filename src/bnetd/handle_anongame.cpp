@@ -612,13 +612,15 @@ static int _client_anongame_set_icon(t_connection * c, t_packet const * const pa
 static int check_user_icon(t_account * account, const char * user_icon)
 {
     unsigned int i, len;
-    char temp_str[2];
+    char temp_str[2] = {0};
     char user_race;
     int number;
 
     len = std::strlen(user_icon);
-    if (len != 4)
+    if (len != 4) {
         eventlog(eventlog_level_error, __FUNCTION__, "got invalid user icon '{}'", user_icon);
+        return 0;
+    }
 
     for (i = 0; i < len && i < 2; i++)
         temp_str[i] = user_icon[i];

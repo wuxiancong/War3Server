@@ -736,7 +736,6 @@ extern int customicons_load(char const * filename)
 {
     std::FILE * fp;
     unsigned int line, pos, counter = 0;
-    bool end_of_iconset = false;
     char *buff, *value;
     char *rating, *rank, *icon;
     t_icon_var_info * option;
@@ -881,6 +880,8 @@ extern int customicons_load(char const * filename)
                         icon_info->icon_code = xstrdup(strreverse(icon)); // save reversed icon code
                         list_prepend_data(icon_set->icon_info, icon_info);
                     }
+
+                    if (!buff) break;
                 }
 
                 /* 3) parse stats section */
@@ -897,6 +898,8 @@ extern int customicons_load(char const * filename)
                         }
                         tmp = tmp + buff + "\n";
                     }
+
+                    if (!buff) break;
                 }
 
 
@@ -928,6 +931,8 @@ extern int customicons_load(char const * filename)
                         icon_item->value = xstrdup(value);
                         list_append_data(icon_set->iconstash, icon_item);
                     }
+
+                    if (!buff) break;
                 }
 
                 // remember file position

@@ -239,7 +239,7 @@ static int _cb_count_points(int * points_win, int * points_loss, int pl1_points,
 
 extern int ladder_update_wol(t_clienttag clienttag, t_ladder_id id, t_account * * players, t_game_result * results)
 {
-    unsigned int wins, losses, points;
+    unsigned int wins,/* losses,*/ points;
     int curr;
     int uid;
 
