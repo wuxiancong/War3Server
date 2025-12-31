@@ -119,10 +119,10 @@ static char const * bnclass_get_str(unsigned int cclass)
 }
 
 /*
-		* Split text by spaces and return array of arguments.
-		*   First text argument is a command name (index = 0)
-		*   Last text argument always reads to end
-		*/
+        * Split text by spaces and return array of arguments.
+        *   First text argument is a command name (index = 0)
+        *   Last text argument always reads to end
+        */
 extern std::vector<std::string> split_command(char const * text, int args_count)
 {
     std::vector<std::string> result(args_count + 1);
@@ -226,7 +226,7 @@ static void do_whois(t_connection * c, char const * dest)
     t_channel const * channel;
 
     if ((!(dest_c = connlist_find_connection_by_accountname(dest))) &&
-        (!(dest_c = connlist_find_connection_by_name(dest, conn_get_realm(c)))))
+            (!(dest_c = connlist_find_connection_by_name(dest, conn_get_realm(c)))))
     {
         t_account * dest_a;
         t_bnettime btlogin;
@@ -421,130 +421,236 @@ static int _handle_clearstats_command(t_connection * c, char const * text);
 static int _handle_tos_command(t_connection * c, char const * text);
 static int _handle_alert_command(t_connection * c, char const * text);
 
+// =========================================================
+// DotA / Bot 命令静态函数声明
+// 命名规范: _handle_NAME_bot_command
+// =========================================================
+
+// 通用代理逻辑（负责把命令转发回频道）
+static int _handle_bot_proxy_logic(t_connection * c, char const * text);
+
+// 游戏创建与管理
+static int _handle_host_bot_command(t_connection * c, char const * text);
+static int _handle_chost_bot_command(t_connection * c, char const * text);
+static int _handle_hostprivate_bot_command(t_connection * c, char const * text);
+static int _handle_unhost_bot_command(t_connection * c, char const * text);
+static int _handle_start_bot_command(t_connection * c, char const * text);
+static int _handle_hold_bot_command(t_connection * c, char const * text);
+
+// 房间状态
+static int _handle_public_bot_command(t_connection * c, char const * text);
+static int _handle_private_bot_command(t_connection * c, char const * text);
+
+// 槽位管理
+static int _handle_close_bot_command(t_connection * c, char const * text);
+static int _handle_open_bot_command(t_connection * c, char const * text);
+static int _handle_closeall_bot_command(t_connection * c, char const * text);
+static int _handle_openall_bot_command(t_connection * c, char const * text);
+static int _handle_swap_bot_command(t_connection * c, char const * text);
+static int _handle_shuffle_bot_command(t_connection * c, char const * text);
+
+// 地图与统计
+static int _handle_map_bot_command(t_connection * c, char const * text);
+static int _handle_dotaladder_bot_command(t_connection * c, char const * text);
+static int _handle_clearstats_bot_command(t_connection * c, char const * text);
+static int _handle_wrl_bot_command(t_connection * c, char const * text);
+static int _handle_rl_bot_command(t_connection * c, char const * text);
+
+// 反作弊与工具
+static int _handle_antihack_bot_command(t_connection * c, char const * text);
+static int _handle_nah_bot_command(t_connection * c, char const * text);
+static int _handle_noleavers_bot_command(t_connection * c, char const * text);
+static int _handle_addfake_bot_command(t_connection * c, char const * text);
+static int _handle_delfake_bot_command(t_connection * c, char const * text);
+
+// 游戏内指令 / 冲突指令重命名
+static int _handle_latency_bot_command(t_connection * c, char const * text);
+static int _handle_fastfinish_bot_command(t_connection * c, char const * text);
+static int _handle_kick_bot_command(t_connection * c, char const * text);
+static int _handle_ban_bot_command(t_connection * c, char const * text);
+
 static const t_command_table_row standard_command_table[] =
-    {
-        { "/clan", _handle_clan_command },
-        { "/c", _handle_clan_command },
-        { "/admin", _handle_admin_command },
-        { "/f", _handle_friends_command },
-        { "/friends", _handle_friends_command },
-        { "/me", _handle_me_command },
-        { "/emote", _handle_me_command },
-        { "/msg", _handle_whisper_command },
-        { "/whisper", _handle_whisper_command },
-        { "/w", _handle_whisper_command },
-        { "/m", _handle_whisper_command },
-        { "/status", _handle_status_command },
-        { "/users", _handle_status_command },
-        { "/who", _handle_who_command },
-        { "/whois", _handle_whois_command },
-        { "/whereis", _handle_whois_command },
-        { "/where", _handle_whois_command },
-        { "/whoami", _handle_whoami_command },
-        { "/announce", _handle_announce_command },
-        { "/beep", _handle_beep_command },
-        { "/nobeep", _handle_nobeep_command },
-        { "/version", _handle_version_command },
-        { "/copyright", _handle_copyright_command },
-        { "/warranty", _handle_copyright_command },
-        { "/license", _handle_copyright_command },
-        { "/uptime", _handle_uptime_command },
-        { "/stats", _handle_stats_command },
-        { "/astat", _handle_stats_command },
-        { "/time", _handle_time_command },
-        { "/channel", _handle_channel_command },
-        { "/join", _handle_channel_command },
-        { "/j", _handle_channel_command },
-        { "/rejoin", _handle_rejoin_command },
-        { "/away", _handle_away_command },
-        { "/dnd", _handle_dnd_command },
-        { "/ignore", _handle_squelch_command },
-        { "/squelch", _handle_squelch_command },
-        { "/unignore", _handle_unsquelch_command },
-        { "/unsquelch", _handle_unsquelch_command },
-        { "/kick", _handle_kick_command },
-        { "/ban", _handle_ban_command },
-        { "/unban", _handle_unban_command },
-        { "/tos", _handle_tos_command },
+{
+    { "/clan", _handle_clan_command },
+    { "/c", _handle_clan_command },
+    { "/admin", _handle_admin_command },
+    { "/f", _handle_friends_command },
+    { "/friends", _handle_friends_command },
+    { "/me", _handle_me_command },
+    { "/emote", _handle_me_command },
+    { "/msg", _handle_whisper_command },
+    { "/whisper", _handle_whisper_command },
+    { "/w", _handle_whisper_command },
+    { "/m", _handle_whisper_command },
+    { "/status", _handle_status_command },
+    { "/users", _handle_status_command },
+    { "/who", _handle_who_command },
+    { "/whois", _handle_whois_command },
+    { "/whereis", _handle_whois_command },
+    { "/where", _handle_whois_command },
+    { "/whoami", _handle_whoami_command },
+    { "/announce", _handle_announce_command },
+    { "/beep", _handle_beep_command },
+    { "/nobeep", _handle_nobeep_command },
+    { "/version", _handle_version_command },
+    { "/copyright", _handle_copyright_command },
+    { "/warranty", _handle_copyright_command },
+    { "/license", _handle_copyright_command },
+    { "/uptime", _handle_uptime_command },
+    { "/stats", _handle_stats_command },
+    { "/astat", _handle_stats_command },
+    { "/time", _handle_time_command },
+    { "/channel", _handle_channel_command },
+    { "/join", _handle_channel_command },
+    { "/j", _handle_channel_command },
+    { "/rejoin", _handle_rejoin_command },
+    { "/away", _handle_away_command },
+    { "/dnd", _handle_dnd_command },
+    { "/ignore", _handle_squelch_command },
+    { "/squelch", _handle_squelch_command },
+    { "/unignore", _handle_unsquelch_command },
+    { "/unsquelch", _handle_unsquelch_command },
+    { "/kick", _handle_kick_command },
+    { "/ban", _handle_ban_command },
+    { "/unban", _handle_unban_command },
+    { "/tos", _handle_tos_command },
 
-        { "/ann", _handle_announce_command },
-        { "/r", _handle_reply_command },
-        { "/reply", _handle_reply_command },
-        { "/realmann", _handle_realmann_command },
-        { "/watch", _handle_watch_command },
-        { "/unwatch", _handle_unwatch_command },
-        { "/watchall", _handle_watchall_command },
-        { "/unwatchall", _handle_unwatchall_command },
-        { "/lusers", _handle_lusers_command },
-        { "/news", _handle_news_command },
-        { "/games", _handle_games_command },
-        { "/channels", _handle_channels_command },
-        { "/chs", _handle_channels_command },
-        { "/addacct", _handle_addacct_command },
-        { "/chpass", _handle_chpass_command },
-        { "/connections", _handle_connections_command },
-        { "/con", _handle_connections_command },
-        { "/finger", _handle_finger_command },
-        { "/operator", _handle_operator_command },
-        { "/aop", _handle_aop_command },
-        { "/op", _handle_op_command },
-        { "/tmpop", _handle_tmpop_command },
-        { "/deop", _handle_deop_command },
-        { "/voice", _handle_voice_command },
-        { "/devoice", _handle_devoice_command },
-        { "/vop", _handle_vop_command },
-        { "/admins", _handle_admins_command },
-        { "/logout", _handle_quit_command },
-        { "/quit", _handle_quit_command },
-        { "/exit", _handle_quit_command },
-        { "/kill", _handle_kill_command },
-        { "/killsession", _handle_killsession_command },
-        { "/gameinfo", _handle_gameinfo_command },
-        { "/ladderactivate", _handle_ladderactivate_command },
-        { "/rehash", _handle_rehash_command },
-        { "/find", _handle_find_command },
-        { "/save", _handle_save_command },
-        { "/shutdown", _handle_shutdown_command },
-        { "/ladderinfo", _handle_ladderinfo_command },
-        { "/timer", _handle_timer_command },
-        { "/serverban", _handle_serverban_command },
-        { "/netinfo", _handle_netinfo_command },
-        { "/quota", _handle_quota_command },
-        { "/lockacct", _handle_lockacct_command },
-        { "/lock", _handle_lockacct_command },
-        { "/unlockacct", _handle_unlockacct_command },
-        { "/unlock", _handle_unlockacct_command },
-        { "/muteacct", _handle_muteacct_command },
-        { "/mute", _handle_muteacct_command },
-        { "/unmuteacct", _handle_unmuteacct_command },
-        { "/unmute", _handle_unmuteacct_command },
-        { "/flag", _handle_flag_command },
-        { "/tag", _handle_tag_command },
-        { "/help", handle_help_command },
-        { "/?", handle_help_command },
-        { "/mail", handle_mail_command },
-        { "/ipban", handle_ipban_command }, // in ipban.c
-        { "/ipscan", _handle_ipscan_command },
-        { "/set", _handle_set_command },
-        { "/motd", _handle_motd_command },
-        { "/latency", _handle_ping_command },
-        { "/ping", _handle_ping_command },
-        { "/p", _handle_ping_command },
-        { "/commandgroups", _handle_commandgroups_command },
-        { "/cg", _handle_commandgroups_command },
-        { "/topic", _handle_topic_command },
-        { "/moderate", _handle_moderate_command },
-        { "/clearstats", _handle_clearstats_command },
-        { "/icon", handle_icon_command },
-        { "/alert", _handle_alert_command },
-        { "/language", handle_language_command },
-        { "/lang", handle_language_command },
-        { "/log", handle_log_command },
+    { "/ann", _handle_announce_command },
+    { "/r", _handle_reply_command },
+    { "/reply", _handle_reply_command },
+    { "/realmann", _handle_realmann_command },
+    { "/watch", _handle_watch_command },
+    { "/unwatch", _handle_unwatch_command },
+    { "/watchall", _handle_watchall_command },
+    { "/unwatchall", _handle_unwatchall_command },
+    { "/lusers", _handle_lusers_command },
+    { "/news", _handle_news_command },
+    { "/games", _handle_games_command },
+    { "/channels", _handle_channels_command },
+    { "/chs", _handle_channels_command },
+    { "/addacct", _handle_addacct_command },
+    { "/chpass", _handle_chpass_command },
+    { "/connections", _handle_connections_command },
+    { "/con", _handle_connections_command },
+    { "/finger", _handle_finger_command },
+    { "/operator", _handle_operator_command },
+    { "/aop", _handle_aop_command },
+    { "/op", _handle_op_command },
+    { "/tmpop", _handle_tmpop_command },
+    { "/deop", _handle_deop_command },
+    { "/voice", _handle_voice_command },
+    { "/devoice", _handle_devoice_command },
+    { "/vop", _handle_vop_command },
+    { "/admins", _handle_admins_command },
+    { "/logout", _handle_quit_command },
+    { "/quit", _handle_quit_command },
+    { "/exit", _handle_quit_command },
+    { "/kill", _handle_kill_command },
+    { "/killsession", _handle_killsession_command },
+    { "/gameinfo", _handle_gameinfo_command },
+    { "/ladderactivate", _handle_ladderactivate_command },
+    { "/rehash", _handle_rehash_command },
+    { "/find", _handle_find_command },
+    { "/save", _handle_save_command },
+    { "/shutdown", _handle_shutdown_command },
+    { "/ladderinfo", _handle_ladderinfo_command },
+    { "/timer", _handle_timer_command },
+    { "/serverban", _handle_serverban_command },
+    { "/netinfo", _handle_netinfo_command },
+    { "/quota", _handle_quota_command },
+    { "/lockacct", _handle_lockacct_command },
+    { "/lock", _handle_lockacct_command },
+    { "/unlockacct", _handle_unlockacct_command },
+    { "/unlock", _handle_unlockacct_command },
+    { "/muteacct", _handle_muteacct_command },
+    { "/mute", _handle_muteacct_command },
+    { "/unmuteacct", _handle_unmuteacct_command },
+    { "/unmute", _handle_unmuteacct_command },
+    { "/flag", _handle_flag_command },
+    { "/tag", _handle_tag_command },
+    { "/help", handle_help_command },
+    { "/?", handle_help_command },
+    { "/mail", handle_mail_command },
+    { "/ipban", handle_ipban_command }, // in ipban.c
+    { "/ipscan", _handle_ipscan_command },
+    { "/set", _handle_set_command },
+    { "/motd", _handle_motd_command },
+    { "/latency", _handle_ping_command },
+    { "/ping", _handle_ping_command },
+    { "/p", _handle_ping_command },
+    { "/commandgroups", _handle_commandgroups_command },
+    { "/cg", _handle_commandgroups_command },
+    { "/topic", _handle_topic_command },
+    { "/moderate", _handle_moderate_command },
+    { "/clearstats", _handle_clearstats_command },
+    { "/icon", handle_icon_command },
+    { "/alert", _handle_alert_command },
+    { "/language", handle_language_command },
+    { "/lang", handle_language_command },
+    { "/log", handle_log_command },
 
-        { NULL, NULL }
+    // =========================================================
+    // [命令表] DotA Bot 代理命令注册
+    // =========================================================
+
+    // --- 游戏创建与管理 ---
+    { "/host",          _handle_host_bot_command },
+    { "/chost",         _handle_chost_bot_command },
+    { "/hostprivate",   _handle_hostprivate_bot_command },
+    { "/hop",           _handle_hostprivate_bot_command }, // Alias
+    { "/unhost",        _handle_unhost_bot_command },
+    { "/start",         _handle_start_bot_command },
+    { "/hold",          _handle_hold_bot_command },
+
+    // --- 房间状态 ---
+    { "/public",        _handle_public_bot_command },
+    { "/pub",           _handle_public_bot_command },      // Alias
+    { "/private",       _handle_private_bot_command },
+    { "/priv",          _handle_private_bot_command },     // Alias
+
+    // --- 槽位管理 ---
+    { "/close",         _handle_close_bot_command },
+    { "/open",          _handle_open_bot_command },
+    { "/closeall",      _handle_closeall_bot_command },
+    { "/openall",       _handle_openall_bot_command },
+    { "/swap",          _handle_swap_bot_command },
+    { "/switch",        _handle_swap_bot_command },        // Alias
+    { "/shuffle",       _handle_shuffle_bot_command },
+    { "/sp",            _handle_shuffle_bot_command },     // Alias
+
+    // --- 地图与统计 ---
+    { "/map",           _handle_map_bot_command },
+    { "/load",          _handle_map_bot_command },         // Alias
+    { "/dotaladder",    _handle_dotaladder_bot_command },
+    { "/clearstats",    _handle_clearstats_bot_command },
+    { "/wrl",           _handle_wrl_bot_command },
+    { "/rl",            _handle_rl_bot_command },
+
+    // --- 反作弊与工具 ---
+    { "/ah",            _handle_antihack_bot_command },
+    { "/antihack",      _handle_antihack_bot_command },    // Alias
+    { "/latency",       _handle_latency_bot_command },
+    { "/nah",           _handle_nah_bot_command },
+    { "/noleavers",     _handle_noleavers_bot_command },
+    { "/nol",           _handle_noleavers_bot_command },   // Alias
+    { "/nl",            _handle_noleavers_bot_command },   // Alias
+    { "/addfake",       _handle_addfake_bot_command },
+    { "/delfake",       _handle_delfake_bot_command },
+
+    // --- 冲突指令处理 ---
+    { "/kick",          _handle_kick_bot_command },
+    { "/ban",           _handle_ban_bot_command },
+
+    // --- 游戏内指令 ---
+    { "-latency",       _handle_latency_bot_command },
+    { "-fastfinish",    _handle_fastfinish_bot_command },
+    { "-ff",            _handle_fastfinish_bot_command },  // Alias
+
+    // =========================================================
+
+    { NULL, NULL } // 结束标记必须在最后
 
 };
-
 
 extern int handle_command(t_connection * c, char const * text)
 {
@@ -721,7 +827,7 @@ static int _handle_clan_command(t_connection * c, char const * text)
                     const char * username = args[2].c_str();
 
                     if ((dest_account = accountlist_find_account(username)) && (dest_conn = account_get_conn(dest_account))
-                        && (account_get_clan(dest_account) == NULL) && (account_get_creating_clan(dest_account) == NULL))
+                            && (account_get_clan(dest_account) == NULL) && (account_get_creating_clan(dest_account) == NULL))
                     {
                         if (prefs_get_clan_newer_time() > 0)
                             clan_add_member(clan, dest_account, CLAN_NEW);
@@ -1666,10 +1772,10 @@ static int _handle_friends_command(t_connection * c, char const * text)
         flist = account_get_friends(my_acc);
         for (n = 1; n < num; n++)
             if ((dest_uid = account_get_friend(my_acc, n)) &&
-                (fr = friendlist_find_uid(flist, dest_uid)) &&
-                (dest_acc = friend_get_account(fr)) &&
-                (dest_name = account_get_name(dest_acc)) &&
-                (strcasecmp(dest_name, text) == 0))
+                    (fr = friendlist_find_uid(flist, dest_uid)) &&
+                    (dest_acc = friend_get_account(fr)) &&
+                    (dest_name = account_get_name(dest_acc)) &&
+                    (strcasecmp(dest_name, text) == 0))
             {
                 account_set_friend(my_acc, n, account_get_friend(my_acc, n - 1));
                 account_set_friend(my_acc, n - 1, dest_uid);
@@ -1709,10 +1815,10 @@ static int _handle_friends_command(t_connection * c, char const * text)
         flist = account_get_friends(my_acc);
         for (n = 0; n < num - 1; n++)
             if ((dest_uid = account_get_friend(my_acc, n)) &&
-                (fr = friendlist_find_uid(flist, dest_uid)) &&
-                (dest_acc = friend_get_account(fr)) &&
-                (dest_name = account_get_name(dest_acc)) &&
-                (strcasecmp(dest_name, text) == 0))
+                    (fr = friendlist_find_uid(flist, dest_uid)) &&
+                    (dest_acc = friend_get_account(fr)) &&
+                    (dest_name = account_get_name(dest_acc)) &&
+                    (strcasecmp(dest_name, text) == 0))
             {
                 account_set_friend(my_acc, n, account_get_friend(my_acc, n + 1));
                 account_set_friend(my_acc, n + 1, dest_uid);
@@ -2016,24 +2122,24 @@ static int _handle_version_command(t_connection * c, char const *text)
 static int _handle_copyright_command(t_connection * c, char const *text)
 {
     static char const * const info[] =
-        {
-            " Copyright (C) 2002 - 2014  See source for details",
-            " ",
-            " PvPGN is free software; you can redistribute it and/or",
-            " modify it under the terms of the GNU General Public License",
-            " as published by the Free Software Foundation; either version 2",
-            " of the License, or (at your option) any later version.",
-            " ",
-            " This program is distributed in the hope that it will be useful,",
-            " but WITHOUT ANY WARRANTY; without even the implied warranty of",
-            " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
-            " GNU General Public License for more details.",
-            " ",
-            " You should have received a copy of the GNU General Public License",
-            " along with this program; if not, write to the Free Software",
-            " Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.",
-            NULL
-        };
+    {
+        " Copyright (C) 2002 - 2014  See source for details",
+        " ",
+        " PvPGN is free software; you can redistribute it and/or",
+        " modify it under the terms of the GNU General Public License",
+        " as published by the Free Software Foundation; either version 2",
+        " of the License, or (at your option) any later version.",
+        " ",
+        " This program is distributed in the hope that it will be useful,",
+        " but WITHOUT ANY WARRANTY; without even the implied warranty of",
+        " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+        " GNU General Public License for more details.",
+        " ",
+        " You should have received a copy of the GNU General Public License",
+        " along with this program; if not, write to the Free Software",
+        " Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.",
+        NULL
+    };
     unsigned int i;
 
     for (i = 0; info[i]; i++)
@@ -2503,10 +2609,10 @@ static int _handle_kick_command(t_connection * c, char const *text)
 
     acc = conn_get_account(c);
     if (account_get_auth_admin(acc, NULL) != 1 && /* default to false */
-                                                      account_get_auth_admin(acc, channel_get_name(channel)) != 1 && /* default to false */
-               account_get_auth_operator(acc, NULL) != 1 && /* default to false */
-               account_get_auth_operator(acc, channel_get_name(channel)) != 1 && /* default to false */
-        !channel_conn_is_tmpOP(channel, account_get_conn(acc)))
+            account_get_auth_admin(acc, channel_get_name(channel)) != 1 && /* default to false */
+            account_get_auth_operator(acc, NULL) != 1 && /* default to false */
+            account_get_auth_operator(acc, channel_get_name(channel)) != 1 && /* default to false */
+            !channel_conn_is_tmpOP(channel, account_get_conn(acc)))
     {
         message_send_text(c, message_type_error, c, localize(c, "You have to be at least a Channel Operator or tempOP to use this command."));
         return -1;
@@ -2522,7 +2628,7 @@ static int _handle_kick_command(t_connection * c, char const *text)
         return -1;
     }
     if (account_get_auth_admin(conn_get_account(kuc), NULL) == 1 ||
-        account_get_auth_admin(conn_get_account(kuc), channel_get_name(channel)) == 1)
+            account_get_auth_admin(conn_get_account(kuc), channel_get_name(channel)) == 1)
     {
         message_send_text(c, message_type_error, c, localize(c, "You cannot kick administrators."));
         return -1;
@@ -2580,9 +2686,9 @@ static int _handle_ban_command(t_connection * c, char const *text)
         return -1;
     }
     if (account_get_auth_admin(conn_get_account(c), NULL) != 1 && /* default to false */
-                                                                      account_get_auth_admin(conn_get_account(c), channel_get_name(channel)) != 1 && /* default to false */
-               account_get_auth_operator(conn_get_account(c), NULL) != 1 && /* default to false */
-               account_get_auth_operator(conn_get_account(c), channel_get_name(channel)) != 1) /* default to false */
+            account_get_auth_admin(conn_get_account(c), channel_get_name(channel)) != 1 && /* default to false */
+            account_get_auth_operator(conn_get_account(c), NULL) != 1 && /* default to false */
+            account_get_auth_operator(conn_get_account(c), channel_get_name(channel)) != 1) /* default to false */
     {
         message_send_text(c, message_type_error, c, localize(c, "You have to be at least a Channel Operator to use this command."));
         return -1;
@@ -2625,7 +2731,7 @@ static int _handle_ban_command(t_connection * c, char const *text)
         channel_message_send(channel, message_type_info, c, msgtemp.c_str());
     }
     if ((buc = connlist_find_connection_by_accountname(username)) &&
-        conn_get_channel(buc) == channel)
+            conn_get_channel(buc) == channel)
         conn_set_channel(buc, CHANNEL_NAME_BANNED);
 
     return 0;
@@ -2650,9 +2756,9 @@ static int _handle_unban_command(t_connection * c, char const *text)
         return -1;
     }
     if (account_get_auth_admin(conn_get_account(c), NULL) != 1 && /* default to false */
-                                                                      account_get_auth_admin(conn_get_account(c), channel_get_name(channel)) != 1 && /* default to false */
-               account_get_auth_operator(conn_get_account(c), NULL) != 1 && /* default to false */
-               account_get_auth_operator(conn_get_account(c), channel_get_name(channel)) != 1) /* default to false */
+            account_get_auth_admin(conn_get_account(c), channel_get_name(channel)) != 1 && /* default to false */
+            account_get_auth_operator(conn_get_account(c), NULL) != 1 && /* default to false */
+            account_get_auth_operator(conn_get_account(c), channel_get_name(channel)) != 1) /* default to false */
     {
         message_send_text(c, message_type_error, c, localize(c, "You are not a channel operator."));
         return -1;
@@ -3126,12 +3232,12 @@ static int _handle_channels_command(t_connection * c, char const *text)
     {
         channel = (t_channel*)elem_get_data(curr);
         if ((!(channel_get_flags(channel) & channel_flags_clan)) && (!clienttag || !prefs_get_hide_temp_channels() || channel_get_permanent(channel)) &&
-            (!clienttag || !channel_get_clienttag(channel) ||
-             channel_get_clienttag(channel) == clienttag) &&
-            ((channel_get_max(channel) != 0) || //only show restricted channels to OPs and Admins
-             ((channel_get_max(channel) == 0 && account_is_operator_or_admin(conn_get_account(c), NULL)))) &&
-            (!(channel_get_flags(channel) & channel_flags_thevoid)) // don't list TheVoid
-            )
+                (!clienttag || !channel_get_clienttag(channel) ||
+                 channel_get_clienttag(channel) == clienttag) &&
+                ((channel_get_max(channel) != 0) || //only show restricted channels to OPs and Admins
+                 ((channel_get_max(channel) == 0 && account_is_operator_or_admin(conn_get_account(c), NULL)))) &&
+                (!(channel_get_flags(channel) & channel_flags_thevoid)) // don't list TheVoid
+                )
         {
 
             std::snprintf(msgtemp0, sizeof(msgtemp0), " %-26.26s %5d - ",
@@ -3144,7 +3250,7 @@ static int _handle_channels_command(t_connection * c, char const *text)
             {
                 acc = conn_get_account(conn);
                 if (account_is_operator_or_admin(acc, channel_get_name(channel)) ||
-                    channel_conn_is_tmpOP(channel, account_get_conn(acc)))
+                        channel_conn_is_tmpOP(channel, account_get_conn(acc)))
                 {
                     name = conn_get_loggeduser(conn);
                     if (std::strlen(msgtemp0) + std::strlen(name) + 6 >= sizeof(msgtemp0)) break;
@@ -3270,7 +3376,7 @@ static int _handle_chpass_command(t_connection * c, char const *text)
     account = conn_get_account(c);
 
     if ((temp == account && account_get_auth_changepass(account) == 0) || /* default to true */
-        (temp != account && !(account_get_command_groups(conn_get_account(c)) & command_get_group("/admin-chpass")))) /* default to false */
+            (temp != account && !(account_get_command_groups(conn_get_account(c)) & command_get_group("/admin-chpass")))) /* default to false */
     {
         eventlog(eventlog_level_info, __FUNCTION__, "[{}] password change for \"{}\" refused (no change access)", conn_get_socket(c), username);
         message_send_text(c, message_type_error, c, localize(c, "Only admins may change passwords for other accounts."));
@@ -3305,7 +3411,7 @@ static int _handle_chpass_command(t_connection * c, char const *text)
     }
 
     if (account_get_auth_admin(account, NULL) == 1 ||
-        account_get_auth_operator(account, NULL) == 1) {
+            account_get_auth_operator(account, NULL) == 1) {
         msgtemp = localize(c, "Password for account {} updated.", account_get_uid(temp));
         message_send_text(c, message_type_info, c, msgtemp);
 
@@ -3453,8 +3559,8 @@ static int _handle_finger_command(t_connection * c, char const *text)
     std::string sex = account_get_sex(account);
     std::string pattern = "Login: {} {} Sex: {}";
     pattern = (sex.length() > 0)
-                  ? pattern
-                  : pattern.substr(0, pattern.find("Sex: ", 0));
+            ? pattern
+            : pattern.substr(0, pattern.find("Sex: ", 0));
 
     msgtemp = localize(c, pattern.c_str(),
                        account_get_name(account),
@@ -3502,8 +3608,8 @@ static int _handle_finger_command(t_connection * c, char const *text)
     std::string age = account_get_age(account);
     pattern = "Location: {} Age: {}";
     pattern = (age.length() > 0)
-                  ? pattern
-                  : pattern.substr(0, pattern.find("Age: ", 0));
+            ? pattern
+            : pattern.substr(0, pattern.find("Age: ", 0));
     std::string loc = account_get_loc(account);
     msgtemp = localize(c, pattern.c_str(),
                        (!loc.empty()) ? loc : "unknown",
@@ -3522,7 +3628,7 @@ static int _handle_finger_command(t_connection * c, char const *text)
     const char* const ip_tmp = account_get_ll_ip(account);
     std::string ip(ip_tmp ? ip_tmp : "");
     if (ip.empty() == true ||
-        !(account_get_command_groups(conn_get_account(c)) & command_get_group("/admin-addr"))) /* default to false */
+            !(account_get_command_groups(conn_get_account(c)) & command_get_group("/admin-addr"))) /* default to false */
         ip = localize(c, "unknown");
 
     {
@@ -3548,8 +3654,8 @@ static int _handle_finger_command(t_connection * c, char const *text)
         std::string yes = localize(c, "Yes");
         std::string no = localize(c, "No");
         /* the player who requested /finger has admin privileges
-				give him more info about the one he queries;
-				is_admin, is_operator, is_locked, email */
+                give him more info about the one he queries;
+                is_admin, is_operator, is_locked, email */
         msgtemp = localize(c, "Operator: {}, Admin: {}, Locked: {}, Muted: {}",
                            account_get_auth_operator(account, NULL) == 1 ? yes : no,
                            account_get_auth_admin(account, NULL) == 1 ? yes : no,
@@ -3928,8 +4034,8 @@ static int _handle_rehash_command(t_connection * c, char const *text)
 }
 
 /**
-		* /find <substr to search for inside username>
-		*/
+        * /find <substr to search for inside username>
+        */
 static int _handle_find_command(t_connection * c, char const *text)
 {
     unsigned int  i = 0;
@@ -3969,8 +4075,8 @@ static int _handle_find_command(t_connection * c, char const *text)
 }
 
 /**
-		* Save changes of accounts and clans from the cache to a storage
-		*/
+        * Save changes of accounts and clans from the cache to a storage
+        */
 static int _handle_save_command(t_connection * c, char const *text)
 {
     clanlist_save();
@@ -4349,7 +4455,7 @@ static int _handle_netinfo_command(t_connection * c, char const *text)
     }
 
     if (conn_get_account(conn) != conn_get_account(c) &&
-        prefs_get_hide_addr() && !(account_get_command_groups(conn_get_account(c)) & command_get_group("/admin-addr"))) // default to false
+            prefs_get_hide_addr() && !(account_get_command_groups(conn_get_account(c)) & command_get_group("/admin-addr"))) // default to false
     {
         message_send_text(c, message_type_error, c, localize(c, "Address information for other users is only available to admins."));
         return -1;
@@ -4620,10 +4726,10 @@ static int _handle_tag_command(t_connection * c, char const *text)
 static int _handle_ipscan_command(t_connection * c, char const * text)
 {
     /*
-			Description of _handle_ipscan_command
-			---------------------------------------
-			Finds all currently logged in users with the given ip address.
-			*/
+            Description of _handle_ipscan_command
+            ---------------------------------------
+            Finds all currently logged in users with the given ip address.
+            */
 
     t_account * account;
     t_connection * conn;
@@ -4776,7 +4882,7 @@ static int _handle_tos_command(t_connection * c, char const * text)
 
     std::string filename = i18n_filename(prefs_get_tosfile(), conn_get_gamelang_localized(c));
     /* FIXME: if user enters relative path to tos file in config,
-			   above routine will fail */
+               above routine will fail */
     std::FILE* fp = std::fopen(filename.c_str(), "r");
     if (fp)
     {
@@ -4793,8 +4899,8 @@ static int _handle_tos_command(t_connection * c, char const * text)
             }
             else {
                 /*  lines in TOS file can be > MAX_MESSAGE_LEN, so split them
-						truncating is not an option for TOS -raistlinthewiz
-						*/
+                        truncating is not an option for TOS -raistlinthewiz
+                        */
 
                 while (len  > MAX_MESSAGE_LEN - 1)
                 {
@@ -4878,7 +4984,7 @@ static int _handle_commandgroups_command(t_connection * c, char const * text)
     std::vector<std::string> args = split_command(text, 3);
     // display help if [list] without [username], or not [list] without [groups]
     if ( ((args[1] == "list" || args[1] == "l") && args[2].empty())
-        || (!(args[1] == "list" || args[1] == "l") && args[3].empty()) )
+         || (!(args[1] == "list" || args[1] == "l") && args[3].empty()) )
     {
         describe_command(c, args[0].c_str());
         return -1;
@@ -5034,10 +5140,10 @@ static void _reset_d1_stats(t_account *account, t_clienttag ctag, t_connection *
 {
     account_set_normal_level(account, ctag, 0);
     account_set_normal_strength(account, ctag, 0),
-        account_set_normal_magic(account, ctag, 0),
-        account_set_normal_dexterity(account, ctag, 0),
-        account_set_normal_vitality(account, ctag, 0),
-        account_set_normal_gold(account, ctag, 0);
+            account_set_normal_magic(account, ctag, 0),
+            account_set_normal_dexterity(account, ctag, 0),
+            account_set_normal_vitality(account, ctag, 0),
+            account_set_normal_gold(account, ctag, 0);
 
     msgtemp = localize(c, "Reset {}'s {} stats", account_get_name(account), clienttag_get_title(ctag));
     message_send_text(c, message_type_info, c, msgtemp);
@@ -5234,8 +5340,8 @@ static int _handle_alert_command(t_connection * c, char const * text)
     clienttag = conn_get_clienttag(c);
     // disallow clients that doesn't support SID_MESSAGEBOX
     if (clienttag != CLIENTTAG_STARCRAFT_UINT && clienttag != CLIENTTAG_BROODWARS_UINT && clienttag != CLIENTTAG_STARJAPAN_UINT && clienttag != CLIENTTAG_SHAREWARE_UINT &&
-        clienttag != CLIENTTAG_DIABLORTL_UINT && clienttag != CLIENTTAG_DIABLOSHR_UINT &&
-        clienttag != CLIENTTAG_WARCIIBNE_UINT && clienttag != CLIENTTAG_BNCHATBOT_UINT)
+            clienttag != CLIENTTAG_DIABLORTL_UINT && clienttag != CLIENTTAG_DIABLOSHR_UINT &&
+            clienttag != CLIENTTAG_WARCIIBNE_UINT && clienttag != CLIENTTAG_BNCHATBOT_UINT)
     {
         message_send_text(c, message_type_error, c, localize(c, "Your game client doesn't support MessageBox."));
         return -1;
@@ -5265,8 +5371,8 @@ static int _handle_alert_command(t_connection * c, char const * text)
             clienttag_dest = conn_get_clienttag(conn);
 
             if (clienttag_dest != CLIENTTAG_STARCRAFT_UINT && clienttag_dest != CLIENTTAG_BROODWARS_UINT && clienttag_dest != CLIENTTAG_STARJAPAN_UINT && clienttag_dest != CLIENTTAG_SHAREWARE_UINT &&
-                clienttag_dest != CLIENTTAG_DIABLORTL_UINT && clienttag_dest != CLIENTTAG_DIABLOSHR_UINT &&
-                clienttag_dest != CLIENTTAG_WARCIIBNE_UINT && clienttag_dest != CLIENTTAG_BNCHATBOT_UINT) {
+                    clienttag_dest != CLIENTTAG_DIABLORTL_UINT && clienttag_dest != CLIENTTAG_DIABLOSHR_UINT &&
+                    clienttag_dest != CLIENTTAG_WARCIIBNE_UINT && clienttag_dest != CLIENTTAG_BNCHATBOT_UINT) {
                 continue;
             }
             messagebox_show(conn, goodtext.c_str(), msgtemp.c_str());
@@ -5275,6 +5381,56 @@ static int _handle_alert_command(t_connection * c, char const * text)
 
     return 0;
 }
+
+// =========================================================
+// DotA / Bot 命令实现 (统一转发逻辑)
+// =========================================================
+
+static int _handle_bot_proxy_logic(t_connection * c, char const * text)
+{
+    t_channel * channel = conn_get_channel(c);
+    if (channel) {
+        // 核心逻辑：将命令作为聊天消息广播到频道，让 Bot 捕获
+        channel_message_send(channel, message_type_talk, c, text);
+    }
+    return 0; // 返回 0 表示命令已处理，阻止 Server 报错
+}
+
+// --- 包装函数实现 ---
+
+static int _handle_host_bot_command(t_connection * c, char const * text)        { return _handle_bot_proxy_logic(c, text); }
+static int _handle_chost_bot_command(t_connection * c, char const * text)       { return _handle_bot_proxy_logic(c, text); }
+static int _handle_hostprivate_bot_command(t_connection * c, char const * text) { return _handle_bot_proxy_logic(c, text); }
+static int _handle_unhost_bot_command(t_connection * c, char const * text)      { return _handle_bot_proxy_logic(c, text); }
+static int _handle_start_bot_command(t_connection * c, char const * text)       { return _handle_bot_proxy_logic(c, text); }
+static int _handle_hold_bot_command(t_connection * c, char const * text)        { return _handle_bot_proxy_logic(c, text); }
+
+static int _handle_public_bot_command(t_connection * c, char const * text)      { return _handle_bot_proxy_logic(c, text); }
+static int _handle_private_bot_command(t_connection * c, char const * text)     { return _handle_bot_proxy_logic(c, text); }
+
+static int _handle_close_bot_command(t_connection * c, char const * text)       { return _handle_bot_proxy_logic(c, text); }
+static int _handle_open_bot_command(t_connection * c, char const * text)        { return _handle_bot_proxy_logic(c, text); }
+static int _handle_closeall_bot_command(t_connection * c, char const * text)    { return _handle_bot_proxy_logic(c, text); }
+static int _handle_openall_bot_command(t_connection * c, char const * text)     { return _handle_bot_proxy_logic(c, text); }
+static int _handle_swap_bot_command(t_connection * c, char const * text)        { return _handle_bot_proxy_logic(c, text); }
+static int _handle_shuffle_bot_command(t_connection * c, char const * text)     { return _handle_bot_proxy_logic(c, text); }
+
+static int _handle_map_bot_command(t_connection * c, char const * text)         { return _handle_bot_proxy_logic(c, text); }
+static int _handle_dotaladder_bot_command(t_connection * c, char const * text)  { return _handle_bot_proxy_logic(c, text); }
+static int _handle_clearstats_bot_command(t_connection * c, char const * text)  { return _handle_bot_proxy_logic(c, text); }
+static int _handle_wrl_bot_command(t_connection * c, char const * text)         { return _handle_bot_proxy_logic(c, text); }
+static int _handle_rl_bot_command(t_connection * c, char const * text)          { return _handle_bot_proxy_logic(c, text); }
+
+static int _handle_antihack_bot_command(t_connection * c, char const * text)    { return _handle_bot_proxy_logic(c, text); }
+static int _handle_nah_bot_command(t_connection * c, char const * text)         { return _handle_bot_proxy_logic(c, text); }
+static int _handle_noleavers_bot_command(t_connection * c, char const * text)   { return _handle_bot_proxy_logic(c, text); }
+static int _handle_addfake_bot_command(t_connection * c, char const * text)     { return _handle_bot_proxy_logic(c, text); }
+static int _handle_delfake_bot_command(t_connection * c, char const * text)     { return _handle_bot_proxy_logic(c, text); }
+static int _handle_latency_bot_command(t_connection * c, char const * text)     { return _handle_bot_proxy_logic(c, text); }
+
+static int _handle_kick_bot_command(t_connection * c, char const * text)        { return _handle_bot_proxy_logic(c, text); }
+static int _handle_ban_bot_command(t_connection * c, char const * text)         { return _handle_bot_proxy_logic(c, text); }
+static int _handle_fastfinish_bot_command(t_connection * c, char const * text)  { return _handle_bot_proxy_logic(c, text); }
 
 }
 }
