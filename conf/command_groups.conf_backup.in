@@ -34,7 +34,7 @@
 #	    Issue the following commands to get access to all groups:
 #	    	ALTER TABLE BNET ADD COLUMN auth_command_groups VARCHAR(128) default '1';
 #	    	UPDATE BNET SET auth_command_groups='255' WHERE uid='youruserid'
-#
+#	    
 #	    For regular users to be able to use the regular commands
 #	    issue the following command:
 #	    	UPDATE BNET SET auth_command_groups='1' WHERE uid='0'
@@ -49,13 +49,13 @@
 1	/c /clan
 1	/f /friends
 1	/me /emote
-1	/msg /whisper /w /m
+1	/msg /whisper /w /m 
 1	/r /reply
 1	/status /users /lusers
 1	/who /whois /whereis /where /whoami
 1	/beep /nobeep
 1	/version /copyright /warranty /license
-1	/uptime
+1	/uptime 
 1	/stats /astat
 1	/time
 1	/channel /join /j /rejoin
@@ -74,37 +74,37 @@
 1	/icon
 1	/language /lang
 
-#	//////////////////////////////////////////////////////////
-#	///// DotA / Host Bot Commands (Added from C++ Code) /////
-#	//////////////////////////////////////////////////////////
-#   Assigning these to Group 1 allows players to interact with the bot.
-
-#   Game Creation & Management
-1   /host /chost /hostprivate /hop /unhost /start /hold
-
-#   Room Status
-1   /public /pub /private /priv
-
-#   Slot Management
-1   /close /open /closeall /openall /swap /switch /shuffle /sp
-
-#   Map & Stats
-#   Note: /clearstats moved here from Group 7 so users can use it
-1   /map /load /dotaladder /wrl /rl /clearstats
-
-#   Antihack & Tools
-1   /ah /antihack /nah /noleavers /nol /nl /addfake /delfake
-
-#   In-Game Commands (Start with -)
-1   -latency -fastfinish -ff -ff
-
-
 #	/////////////////////////////
 #	///// Operator commands /////
 #	/////////////////////////////
-#   Note: /kick, /ban are also used by Bot logic in your code.
-#   Since they are listed here as Group 1, regular users technically have "access"
-#   to the command string, but the C++ code checks for Admin/Op status OR Bot logic.
+#
+#	-- These commands require the user to be one of the following:
+#	
+#	-- Server Admin - admin status set to true - use --> /admin +<username>
+#		-- can /aop users for any channel
+#		-- can /op & /deop users for any channel
+#		-- can /kick /ban & /unban users for any channel
+#		-- can /vop users for any channel
+#		-- can /voice & /devoice users for any channel
+#	-- Server Operator - operator status set to true - use --> /operator +<username>
+#		-- can /op & /deop users for any channel
+#		-- can /kick /ban & /unban users for any channel
+#		-- can /voice & /devoice users for any channel
+#	-- Channel Admin - admin starus for channel set to true - use --> /aop <username>
+#		-- can /aop users for the channel they are admin of
+#		-- can /op & /deop users for the channel they are admin of
+#		-- can /kick /ban & /unban users for the channel they are admin of
+#		-- can /vop users for the chnnel they are admin of
+#		-- can /voice & /devoice users for the channel they are admin of
+#	-- Channel Operator - operator status for channel set to true - use --> /op <username>
+#		-- can /op & /deop users for the channel they are operator of
+#		-- can /kick /ban & /unban users for the channel they are operator of
+#		-- can /voice & /devoice users for the channel they are	operator of
+#
+#	-- You must be in the channel you wish to give or take Channel Operator or 
+#		Channel Admin status too or from. ** /aop /op & /deop **
+#	-- P.S. You may now have more than one operator and/or admin per channel.
+#		-- No need to make everyone Server Admins.
 
 1	/kick /ban /unban /op /deop /aop /voice /devoice /vop /devop /tmpop /moderate
 
@@ -115,8 +115,8 @@
 #	-- Although set to Group '1', these command have the following limitations for users.
 #
 #	-- /admin-con & /admin-addr /admin-chpass are not real commands.
-#
-#	-- Without 'enable_conn_all = true' in bnetd.conf, only users with access to
+#		
+#	-- Without 'enable_conn_all = true' in bnetd.conf, only users with access to 
 #		/admin-con may use the /con or /connections.
 
 1	/connections /con
@@ -169,7 +169,7 @@
 
 7	/set
 7	/commandgroups /cg
-# 7	/clearstats  <-- Commented out by Bot Setup (Moved to Group 1)
+7	/clearstats
 
 8	/shutdown /rehash /find /save
 
