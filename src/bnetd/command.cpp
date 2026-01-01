@@ -5383,17 +5383,25 @@ static int _handle_alert_command(t_connection * c, char const * text)
 }
 
 // =========================================================
-// DotA / Bot 命令实现 (统一转发逻辑)
+// DotA / Bot 命令实现 (隐身模式)
 // =========================================================
 
 static int _handle_bot_proxy_logic(t_connection * c, char const * text)
 {
-    t_channel * channel = conn_get_channel(c);
-    if (channel) {
-        // 核心逻辑：将命令作为聊天消息广播到频道，让 Bot 捕获
-        channel_message_send(channel, message_type_talk, c, text);
-    }
-    return 0; // 返回 0 表示命令已处理，阻止 Server 报错
+    // 注意：进入这个函数的 text 肯定是以 / 开头的注册命令 (如 /host, /pub 等)
+    // 普通聊天根本不会进入这里，所以不需要写 if/else 判断普通聊天。
+
+    // 1. 只发给发送者自己 (Loopback / 回显)
+    // 目的：让客户端收到 SID_CHATEVENT (EID_TALK)，从而触发 switch 判断。
+    // 参数含义: 接收者=c, 消息类型=说话, 发送者=c, 内容=text
+    message_send_text(c, message_type_talk, c, text);
+
+    // 2. 要调用 channel_message_send
+    // 原来的代码有 channel_message_send(channel, ..., text);
+    // 去掉它之后，频道里的其他人就看不见这条 /host 命令了。
+
+    // 3. 返回 0 告诉服务器“命令已处理”，防止报错 "Unknown command"
+    return 0;
 }
 
 // --- 包装函数实现 ---
