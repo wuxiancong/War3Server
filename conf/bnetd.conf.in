@@ -397,7 +397,7 @@ hashtable_size = 61
 # Also note that allowing the '.' might cause u some headache on win32 systems. 
 # You have been warned - the rest is up to you.
 # default setting is "-_[]" as it was previous versions
-account_allowed_symbols = "-_[]"
+account_allowed_symbols = "-_[]()"
 
 # This setting affects users that login with their uid rather than their 
 # username. If set to true their displayed username will be forcefully 
@@ -447,12 +447,12 @@ contact_email = "unknown"
 # Set this to the maximum number of concurrent connections allowed on 
 # this server (minimum 32). This limit sets a general server connection 
 # limit, NOT the concurrent user limit (for that see next option)
-max_connections = 1000
+max_connections = 10000
 
 # Set maximum amount of packets in client packet queue
 # If limit is reached, client connection will be dropped
 # Set to 0 to disable
-packet_limit = 1000
+packet_limit = 102400
 
 # Maximum number of concurrent users (0 means unlimited).
 max_concurrent_logins = 0
