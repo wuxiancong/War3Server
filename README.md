@@ -77,7 +77,7 @@ sudo apt install -y build-essential cmake git libmysqlclient-dev libssl-dev zlib
 apt-get install -y liblua5.1-0-dev
 
 # 安装 MySQL 服务器
-sudo apt install -y mysql-server
+sudo apt install -y mysql-server libqt5sql5-mysql default-libmysqlclient-dev
 
 # 启动并启用 MySQL 服务
 sudo systemctl start mysql
