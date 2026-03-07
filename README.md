@@ -76,45 +76,78 @@ sudo apt install -y build-essential cmake git libmysqlclient-dev libssl-dev zlib
 # 安装 Lua 支持
 apt-get install -y liblua5.1-0-dev
 
-# 安装 MySQL 服务器
-sudo apt install -y mysql-server libqt5sql5-mysql default-libmysqlclient-dev
+为了实现完全自动化并确保你的 Qt 程序（War3Bot）能够完美连接，我们需要针对 **Ubuntu 环境**、**Qt 驱动兼容性** 以及 **127.0.0.1 本地回环** 进行优化。
+
+以下是为你整理好的 Markdown 文档，你可以直接替换或更新：
+
+---
+
+# MySQL 数据库环境自动化配置指南
+
+### 1. 安装 MySQL 及 Qt 驱动
+在 Ubuntu 上安装 MySQL 服务器以及 Qt 连接所需的驱动插件。
+```bash
+# 更新源并安装 MySQL 服务器、Qt MySQL 驱动及开发库
+sudo apt update
+sudo apt install -y mysql-server libqt5sql5-mysql libmysqlclient-dev
 
 # 启动并启用 MySQL 服务
 sudo systemctl start mysql
 sudo systemctl enable mysql
 ```
 
-### 2. 配置 MySQL 数据库
-首先设置 root 密码（如果是新安装）：
+### 2. 自动化配置数据库与用户
+为了确保 `pvpgn` 用户拥有足够的权限（包括自动创库、建表）以及兼容 Qt 的连接协议，请执行以下命令：
+
+**方式 A：手动进入 MySQL 执行（推荐初次配置）**
 ```bash
-sudo mysql -u root
-# 在 MySQL 提示符下执行：
-# ALTER USER 'root'@'localhost' IDENTIFIED BY 'yourpassword';
-# EXIT;
+# 使用系统 root 权限进入（Ubuntu 默认不需要密码）
+sudo mysql
 ```
 
-创建 PvPGN 数据库和用户：
-```bash
-# 使用密码登录
-sudo mysql -u root -p
-```
-在 MySQL 提示符下执行以下 SQL 语句：
+在 MySQL 提示符下执行以下 SQL（请直接复制全段）：
 ```sql
--- 创建数据库
-CREATE DATABASE pvpgn;
+-- 1. 创建业务数据库 (使用 utf8mb4 支持中文及特殊字符)
+CREATE DATABASE IF NOT EXISTS platform DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- 创建用户
-CREATE USER 'pvpgn'@'localhost' IDENTIFIED BY 'yourpassword';
+-- 2. 创建用户 (针对 127.0.0.1 和 localhost，确保 Qt 和终端都能连)
+-- 使用 mysql_native_password 以确保旧版 Qt 驱动也能完美兼容
+CREATE USER IF NOT EXISTS 'pvpgn'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY 'yourpassword';
+CREATE USER IF NOT EXISTS 'pvpgn'@'localhost' IDENTIFIED WITH mysql_native_password BY 'yourpassword';
 
--- 授权
-GRANT ALL PRIVILEGES ON pvpgn.* TO 'pvpgn'@'localhost';
+-- 3. 授予权限
+-- 授予全局 CREATE 权限，允许程序执行 "CREATE DATABASE IF NOT EXISTS"
+GRANT CREATE ON *.* TO 'pvpgn'@'127.0.0.1';
+GRANT CREATE ON *.* TO 'pvpgn'@'localhost';
 
--- 刷新权限
+-- 授予业务库 platform 的所有操作权限
+GRANT ALL PRIVILEGES ON platform.* TO 'pvpgn'@'127.0.0.1';
+GRANT ALL PRIVILEGES ON platform.* TO 'pvpgn'@'localhost';
+
+-- 4. 刷新权限并退出
 FLUSH PRIVILEGES;
-
--- 退出
 EXIT;
 ```
+
+**方式 B：一键脚本执行（适合自动化脚本）**
+如果你在写 shell 脚本，可以直接运行这一行：
+```bash
+sudo mysql -e "CREATE DATABASE IF NOT EXISTS platform; CREATE USER IF NOT EXISTS 'pvpgn'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY 'yourpassword'; GRANT CREATE ON *.* TO 'pvpgn'@'127.0.0.1'; GRANT ALL PRIVILEGES ON platform.* TO 'pvpgn'@'127.0.0.1'; FLUSH PRIVILEGES;"
+```
+
+### 3. 程序连接参数建议
+在你的 War3Bot 配置文件（`war3bot.ini`）或代码中，请使用以下参数：
+
+| 参数 | 设定值 | 说明 |
+| :--- | :--- | :--- |
+| **驱动 (Driver)** | `QMYSQL` | Ubuntu 环境下的标准名称 |
+| **主机 (Host)** | `127.0.0.1` | **必须使用 IP**，避开 .sock 文件冲突 |
+| **端口 (Port)** | `3306` | 默认端口 |
+| **用户 (User)** | `pvpgn` | 专用业务用户 |
+| **密码 (Pass)** | `yourpassword` | 设定的安全密码 |
+| **库名 (Database)** | `platform` | 业务数据库名称 |
+
+--- 
 
 ### 3. 编译与安装 War3Server
 
