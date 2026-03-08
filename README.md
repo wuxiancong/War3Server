@@ -76,15 +76,9 @@ sudo apt install -y build-essential cmake git libmysqlclient-dev libssl-dev zlib
 # 安装 Lua 支持
 apt-get install -y liblua5.1-0-dev
 
-为了实现完全自动化并确保你的 Qt 程序（War3Bot）能够完美连接，我们需要针对 **Ubuntu 环境**、**Qt 驱动兼容性** 以及 **127.0.0.1 本地回环** 进行优化。
-
-以下是为你整理好的 Markdown 文档，你可以直接替换或更新：
-
----
-
 # MySQL 数据库环境自动化配置指南
 
-### 1. 安装 MySQL 及 Qt 驱动
+### 2. 安装 MySQL 及 Qt 驱动
 在 Ubuntu 上安装 MySQL 服务器以及 Qt 连接所需的驱动插件。
 ```bash
 # 更新源并安装 MySQL 服务器、Qt MySQL 驱动及开发库
@@ -96,7 +90,7 @@ sudo systemctl start mysql
 sudo systemctl enable mysql
 ```
 
-### 2. 自动化配置数据库与用户
+### 3. 自动化配置数据库与用户
 为了确保 `pvpgn` 用户拥有足够的权限（包括自动创库、建表）以及兼容 Qt 的连接协议，请执行以下命令：
 
 **方式 A：手动进入 MySQL 执行（推荐初次配置）**
@@ -135,7 +129,7 @@ EXIT;
 sudo mysql -e "CREATE DATABASE IF NOT EXISTS platform; CREATE USER IF NOT EXISTS 'pvpgn'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY 'yourpassword'; GRANT CREATE ON *.* TO 'pvpgn'@'127.0.0.1'; GRANT ALL PRIVILEGES ON platform.* TO 'pvpgn'@'127.0.0.1'; FLUSH PRIVILEGES;"
 ```
 
-### 3. 程序连接参数建议
+### 4. 程序连接参数建议
 在你的 War3Bot 配置文件（`war3bot.ini`）或代码中，请使用以下参数：
 
 | 参数 | 设定值 | 说明 |
@@ -147,7 +141,7 @@ sudo mysql -e "CREATE DATABASE IF NOT EXISTS platform; CREATE USER IF NOT EXISTS
 | **密码 (Pass)** | `yourpassword` | 设定的安全密码 |
 | **库名 (Database)** | `platform` | 业务数据库名称 |
 
-### 4. 重新赋予权限
+### 5. 重新赋予权限
 -- 确保进入 mysql 数据库
 USE pvpgn;
 
@@ -163,7 +157,7 @@ FLUSH PRIVILEGES;
 
 --- 
 
-### 3. 编译与安装 War3Server
+### 6. 编译与安装 War3Server
 
 ```bash
 # 克隆项目代码
