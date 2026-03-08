@@ -147,6 +147,20 @@ sudo mysql -e "CREATE DATABASE IF NOT EXISTS platform; CREATE USER IF NOT EXISTS
 | **密码 (Pass)** | `yourpassword` | 设定的安全密码 |
 | **库名 (Database)** | `platform` | 业务数据库名称 |
 
+### 4. 重新赋予权限
+-- 确保进入 mysql 数据库
+USE pvpgn;
+
+-- 重新给 pvpgn 用户在所有可能的本地地址上授权
+GRANT ALL PRIVILEGES ON pvpgn.* TO 'pvpgn'@'localhost';
+GRANT ALL PRIVILEGES ON pvpgn.* TO 'pvpgn'@'127.0.0.1';
+
+-- 如果你希望以后能通过 IP 远程连接（比如用 Navicat 查看），可以加上这一行：
+-- GRANT ALL PRIVILEGES ON pvpgn.* TO 'pvpgn'@'%';
+
+-- 这一步至关重要：强制刷新权限表到内存
+FLUSH PRIVILEGES;
+
 --- 
 
 ### 3. 编译与安装 War3Server
