@@ -114,10 +114,6 @@ CREATE USER IF NOT EXISTS 'pvpgn'@'localhost' IDENTIFIED WITH mysql_native_passw
 GRANT CREATE ON *.* TO 'pvpgn'@'127.0.0.1';
 GRANT CREATE ON *.* TO 'pvpgn'@'localhost';
 
--- 授予业务库 platform 的所有操作权限
-GRANT ALL PRIVILEGES ON platform.* TO 'pvpgn'@'127.0.0.1';
-GRANT ALL PRIVILEGES ON platform.* TO 'pvpgn'@'localhost';
-
 -- 4. 刷新权限并退出
 FLUSH PRIVILEGES;
 EXIT;
