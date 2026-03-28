@@ -436,6 +436,8 @@ static int _handle_hostprivate_bot_command(t_connection * c, char const * text);
 static int _handle_unhost_bot_command(t_connection * c, char const * text);
 static int _handle_start_bot_command(t_connection * c, char const * text);
 static int _handle_hold_bot_command(t_connection * c, char const * text);
+static int _handle_ready_bot_command(t_connection * c, char const * text);
+static int _handle_unready_bot_command(t_connection * c, char const * text);
 
 // 房间状态
 static int _handle_public_bot_command(t_connection * c, char const * text);
@@ -601,6 +603,8 @@ static const t_command_table_row standard_command_table[] =
     { "/unhost",        _handle_unhost_bot_command },
     { "/start",         _handle_start_bot_command },
     { "/hold",          _handle_hold_bot_command },
+    { "/ready",         _handle_ready_bot_command },
+    { "/unready",       _handle_unready_bot_command },
 
     // --- 房间状态 ---
     { "/public",        _handle_public_bot_command },
@@ -5412,6 +5416,8 @@ static int _handle_hostprivate_bot_command(t_connection * c, char const * text) 
 static int _handle_unhost_bot_command(t_connection * c, char const * text)      { return _handle_bot_proxy_logic(c, text); }
 static int _handle_start_bot_command(t_connection * c, char const * text)       { return _handle_bot_proxy_logic(c, text); }
 static int _handle_hold_bot_command(t_connection * c, char const * text)        { return _handle_bot_proxy_logic(c, text); }
+static int _handle_ready_bot_command(t_connection * c, char const * text)       { return _handle_bot_proxy_logic(c, text); }
+static int _handle_unready_bot_command(t_connection * c, char const * text)     { return _handle_bot_proxy_logic(c, text); }
 
 static int _handle_public_bot_command(t_connection * c, char const * text)      { return _handle_bot_proxy_logic(c, text); }
 static int _handle_private_bot_command(t_connection * c, char const * text)     { return _handle_bot_proxy_logic(c, text); }
