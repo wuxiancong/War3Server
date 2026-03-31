@@ -80,7 +80,7 @@
 #   Assigning these to Group 1 allows players to interact with the bot.
 
 #   Game Creation & Management
-1   /host /chost /hostprivate /hop /unhost /ready /unready /start /hold
+1   /host /chost /hostprivate /hop /unhost /ready /unready /swapself /start /hold
 
 #   Room Status
 1   /public /pub /private /priv
