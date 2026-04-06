@@ -1028,6 +1028,16 @@ namespace pvpgn
                     return -1;
                 }
 
+                // ----------------------- 调试代码开始 -----------------------
+                char debug_hex[256] = {0};
+                int pos = 0;
+                for (int i = 0; i < 64; i++) {
+                    pos += std::sprintf(debug_hex + pos, "%02X ", (unsigned char)gameinfo[i]);
+                }
+                eventlog(eventlog_level_info, __FUNCTION__, "[调试] 收到 gameinfo 原始字节: {}", debug_hex);
+                eventlog(eventlog_level_info, __FUNCTION__, "[调试] strlen(gameinfo) 的结果是: {}", std::strlen(gameinfo));
+                // ----------------------- 调试代码结束 -----------------------
+
 				if (std::strlen(gameinfo) < 0xf + 2 + 1 + 2 + 4) {
                     // eventlog(eventlog_level_error, __FUNCTION__, "got too short W3 mapinfo");
                     // ----------------------- 修改开始 -----------------------

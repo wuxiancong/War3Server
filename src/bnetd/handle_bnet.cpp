@@ -4417,25 +4417,27 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
         // }
         // --- 修改：支持热更新 ---
         if ((currgame = conn_get_game(c))) {
+            // 修复点：将所有 %s 和 %x 替换为 {} 或 {:04x}
             eventlog(eventlog_level_info, __FUNCTION__,
                      "[{}] [建房调试] 正在热更新现有游戏 \"{}\" (原状态枚举: {})",
                      conn_get_socket(c), game_get_name(currgame), (int)game_get_status(currgame));
 
             // 1. 热更新房间基本信息
-            // 房主交接时，Bot会通过这里发送新的房间名、密码和包含新房主名的StatString
-            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 更新房间名为: \"%s\"", gamename);
+            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 更新房间名为: \"{}\"", gamename);
             game_set_name(currgame, gamename);
 
-            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 更新房间密码为: \"%s\"", gamepass);
+            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 更新房间密码为: \"{}\"", gamepass);
             game_set_pass(currgame, gamepass);
 
             eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 核心：更新 StatString (同步新房主名及地图配置)");
+            // 注意：gameinfo 是二进制，日志打印建议只记动作，不记原文，防止不可见字符导致终端乱码
             game_set_info(currgame, gameinfo);
 
-            // 2. 同步游戏选项 (类型、选项等)
+            // 2. 同步游戏选项
             t_game_type gtype = bngtype_to_gtype(conn_get_clienttag(c), bngtype);
             game_set_option(currgame, bngoption_to_goption(conn_get_clienttag(c), gtype, option));
-            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 同步游戏选项: Type=0x%04x, Option=0x%04x", bngtype, option);
+            // {:04x} 代表打印 4 位十六进制
+            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 同步游戏选项: Type=0x{:04x}, Option=0x{:04x}", bngtype, option);
 
             // 3. 更新并转换状态位
             if ((status & CLIENT_STARTGAME4_STATUSMASK_OPEN_VALID) == status) {
@@ -4453,10 +4455,11 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
                 }
             }
             else {
-                eventlog(eventlog_level_error, __FUNCTION__, "   └─ [错误] 收到未知的状态位指令: 0x%08x", status);
+                // 0x{:08x} 打印 8 位十六进制状态码
+                eventlog(eventlog_level_error, __FUNCTION__, "   └─ [错误] 收到未知的状态位指令: 0x{:08x}", status);
             }
 
-            eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 房间 \"%s\" 的房主/属性热更新流程处理完毕", conn_get_socket(c), gamename);
+            eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 房间 \"{}\" 的房主/属性热更新流程处理完毕", conn_get_socket(c), gamename);
         }
         else if ((status & CLIENT_STARTGAME4_STATUSMASK_INIT_VALID) == status) {
             eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 尝试创建新游戏 \"{}\"", conn_get_socket(c), gamename);
