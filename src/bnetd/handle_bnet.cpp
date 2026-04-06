@@ -4391,33 +4391,74 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
                  "[{}] [建房调试] 收到STARTGAME4: Name=\"{}\", 客户端发来的Status=0x{:08x}, Type=0x{:04x}, Option=0x{:04x}, Flag=0x{:04x}",
                  conn_get_socket(c), gamename, status, bngtype, option, flag);
 
+        // if ((currgame = conn_get_game(c))) {
+        //     eventlog(eventlog_level_info, __FUNCTION__,
+        //              "[{}] [建房调试] 正在更新现有游戏 \"{}\" (原状态: {})",
+        //              conn_get_socket(c), game_get_name(currgame), (int)game_get_status(currgame));
+
+        //     if ((status & CLIENT_STARTGAME4_STATUSMASK_OPEN_VALID) == status) {
+        //         if (status & CLIENT_STARTGAME4_STATUS_START) {
+        //             eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> STARTED (0x04)", conn_get_socket(c));
+        //             game_set_status(currgame, game_status_started);
+        //         }
+        //         else if (status & CLIENT_STARTGAME4_STATUS_FULL) {
+        //             eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> FULL (0x02)", conn_get_socket(c));
+        //             game_set_status(currgame, game_status_full);
+        //         }
+        //         else {
+        //             eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> OPEN (0x10/Wait)", conn_get_socket(c));
+        //             game_set_status(currgame, game_status_open);
+        //         }
+        //     }
+        //     else {
+        //         eventlog(eventlog_level_error, __FUNCTION__, "[{}] unknown startgame4 status {} (clienttag: {})", conn_get_socket(c), status, clienttag_uint_to_str(conn_get_clienttag(c)));
+        //     }
+
+        // }
+        // --- 修改：支持热更新 ---
         if ((currgame = conn_get_game(c))) {
-            // [调试日志] 这是一个“更新”已有游戏的请求
             eventlog(eventlog_level_info, __FUNCTION__,
-                     "[{}] [建房调试] 正在更新现有游戏 \"{}\" (原状态: {})",
+                     "[{}] [建房调试] 正在热更新现有游戏 \"{}\" (原状态枚举: {})",
                      conn_get_socket(c), game_get_name(currgame), (int)game_get_status(currgame));
 
+            // 1. 热更新房间基本信息
+            // 房主交接时，Bot会通过这里发送新的房间名、密码和包含新房主名的StatString
+            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 更新房间名为: \"%s\"", gamename);
+            game_set_name(currgame, gamename);
+
+            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 更新房间密码为: \"%s\"", gamepass);
+            game_set_pass(currgame, gamepass);
+
+            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 核心：更新 StatString (同步新房主名及地图配置)");
+            game_set_info(currgame, gameinfo);
+
+            // 2. 同步游戏选项 (类型、选项等)
+            t_game_type gtype = bngtype_to_gtype(conn_get_clienttag(c), bngtype);
+            game_set_option(currgame, bngoption_to_goption(conn_get_clienttag(c), gtype, option));
+            eventlog(eventlog_level_info, __FUNCTION__, "   ├─ 同步游戏选项: Type=0x%04x, Option=0x%04x", bngtype, option);
+
+            // 3. 更新并转换状态位
             if ((status & CLIENT_STARTGAME4_STATUSMASK_OPEN_VALID) == status) {
                 if (status & CLIENT_STARTGAME4_STATUS_START) {
-                    eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> STARTED (0x04)", conn_get_socket(c));
+                    eventlog(eventlog_level_info, __FUNCTION__, "   └─ 更新状态指令 -> 已开始 (STARTED/0x04)");
                     game_set_status(currgame, game_status_started);
                 }
                 else if (status & CLIENT_STARTGAME4_STATUS_FULL) {
-                    eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> FULL (0x02)", conn_get_socket(c));
+                    eventlog(eventlog_level_info, __FUNCTION__, "   └─ 更新状态指令 -> 满员 (FULL/0x02)");
                     game_set_status(currgame, game_status_full);
                 }
                 else {
-                    eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 更新状态 -> OPEN (0x10/Wait)", conn_get_socket(c));
+                    eventlog(eventlog_level_info, __FUNCTION__, "   └─ 更新状态指令 -> 开启/大厅等待 (OPEN/0x10)");
                     game_set_status(currgame, game_status_open);
                 }
             }
             else {
-                eventlog(eventlog_level_error, __FUNCTION__, "[{}] unknown startgame4 status {} (clienttag: {})", conn_get_socket(c), status, clienttag_uint_to_str(conn_get_clienttag(c)));
+                eventlog(eventlog_level_error, __FUNCTION__, "   └─ [错误] 收到未知的状态位指令: 0x%08x", status);
             }
 
+            eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 房间 \"%s\" 的房主/属性热更新流程处理完毕", conn_get_socket(c), gamename);
         }
         else if ((status & CLIENT_STARTGAME4_STATUSMASK_INIT_VALID) == status) {
-            // [调试日志] 这是一个“新建”游戏的请求
             eventlog(eventlog_level_info, __FUNCTION__, "[{}] [建房调试] 尝试创建新游戏 \"{}\"", conn_get_socket(c), gamename);
 
             t_game_type gtype;

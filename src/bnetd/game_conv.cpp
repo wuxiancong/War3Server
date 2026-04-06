@@ -1019,14 +1019,20 @@ namespace pvpgn
 					*/
 				const char *pstr;
 
-				if (!std::strlen(gameinfo))
-				{
-					eventlog(eventlog_level_info, __FUNCTION__, "got empty gameinfo (from W3 client)");
-					return -1;
-				}
+                if (!std::strlen(gameinfo))
+                {
+                    // eventlog(eventlog_level_info, __FUNCTION__, "got empty gameinfo (from W3 client)");
+                    // ----------------------- 修改开始 -----------------------
+                    eventlog(eventlog_level_info, __FUNCTION__, "收到来自 W3 客户端的空游戏信息 (gameinfo)");
+                    // ----------------------- 修改结束 -----------------------
+                    return -1;
+                }
 
 				if (std::strlen(gameinfo) < 0xf + 2 + 1 + 2 + 4) {
-					eventlog(eventlog_level_error, __FUNCTION__, "got too short W3 mapinfo");
+                    // eventlog(eventlog_level_error, __FUNCTION__, "got too short W3 mapinfo");
+                    // ----------------------- 修改开始 -----------------------
+                    eventlog(eventlog_level_error, __FUNCTION__, "W3 地图信息 (mapinfo) 长度过短，解析中止");
+                    // ----------------------- 修改结束 -----------------------
 					return -1;
 				}
 				pstr = gameinfo + 9;
@@ -1038,6 +1044,19 @@ namespace pvpgn
 				game_set_mapsize_x(game, bn_short_get(*((bn_short*)(pstr + 5))));
 				game_set_mapsize_y(game, bn_short_get(*((bn_short*)(pstr + 7))));
 				game_set_mapname(game, pstr + 13);
+
+                // ----------------------- 新增开始 -----------------------
+                char const * new_host_name = pstr + 13 + std::strlen(pstr + 13) + 1;
+                if (new_host_name && std::strlen(new_host_name) > 0) {
+                    eventlog(eventlog_level_info, __FUNCTION__, "[房主热更新] 房间 \"%s\" 正在通过 StatString 更换房主为: %s", game_get_name(game), new_host_name);
+                    /**
+                     * 注意：PvPGN 的游戏列表发送给其他玩家时，主要直接转发 game->info 这个原始字符串。
+                     * 因为在之前的 game_set_info 中已经用 xstrdup 更新了 game->info，
+                     * 所以其他玩家刷新列表时，他们的魔兽客户端解析出的就会是这个新名字。
+                     */
+                }
+                // ----------------------- 新增结束 -----------------------
+
 				xfree((void*)pstr);
 
 				return 0;

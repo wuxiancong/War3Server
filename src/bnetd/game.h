@@ -286,6 +286,9 @@ namespace pvpgn
 		extern char const * game_difficulty_get_str(unsigned difficulty);
 		extern t_game * game_create(char const * name, char const * pass, char const * info, t_game_type type, int startver, t_clienttag clienttag, unsigned long gameversion);
 		extern unsigned int game_get_id(t_game const * game);
+        // ----------------------- 新增开始 -----------------------
+        extern int game_set_name(t_game * game, char const * name);
+        // ----------------------- 新增结束 -----------------------
 		extern char const * game_get_name(t_game const * game);
 		extern t_game_type game_get_type(t_game const * game);
 		extern t_game_maptype game_get_maptype(t_game const * game);
@@ -304,12 +307,18 @@ namespace pvpgn
 		extern int game_set_difficulty(t_game * game, unsigned int difficulty);
 		extern char const * game_get_description(t_game const * game);
 		extern int game_set_description(t_game * game, char const * description);
-		extern char const * game_get_pass(t_game const * game);
+        // ----------------------- 新增开始 -----------------------
+        extern int game_set_pass(t_game * game, char const * pass);
+        // ----------------------- 新增结束 -----------------------
+        extern char const * game_get_pass(t_game const * game);
+        // ----------------------- 新增开始 -----------------------
+        extern int game_set_info(t_game * game, char const * info);
+        // ----------------------- 新增结束 -----------------------
 		extern char const * game_get_info(t_game const * game);
 		extern unsigned long game_get_version(t_game const * game);
 		extern int game_get_startver(t_game const * game);
 		extern unsigned int game_get_ref(t_game const * game);
-		extern unsigned int game_get_count(t_game const * game);
+        extern unsigned int game_get_count(t_game const * game);
 		extern void game_set_status(t_game * game, t_game_status status);
 		extern t_game_status game_get_status(t_game const * game);
 		extern unsigned int game_get_addr(t_game const * game);
