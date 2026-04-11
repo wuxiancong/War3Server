@@ -434,6 +434,7 @@ static int _handle_host_bot_command(t_connection * c, char const * text);
 static int _handle_chost_bot_command(t_connection * c, char const * text);
 static int _handle_hostprivate_bot_command(t_connection * c, char const * text);
 static int _handle_unhost_bot_command(t_connection * c, char const * text);
+static int _handle_leave_bot_command(t_connection * c, char const * text);
 static int _handle_start_bot_command(t_connection * c, char const * text);
 static int _handle_hold_bot_command(t_connection * c, char const * text);
 static int _handle_ready_bot_command(t_connection * c, char const * text);
@@ -602,6 +603,7 @@ static const t_command_table_row standard_command_table[] =
     { "/hostprivate",   _handle_hostprivate_bot_command },
     { "/hop",           _handle_hostprivate_bot_command }, // Alias
     { "/unhost",        _handle_unhost_bot_command },
+    { "/leave",        _handle_leave_bot_command },
     { "/start",         _handle_start_bot_command },
     { "/hold",          _handle_hold_bot_command },
     { "/ready",         _handle_ready_bot_command },
@@ -5416,6 +5418,7 @@ static int _handle_host_bot_command(t_connection * c, char const * text)        
 static int _handle_chost_bot_command(t_connection * c, char const * text)       { return _handle_bot_proxy_logic(c, text); }
 static int _handle_hostprivate_bot_command(t_connection * c, char const * text) { return _handle_bot_proxy_logic(c, text); }
 static int _handle_unhost_bot_command(t_connection * c, char const * text)      { return _handle_bot_proxy_logic(c, text); }
+static int _handle_leave_bot_command(t_connection * c, char const * text)      { return _handle_bot_proxy_logic(c, text); }
 static int _handle_start_bot_command(t_connection * c, char const * text)       { return _handle_bot_proxy_logic(c, text); }
 static int _handle_hold_bot_command(t_connection * c, char const * text)        { return _handle_bot_proxy_logic(c, text); }
 static int _handle_ready_bot_command(t_connection * c, char const * text)       { return _handle_bot_proxy_logic(c, text); }

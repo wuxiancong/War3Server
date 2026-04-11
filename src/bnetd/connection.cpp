@@ -2111,17 +2111,30 @@ extern int conn_quit_channel(t_connection * c, char const * text)
     return 0;
 }
 
+// extern t_game * conn_get_game(t_connection const * c)
+// {
+//     if (!c)
+//     {
+//         eventlog(eventlog_level_error, __FUNCTION__, "got NULL connection");
+//         return NULL;
+//     }
+
+//     return c->protocol.game;
+// }
+// ----------------------- 修改开始 -----------------------
 extern t_game * conn_get_game(t_connection const * c)
 {
     if (!c)
     {
-        eventlog(eventlog_level_error, __FUNCTION__, "got NULL connection");
+        eventlog(eventlog_level_error, __FUNCTION__, "错误：试图从空的连接句柄中获取游戏对象");
         return NULL;
     }
 
+    eventlog(eventlog_level_debug, __FUNCTION__, "查询到游戏对象：指针地址 = {}", (void*)c->protocol.game);
+
     return c->protocol.game;
 }
-
+// ----------------------- 修改结束 -----------------------
 
 extern int conn_set_game(t_connection * c, char const * gamename, char const * gamepass, char const * gameinfo, t_game_type type, int version)
 /*

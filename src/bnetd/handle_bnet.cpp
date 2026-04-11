@@ -4534,18 +4534,50 @@ static int _client_startgame4(t_connection * c, t_packet const *const packet)
     return 0;
 }
 
+// static int _client_closegame(t_connection * c, t_packet const *const packet)
+// {
+//     t_game *game;
+
+//     eventlog(eventlog_level_info, __FUNCTION__, "[{}] client closing game", conn_get_socket(c));
+//     if (packet_get_type(packet) == CLIENT_CLOSEGAME2 || ((conn_get_clienttag(c) != CLIENTTAG_WARCRAFT3_UINT) && (conn_get_clienttag(c) != CLIENTTAG_WAR3XP_UINT)))
+//         conn_set_game(c, NULL, NULL, NULL, game_type_none, 0);
+//     else if ((game = conn_get_game(c)))
+//         game_set_status(game, game_status_started);
+
+//     return 0;
+// }
+// ----------------------- 修改开始 -----------------------
 static int _client_closegame(t_connection * c, t_packet const *const packet)
 {
     t_game *game;
+    t_clienttag tag = conn_get_clienttag(c);
+    int pkt_type = packet_get_type(packet);
 
-    eventlog(eventlog_level_info, __FUNCTION__, "[{}] client closing game", conn_get_socket(c));
-    if (packet_get_type(packet) == CLIENT_CLOSEGAME2 || ((conn_get_clienttag(c) != CLIENTTAG_WARCRAFT3_UINT) && (conn_get_clienttag(c) != CLIENTTAG_WAR3XP_UINT)))
+    eventlog(eventlog_level_info, __FUNCTION__, "[{}] [关闭游戏] 收到来自客户端的关闭/停止广播请求", conn_get_socket(c));
+
+    // 分支 1：彻底销毁游戏对象
+    // 条件：收到的包是 0x1F (CLOSEGAME2) 或者 客户端不是魔兽争霸3
+    if (pkt_type == CLIENT_CLOSEGAME2 || ((tag != CLIENTTAG_WARCRAFT3_UINT) && (tag != CLIENTTAG_WAR3XP_UINT))) {
+        eventlog(eventlog_level_info, __FUNCTION__, "   └─ [逻辑分支 A] 判定为：彻底销毁房间并清空内存映射");
         conn_set_game(c, NULL, NULL, NULL, game_type_none, 0);
-    else if ((game = conn_get_game(c)))
+    }
+    // 分支 2：魔兽争霸3 特有的状态转换
+    // 条件：是魔兽客户端，发送的是标准 0x02 (STOPADV)
+    else if ((game = conn_get_game(c))) {
+        eventlog(eventlog_level_info, __FUNCTION__, "   └─ [逻辑分支 B] 判定为：W3 客户端发送停止广播指令 (0x02)");
+        eventlog(eventlog_level_info, __FUNCTION__, "      ├─ 房间名称: \"{}\"", game_get_name(game));
+        eventlog(eventlog_level_info, __FUNCTION__, "      └─ 核心动作: PvPGN 正在将状态设置为 STARTED (Status 0)");
+
+        // 💥 检查房间连接是否存在，如果存在设置为游戏开始
         game_set_status(game, game_status_started);
+    }
+    else {
+        eventlog(eventlog_level_info, __FUNCTION__, "   └─ [逻辑分支 C] 异常：该连接当前没有关联任何活跃游戏");
+    }
 
     return 0;
 }
+// ----------------------- 修改结束 -----------------------
 
 static int _client_gamereport(t_connection * c, t_packet const *const packet)
 {
